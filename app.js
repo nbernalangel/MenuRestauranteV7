@@ -72,29 +72,33 @@ app.post('/api/register', async (req, res) => {
         await nuevoRestaurante.save();
 
         const verificationCode = generateVerificationCode();
-        const verificationCodeExpires = new Date(Date.now() + 3600000); // Código válido por 1 hora
+        // Ajuste para la expiración: 15 minutos en lugar de 1 hora para pruebas
+        const verificationCodeExpires = new Date(Date.now() + 15 * 60 * 1000); 
 
         const nuevoUsuario = new Usuario({
             email,
             password, // La contraseña se hasheará en el middleware 'pre' de Usuario.js
             rol: 'admin_restaurante',
             restaurante: nuevoRestaurante._id,
-            isVerified: false, // CAMBIO: El usuario NO está verificado al registrarse
+            isVerified: false, 
             verificationCode: verificationCode,
             verificationCodeExpires: verificationCodeExpires
         });
-        await nuevoUsuario.save(); // El middleware pre('save') en Usuario.js actuará aquí
+        await nuevoUsuario.save(); 
+
+        // NUEVO LOG: Para depurar el código generado y guardado
+        console.log(`DEBUG: Código generado para ${email}: ${verificationCode}. Expira: ${verificationCodeExpires.toISOString()}`);
 
         // Enviar correo de verificación
         const mailOptions = {
-            from: process.env.EMAIL_USER, // Tu correo de Gmail
+            from: process.env.EMAIL_USER, 
             to: email,
             subject: 'Verifica tu cuenta de Menú Digital',
             html: `
                 <p>Hola,</p>
                 <p>Gracias por registrarte en Menú Digital. Por favor, usa el siguiente código para verificar tu cuenta:</p>
                 <h3 style="color: ${process.env.COLOR_VERDE_LIMA || '#89d341'};">${verificationCode}</h3>
-                <p>Este código es válido por 1 hora.</p>
+                <p>Este código es válido por 15 minutos.</p>
                 <p>Ingresa este código en la página de verificación: <a href="${process.env.APP_URL || 'http://localhost:3000'}/verify.html?email=${encodeURIComponent(email)}">${process.env.APP_URL || 'http://localhost:3000'}/verify.html</a></p>
                 <p>Si no te registraste en Menú Digital, puedes ignorar este correo.</p>
             `,
@@ -116,6 +120,9 @@ app.post('/api/verify', async (req, res) => {
         const { email, code } = req.body;
         const usuario = await Usuario.findOne({ email });
 
+        // NUEVO LOG: Para depurar el código recibido y el código guardado
+        console.log(`DEBUG: Verificando para ${email}. Código recibido: ${code}. Código guardado: ${usuario ? usuario.verificationCode : 'N/A'}. Expira: ${usuario ? usuario.verificationCodeExpires.toISOString() : 'N/A'}. Hora actual: ${new Date().toISOString()}`);
+
         if (!usuario) {
             return res.status(404).json({ message: 'Usuario no encontrado.' });
         }
@@ -124,7 +131,8 @@ app.post('/api/verify', async (req, res) => {
             return res.status(400).json({ message: 'La cuenta ya ha sido verificada.' });
         }
 
-        if (usuario.verificationCode !== code) {
+        // Asegurarse de que ambos sean strings para la comparación
+        if (String(usuario.verificationCode) !== String(code)) { // NUEVO: Comparación segura de strings
             return res.status(400).json({ message: 'Código de verificación incorrecto.' });
         }
 
@@ -133,8 +141,8 @@ app.post('/api/verify', async (req, res) => {
         }
 
         usuario.isVerified = true;
-        usuario.verificationCode = undefined; // Elimina el código
-        usuario.verificationCodeExpires = undefined; // Elimina la fecha de expiración
+        usuario.verificationCode = undefined; 
+        usuario.verificationCodeExpires = undefined; 
         await usuario.save();
 
         res.status(200).json({ message: 'Cuenta verificada con éxito. Ya puedes iniciar sesión.' });
