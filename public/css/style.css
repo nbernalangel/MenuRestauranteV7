@@ -1,0 +1,455 @@
+/* --- ESTILOS GENERALES Y FUENTES --- */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+:root {
+    --color-azul-oscuro: #002b4d;
+    --color-verde-lima: #89d341;
+    --color-fondo: #f4f7f6;
+    --color-superficie: #ffffff;
+    --color-texto-principal: #212529;
+    --color-texto-secundario: #6c757d;
+    --color-borde: #e9ecef;
+    --color-peligro: #e74c3c;
+    --color-exito: #28a745;
+    --radio-borde: 8px;
+    --sombra-suave: 0 8px 24px rgba(0,0,0,0.06);
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--color-fondo);
+    color: var(--color-texto-principal);
+    margin: 0;
+    padding: 1.5em; /* Padding general del body */
+    font-size: 15px;
+}
+
+.container {
+    max-width: 850px;
+    margin: auto;
+    background: var(--color-superficie);
+    padding: 1.5em 2em; /* Padding del contenedor principal */
+    border-radius: var(--radio-borde);
+    box-shadow: var(--sombra-suave);
+}
+
+/* --- ENCABEZADOS Y SEPARADORES --- */
+h1, h2, h3 {
+    font-family: 'Poppins', sans-serif;
+    color: var(--color-azul-oscuro);
+}
+h1 { font-size: 1.4em; margin: 0; }
+h2 { font-size: 1.2em; border-bottom: 2px solid var(--color-verde-lima); padding-bottom: 8px; margin-top: 25px; margin-bottom: 20px; }
+h3 { font-size: 1em; margin-top: 25px; color: var(--color-texto-principal); } /* Corregido var(--color-texto) */
+hr { border: none; border-top: 1px solid var(--color-borde); margin: 30px 0; }
+.admin-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; margin-bottom: 15px; }
+
+/* --- FORMULARIOS --- */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+}
+label {
+    font-weight: 600;
+    font-size: 0.9em;
+}
+input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="date"], textarea, select {
+    width: 100%; padding: 10px; border: 1px solid var(--color-borde); border-radius: var(--radio-borde); font-size: 1em; box-sizing: border-box;
+}
+input:focus, textarea:focus {
+    outline: none;
+    border-color: var(--color-verde-lima);
+    box-shadow: 0 0 0 3px rgba(137, 211, 65, 0.2);
+}
+.opcion-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* --- BOTONES --- */
+.btn {
+    display: inline-block;
+    padding: 12px 30px;
+    border: none;
+    border-radius: var(--radio-borde);
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
+    transition: all 0.2s ease-in-out;
+    width: auto; /* Ancho automático */
+}
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+/* Botones dentro de un formulario se alinean a la derecha */
+form .btn {
+    align-self: flex-end;
+}
+
+.btn-primary {
+    background-color: var(--color-verde-lima);
+    color: var(--color-azul-oscuro);
+}
+.btn-primary:hover {
+    background-color: var(--color-azul-oscuro);
+    color: white;
+}
+.btn-danger {
+    background-color: var(--color-peligro);
+    color: white;
+}
+
+/* --- TABLAS --- */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1.5em;
+    font-size: 0.95em;
+}
+th, td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--color-borde);
+    vertical-align: middle;
+}
+thead th {
+    background-color: var(--color-azul-oscuro);
+    color: white;
+    font-weight: 500;
+}
+td button {
+    width: auto;
+    padding: 6px 10px;
+    margin-right: 5px;
+    font-size: 12px;
+}
+
+/* --- TABLAS RESPONSIVAS --- */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.table-responsive table {
+    min-width: unset; /* Deja que la tabla se ajuste, o define uno más pequeño con media queries */
+}
+/* Media query para asegurar que las tablas sean desplazables solo cuando la pantalla es pequeña */
+@media (max-width: 768px) {
+    .table-responsive table {
+        min-width: 500px; /* Un min-width para que la tabla sea desplazable horizontalmente en pantallas pequeñas si es necesario */
+    }
+}
+
+
+/* --- Switch de Disponibilidad --- */
+.switch { position: relative; display: inline-block; width: 40px; height: 20px; } /* Ajustado a más pequeño */
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 20px; } /* Ajustado el radio */
+.slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
+input:checked + .slider { background-color: var(--color-verde-lima); }
+input:checked + .slider:before { transform: translateX(20px); } /* Ajustado el translateX */
+
+
+/* --- PÁGINA DEL CLIENTE (index.html) --- */
+.public-menu-header h1 {
+    font-size: 2.5em;
+    text-align: center;
+    color: var(--color-azul-oscuro);
+    margin-bottom: 1em;
+}
+
+.public-menu-grid {
+    display: grid;
+    grid-template-columns: 1fr; /* Por defecto, en móviles, una columna */
+    gap: 2em;
+}
+
+/* Títulos de sección como "Menú del día", "Especiales", etc. */
+.menu-section h2 {
+    font-size: 2em;
+    color: var(--color-azul-oscuro);
+    border-bottom: 3px solid var(--color-verde-lima);
+    padding-bottom: 10px;
+    margin-bottom: 25px;
+}
+
+/* --- CONTENEDORES DE PLATOS/ESPECIALES (Flexbox para disposición interna) --- */
+.menu-items-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Por defecto, 2-3 columnas flexibles */
+    gap: 20px; /* Espacio entre las tarjetas de menú */
+}
+
+.menu-card {
+    background-color: var(--color-superficie);
+    border-radius: var(--radio-borde);
+    padding: 20px; /* Ligeramente reducido el padding */
+    margin-bottom: 0; /* Eliminado margin-bottom para usar gap del grid */
+    box-shadow: var(--sombra-suave);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 200px; /* Ligeramente reducido min-height */
+    text-align: left; /* Alineado a la izquierda para mejor lectura */
+}
+
+.menu-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.1);
+}
+
+.menu-card h3 {
+    font-size: 1.4em; /* Ligeramente reducido */
+    color: var(--color-azul-oscuro);
+    margin-top: 0;
+    margin-bottom: 8px; /* Ajustado */
+}
+
+.menu-card .description {
+    color: var(--color-texto-secundario);
+    font-size: 0.95em; /* Ligeramente reducido */
+    line-height: 1.4; /* Ligeramente reducido */
+    flex-grow: 1; 
+    margin-bottom: 15px; /* Espacio antes del footer */
+}
+
+.menu-card .price {
+    font-size: 1.5em; /* Ligeramente reducido */
+    font-weight: 700;
+    color: var(--color-azul-oscuro);
+}
+
+.menu-card .add-btn {
+    background-color: var(--color-verde-lima);
+    color: var(--color-azul-oscuro);
+    font-weight: 700;
+    border: none;
+    padding: 10px 20px; /* Ligeramente reducido el padding */
+    border-radius: var(--radio-borde);
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    font-size: 0.9em; /* Ligeramente reducido */
+}
+
+.menu-card .add-btn:hover {
+    background-color: var(--color-azul-oscuro);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+
+/* SECCIÓN DEL CARRITO DE COMPRAS */
+#cart-section {
+    background-color: var(--color-superficie);
+    padding: 25px;
+    border-radius: var(--radio-borde);
+    box-shadow: var(--sombra-suave);
+    position: sticky;
+    top: 24px;
+}
+
+#cart-section h2 {
+    border-color: var(--color-verde-lima);
+}
+
+.cart-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--color-borde);
+    font-size: 0.95em;
+}
+
+.cart-item:last-child {
+    border-bottom: none;
+}
+
+.cart-item-details {
+    flex-grow: 1;
+}
+
+.cart-item-details .item-name {
+    font-weight: 600;
+}
+
+.cart-item-details .item-price {
+    font-size: 0.9em;
+    color: var(--color-texto-secundario);
+}
+
+.cart-item .remove-btn {
+    background: transparent;
+    border: none;
+    color: var(--color-peligro);
+    font-size: 1.2em;
+    cursor: pointer;
+    padding: 5px;
+}
+
+/* --- ESTILOS PARA EL FORMULARIO DEL PEDIDO (AÑADIDO) --- */
+.customer-info {
+    display: flex;
+    flex-direction: column; 
+    gap: 15px; 
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.customer-info .form-group {
+    display: flex;
+    flex-direction: column; 
+    gap: 5px; 
+}
+
+.customer-info input[type="text"],
+.customer-info input[type="tel"],
+.customer-info textarea {
+    width: 100%;
+    box-sizing: border-box; 
+}
+
+
+/* ======================================================== */
+/* === AJUSTES DE RESPONSIVIDAD PARA LA PÁGINA DEL CLIENTE (index.html) === */
+/* ======================================================== */
+
+/* Media Query para pantallas medianas (tabletas, laptops pequeñas) */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .container {
+        padding: 1em 1.5em; /* Ligeramente menos padding */
+    }
+    body {
+        padding: 1em;
+    }
+    .public-menu-header h1 {
+        font-size: 2em; /* Reducir tamaño del título principal */
+    }
+    .menu-section h2 {
+        font-size: 1.8em; /* Reducir tamaño de títulos de sección */
+    }
+    .menu-items-container {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* 2-3 columnas más pequeñas */
+        gap: 15px;
+    }
+    .menu-card {
+        padding: 15px; /* Reducir padding de la tarjeta */
+        min-height: 180px; /* Reducir altura mínima */
+    }
+    .menu-card h3 {
+        font-size: 1.3em;
+    }
+    .menu-card .description {
+        font-size: 0.9em;
+    }
+    .menu-card .price {
+        font-size: 1.4em;
+    }
+    .menu-card .add-btn {
+        padding: 8px 15px;
+        font-size: 0.8em;
+    }
+    /* El carrito sigue siendo una columna principal */
+}
+
+/* Media Query para pantallas pequeñas (móviles) */
+@media (max-width: 480px) { /* Más agresivo: apuntar directamente a pantallas de móvil más pequeñas */
+    .container {
+        padding: 0.5em 0.8em; /* Más reducción de padding del contenedor */
+    }
+    body {
+        padding: 0.3em; /* Menos padding general */
+        font-size: 14px; /* Reducir tamaño de fuente base */
+    }
+    .public-menu-header h1 {
+        font-size: 1.6em; /* Aún más pequeño el título principal */
+        margin-bottom: 0.5em;
+    }
+    .menu-section h2 {
+        font-size: 1.3em; /* Aún más pequeño los títulos de sección */
+        margin-bottom: 10px;
+        padding-bottom: 5px; /* Menos padding inferior */
+    }
+    .public-menu-grid {
+        grid-template-columns: 1fr; /* Fuerza una sola columna si la pantalla es muy pequeña */
+        gap: 1em; /* Reducir espacio entre secciones */
+    }
+    .menu-items-container {
+        grid-template-columns: 1fr; /* Una sola columna de tarjetas en móviles */
+        gap: 10px; /* Reducir espacio entre tarjetas */
+    }
+    .menu-card {
+        padding: 12px; /* Más reducción de padding de la tarjeta */
+        min-height: unset; /* Quitar min-height, dejar que el contenido defina la altura */
+        margin-bottom: 0; /* Asegurar que no hay margen */
+    }
+    .menu-card h3 {
+        font-size: 1.2em; /* Reducir título de plato */
+        margin-bottom: 5px;
+    }
+    .menu-card .description {
+        font-size: 0.85em; /* Reducir descripción */
+        line-height: 1.3;
+        margin-bottom: 10px;
+    }
+    .menu-card .price {
+        font-size: 1.3em; /* Reducir precio */
+    }
+    .menu-card .add-btn {
+        padding: 8px 15px; /* Ajustar botón añadir */
+        font-size: 0.85em;
+    }
+    
+    /* Menú del Día: Ajustes específicos para que quepa mejor */
+    .menu-card h4 { /* Asumiendo que los títulos de categorías del menú del día son h4 */
+        font-size: 1em;
+        margin-top: 10px;
+        margin-bottom: 5px;
+    }
+    .menu-card label { /* Ajustar tamaño de labels de radio buttons */
+        font-size: 0.9em;
+        margin-bottom: 3px;
+    }
+    .menu-card input[type="radio"] {
+        transform: scale(0.8); /* Hacer los radio buttons un poco más pequeños */
+        margin-right: 3px;
+    }
+    
+    #cart-section {
+        position: relative; /* Quitar sticky para que se desplace con el scroll */
+        top: 0;
+        margin-top: 1.5em; /* Espacio arriba del carrito */
+        padding: 15px; /* Reducir padding del carrito */
+    }
+    .cart-item {
+        padding: 8px 0; /* Reducir padding de items del carrito */
+        font-size: 0.85em;
+    }
+    .customer-info {
+        gap: 10px; /* Reducir espacio entre campos */
+    }
+    .customer-info .form-group label {
+        font-size: 0.8em; /* Reducir tamaño de labels del formulario de cliente */
+    }
+    .customer-info input[type="text"],
+    .customer-info input[type="tel"],
+    .customer-info textarea {
+        padding: 8px; /* Reducir padding de inputs del formulario de cliente */
+        font-size: 0.9em;
+    }
+    #checkout-btn {
+        padding: 10px; /* Reducir padding del botón de WhatsApp */
+        font-size: 0.9em;
+    }
+}
+
+/* @media (max-width: 480px) { ... } */
+/* Tu Media Query anterior para 480px, la he expandido y reubicado arriba */

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menú Digital</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container public-menu-container">
+        <header class="public-menu-header">
+            <h1 id="nombre-restaurante">Cargando...</h1>
+        </header>
+
+        <div class="public-menu-grid">
+            <main>
+                <section id="menu-del-dia-section" class="menu-section">
+                    <h2>Menú del Día</h2>
+                    <div id="menu-del-dia-content" class="menu-items-container"></div>
+                </section>
+                
+                <section id="especiales-section" class="menu-section">
+                    <h2>Especiales de la Casa</h2>
+                    <div id="especiales-content" class="menu-items-container"></div>
+                </section>
+                
+                <section id="platos-a-la-carta-section" class="menu-section">
+                    <h2>Platos a la Carta</h2>
+                    <div id="platos-a-la-carta-content" class="menu-items-container"></div>
+                </section>
+            </main>
+            
+            <aside id="cart-section">
+                <h2>Tu Pedido</h2>
+                <div id="cart-items"><p>Tu carrito está vacío.</p></div>
+                <div class="cart-summary">
+                    <strong>Total: $<span id="cart-total-price">0.00</span></strong>
+                </div>
+
+                <div class="customer-info">
+                    <div class="form-group">
+                        <label for="nombre-cliente">Tu Nombre</label>
+                        <input type="text" id="nombre-cliente" placeholder="Nombre (requerido)">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="telefono-cliente">Tu Teléfono</label>
+                        <input type="tel" id="telefono-cliente" placeholder="Teléfono de contacto">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="direccion-cliente">Dirección</label>
+                        <input type="text" id="direccion-cliente" placeholder="Dirección para domicilio (opcional)">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="notas-cliente">Notas Adicionales</label>
+                        <textarea id="notas-cliente" placeholder="Alergias, sin cebolla, etc." rows="2"></textarea>
+                    </div>
+                </div>
+                
+                <button id="checkout-btn" class="btn btn-primary" style="width: 100%;">Pedir por WhatsApp</button>
+            </aside>
+        </div>
+    </div>
+    <script src="/js/script.js"></script>
+</body>
+</html>

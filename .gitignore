@@ -1,0 +1,29 @@
+# Dependencias de Node
+/node_modules
+
+# Archivos de logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.log
+
+# Directorios de producción
+/dist
+/build
+
+# Archivos de entorno
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Varios
+.DS_Store
+Thumbs.db
+*.sqlite3
+*.sqlite3-journal
+*.sublime*
+
+# Archivos de Visual Studio Code
+.vscode/
