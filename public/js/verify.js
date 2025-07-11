@@ -17,15 +17,15 @@ document.addEventListener('DOMContentLoaded', () => {
         submitButton.disabled = true;
         submitButton.textContent = 'Verificando...';
 
-        const formData = new FormData(verifyForm);
-        const verificationCode = formData.get('verificationCode');
+        const formData = new FormData(verifyForm);  
+        const verificationCode = formData.get('Code');
 
         try {
             // Hacemos la petición al endpoint de verificación que vamos a crear
             const response = await fetch('/api/verify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: email, verificationCode: verificationCode }),
+                body: JSON.stringify({ email: email, Code: Code }),
             });
 
             const result = await response.json();
