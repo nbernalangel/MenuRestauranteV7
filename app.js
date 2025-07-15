@@ -120,24 +120,28 @@ app.post('/api/verify', async (req, res) => {
         const { email, code } = req.body;
         const usuario = await Usuario.findOne({ email });
 
-        // NUEVO LOG: Para depurar el código recibido y el código guardado
-        console.log(`DEBUG: Verificando para ${email}. Código recibido: ${code}. Código guardado: ${usuario ? usuario.verificationCode : 'N/A'}. Expira: ${usuario ? usuario.verificationCodeExpires.toISOString() : 'N/A'}. Hora actual: ${new Date().toISOString()}`);
-
         if (!usuario) {
             return res.status(404).json({ message: 'Usuario no encontrado.' });
         }
 
+        // --- ESPÍA DE VERIFICACIÓN ---
+        console.log('--- DIAGNÓSTICO DE VERIFICACIÓN ---');
+        console.log('Email:', email);
+        console.log('Código Recibido del Formulario:', code);
+        console.log('Código Guardado en la Base de Datos:', usuario.verificationCode);
+        console.log('¿Coinciden?:', String(usuario.verificationCode) === String(code));
+        console.log('------------------------------------');
+
         if (usuario.isVerified) {
-            return res.status(400).json({ message: 'La cuenta ya ha sido verificada.' });
+            return res.status(400).json({ message: 'Esta cuenta ya ha sido verificada.' });
         }
-
-        // Asegurarse de que ambos sean strings para la comparación
-        if (String(usuario.verificationCode) !== String(code)) { // NUEVO: Comparación segura de strings
-            return res.status(400).json({ message: 'Código de verificación incorrecto.' });
-        }
-
+        
         if (new Date() > usuario.verificationCodeExpires) {
-            return res.status(400).json({ message: 'El código de verificación ha expirado. Por favor, regístrate de nuevo.' });
+            return res.status(400).json({ message: 'El código de verificación ha expirado.' });
+        }
+        
+        if (String(usuario.verificationCode) !== String(code)) {
+            return res.status(400).json({ message: 'Código de verificación incorrecto.' });
         }
 
         usuario.isVerified = true;
@@ -149,7 +153,7 @@ app.post('/api/verify', async (req, res) => {
 
     } catch (e) {
         console.error("❌ Error en /api/verify:", e.message || e);
-        res.status(500).json({ message: 'Ocurrió un error en el servidor durante la verificación.' });
+        res.status(500).json({ message: 'Ocurrió un error en el servidor.' });
     }
 });
 
@@ -249,7 +253,7 @@ app.post('/api/usuarios', async (req, res) => {
             password, // La contraseña se hasheará en el middleware 'pre' de Usuario.js
             rol, 
             restaurante, 
-            isVerified: false // CAMBIO: El usuario NO está verificado al crearse por superadmin
+            isVerified: true // CAMBIO: El usuario NO está verificado al crearse por superadmin
         }); 
         await item.save(); // Aquí es donde el middleware en Usuario.js actuará.
         

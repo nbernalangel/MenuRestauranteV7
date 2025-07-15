@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const messageContainer = document.getElementById('message-container');
     const verificationMessage = document.getElementById('verification-message');
     const submitButton = verifyForm.querySelector('button[type="submit"]');
+    const codeInput = document.getElementById('verification-code');
 
     // Obtenemos el email de la URL para saber a quién estamos verificando
     const urlParams = new URLSearchParams(window.location.search);
@@ -16,16 +17,16 @@ document.addEventListener('DOMContentLoaded', () => {
         event.preventDefault();
         submitButton.disabled = true;
         submitButton.textContent = 'Verificando...';
-
-        const formData = new FormData(verifyForm);  
-        const verificationCode = formData.get('Code');
+        
+        // Leemos el valor directamente del campo de texto
+        const verificationCode = codeInput.value;
 
         try {
-            // Hacemos la petición al endpoint de verificación que vamos a crear
             const response = await fetch('/api/verify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: email, Code: Code }),
+                // ¡CORRECCIÓN CLAVE! Enviamos la propiedad como 'code' para que coincida con el backend
+                body: JSON.stringify({ email: email, code: verificationCode }),
             });
 
             const result = await response.json();
