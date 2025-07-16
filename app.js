@@ -65,6 +65,11 @@ app.post('/api/register', async (req, res) => {
         });
         await nuevoUsuario.save(); 
         
+        // --- INICIO DEL CAMBIO PARA EL CORREO DE VERIFICACIÓN ---
+        // Usamos process.env.FRONTEND_URL que configuramos en Render, 
+        // o 'http://localhost:3000' para desarrollo local.
+        const appBaseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+
         // Enviar correo de verificación con Resend
         await resend.emails.send({
             from: `Tu Menú Digital <verificacion@ting-col.com>`, // ¡Usando tu dominio verificado!
@@ -75,10 +80,11 @@ app.post('/api/register', async (req, res) => {
                 <p>Gracias por registrarte en Menú Digital. Por favor, usa el siguiente código para verificar tu cuenta:</p>
                 <h3 style="color: ${process.env.COLOR_VERDE_LIMA || '#89d341'};">${verificationCode}</h3>
                 <p>Este código es válido por 15 minutos.</p>
-                <p>Ingresa este código en la página de verificación: <a href="${process.env.APP_URL || 'http://localhost:3000'}/verify.html?email=${encodeURIComponent(email)}">${process.env.APP_URL || 'http://localhost:3000'}/verify.html</a></p>
+                <p>Ingresa este código en la página de verificación: <a href="${appBaseUrl}/verify.html?email=${encodeURIComponent(email)}">${appBaseUrl}/verify.html</a></p>
                 <p>Si no te registraste en Menú Digital, puedes ignorar este correo.</p>
             `,
         });
+        // --- FIN DEL CAMBIO PARA EL CORREO DE VERIFICACIÓN ---
         console.log(`✅ Correo de verificación enviado a ${email} usando Resend.`);
 
         res.status(201).json({ message: '¡Registro exitoso! Revisa tu correo para el código de verificación.' });
@@ -145,7 +151,12 @@ app.post('/api/forgot-password', async (req, res) => {
         usuario.resetTokenExpires = resetTokenExpires;
         await usuario.save();
 
-        const resetUrl = `${process.env.APP_URL || 'http://localhost:3000'}/reset-password.html?token=${resetToken}`;
+        // --- INICIO DEL CAMBIO PARA EL CORREO DE RESTABLECIMIENTO ---
+        // Usamos process.env.FRONTEND_URL que configuramos en Render, 
+        // o 'http://localhost:3000' para desarrollo local.
+        const appBaseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+        const resetUrl = `${appBaseUrl}/reset-password.html?token=${resetToken}`;
+        // --- FIN DEL CAMBIO PARA EL CORREO DE RESTABLECIMIENTO ---
 
         await resend.emails.send({
             from: `Tu Menú Digital <noreply@ting-col.com>`, 
