@@ -159,35 +159,74 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // 6. LÓGICA DE WHATSAPP
-    checkoutBtn.addEventListener('click', () => {
-        if (cart.length === 0) { return alert('Tu carrito está vacío.'); }
-        const nombreCliente = nombreClienteInput.value.trim();
-        if (!nombreCliente) { return alert('Por favor, ingresa tu nombre.'); }
-        
-        const telefono = telefonoClienteInput.value.trim();
-        const direccion = direccionClienteInput.value.trim();
-        const notas = notasClienteInput.value.trim();
+   // 6. LÓGICA DE WHATSAPP
+checkoutBtn.addEventListener('click', async () => { // <-- Se añade 'async'
+    if (cart.length === 0) { return alert('Tu carrito está vacío.'); }
+    const nombreCliente = nombreClienteInput.value.trim();
+    if (!nombreCliente) { return alert('Por favor, ingresa tu nombre.'); }
+    
+    const telefono = telefonoClienteInput.value.trim();
+    const direccion = direccionClienteInput.value.trim();
+    const notas = notasClienteInput.value.trim();
 
-        let message = `*¡Nuevo Pedido para ${restauranteInfo.nombre}!* \n\n`;
-        message += `*Cliente:* ${nombreCliente}\n`;
-        if (telefono) message += `*Teléfono:* ${telefono}\n`;
-        if (direccion) message += `*Dirección:* ${direccion}\n`;
-        
-        message += `\n*--- Detalle del Pedido ---*\n`;
-        cart.forEach(item => {
-            message += `${item.quantity}x ${item.nombre} - $${(item.precio * item.quantity).toFixed(2)}\n`;
+    // --- INICIO DE LA CORRECCIÓN ---
+
+    // 1. Preparamos el objeto del pedido para guardarlo
+    const pedidoParaGuardar = {
+        restaurante: restauranteInfo._id, // Usamos el ID guardado en restauranteInfo
+        items: cart.map(item => ({
+            nombre: item.nombre,
+            cantidad: item.quantity,
+            precio: item.precio
+        })),
+        total: cart.reduce((sum, item) => sum + (item.precio * item.quantity), 0),
+        cliente: {
+            nombre: nombreCliente,
+            telefono: telefono,
+            direccion: direccion
+        }
+    };
+
+    try {
+        // 2. Enviamos el pedido al backend para registrarlo
+        const registroResponse = await fetch('/api/pedidos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(pedidoParaGuardar)
         });
-        message += `\n*Total: $${cartTotalPriceDisplay.textContent}*`;
-        if (notas) message += `\n\n*Notas:* ${notas}`;
-        
-        const whatsappNumber = restauranteInfo.telefono;
-        if (!whatsappNumber) { return alert('Este restaurante no tiene un número de WhatsApp configurado.'); }
-        
-        const encodedMessage = encodeURIComponent(message);
-        const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
-        window.open(whatsappUrl, '_blank');
+
+        if (registroResponse.ok) {
+            console.log('✅ Pedido registrado para estadísticas.');
+        } else {
+            console.error('No se pudo registrar el pedido para estadísticas.');
+        }
+    } catch (error) {
+        console.error('Error de red al registrar el pedido:', error);
+    }
+
+    // --- FIN DE LA CORRECCIÓN ---
+
+
+    // 3. La lógica de WhatsApp continúa igual que antes
+    let message = `*¡Nuevo Pedido para ${restauranteInfo.nombre}!* \n\n`;
+    message += `*Cliente:* ${nombreCliente}\n`;
+    if (telefono) message += `*Teléfono:* ${telefono}\n`;
+    if (direccion) message += `*Dirección:* ${direccion}\n`;
+    
+    message += `\n*--- Detalle del Pedido ---*\n`;
+    cart.forEach(item => {
+        message += `${item.quantity}x ${item.nombre} - $${(item.precio * item.quantity).toFixed(2)}\n`;
     });
+    message += `\n*Total: $${cartTotalPriceDisplay.textContent}*`;
+    if (notas) message += `\n\n*Notas:* ${notas}`;
+    
+    const whatsappNumber = restauranteInfo.telefono;
+    if (!whatsappNumber) { return alert('Este restaurante no tiene un número de WhatsApp configurado.'); }
+    
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
+    window.open(whatsappUrl, '_blank');
+});
 
     // 7. CARGA INICIAL (CORREGIDO PARA USAR EL SLUG ORIGINAL)
     async function loadPage() {

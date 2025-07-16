@@ -13,58 +13,51 @@ const usuarioSchema = new mongoose.Schema({
     password: { 
         type: String, 
         required: true 
-        // ¡Ahora sí se encriptará antes de guardarla gracias al middleware 'pre' de abajo!
     },
-    // --- CAMPOS PARA VERIFICACIÓN DE CORREO (si los usas) ---
     isVerified: {
         type: Boolean,
-        default: false // El usuario no está verificado por defecto al registrarse
+        default: false 
     },
     verificationCode: {
         type: String,
-        required: false // Solo existirá mientras la cuenta no esté verificada
+        required: false 
     },
     verificationCodeExpires: {
         type: Date,
-        required: false // La fecha y hora en que el código expira
+        required: false 
     },
-    // --- FIN DE CAMPOS DE VERIFICACIÓN ---
     rol: { 
         type: String, 
         enum: ['superadmin', 'admin_restaurante'], 
         required: true 
     },
-    // Conecta al usuario con su restaurante, si no es un superadmin.
     restaurante: { 
-        type: mongoose.Schema.Types.ObjectId, // Asegúrate de que sea 'mongoose.Schema.Types.ObjectId'
+        type: mongoose.Schema.Types.ObjectId, 
         ref: 'Restaurante'
+    },
+    // --- NUEVOS CAMPOS PARA RESTABLECIMIENTO DE CONTRASEÑA ---
+    resetToken: { // Campo para guardar el token de restablecimiento
+        type: String,
+        required: false // No es requerido, solo existe cuando se solicita un restablecimiento
+    },
+    resetTokenExpires: { // Campo para guardar la fecha de expiración del token
+        type: Date,
+        required: false // No es requerido
     }
+    // --- FIN DE NUEVOS CAMPOS ---
 }, { timestamps: true });
 
 // Middleware 'pre' de Mongoose: Se ejecuta ANTES de que un documento 'usuario' se guarde
 usuarioSchema.pre('save', async function(next) {
-    // 'this' se refiere al documento de usuario que se está guardando
-    
-    // Solo hasheamos la contraseña si ha sido modificada (o es nueva)
-    // Esto evita re-hashear una contraseña ya hasheada si el usuario solo actualiza otros datos
     if (this.isModified('password')) {
-        // Generamos un 'salt' (una cadena aleatoria) para añadir seguridad al hash
-        // El '10' es el costo (número de rondas de hashing), un valor estándar y seguro
         const salt = await bcrypt.genSalt(10); 
-        
-        // Hasheamos la contraseña original y la reemplazamos con su versión hasheada
         this.password = await bcrypt.hash(this.password, salt);
     }
-    
-    next(); // Continúa con el proceso de guardado (guarda el usuario en la base de datos)
+    next(); 
 });
 
-// Método personalizado para comparar una contraseña ingresada con la contraseña hasheada en la BD
+// Método para comparar la contraseña ingresada con la contraseña hasheada en la base de datos
 usuarioSchema.methods.comparePassword = async function(candidatePassword) {
-    // 'candidatePassword' es la contraseña que el usuario intentó ingresar
-    // 'this.password' es la contraseña hasheada que está guardada en la base de datos
-    
-    // bcrypt.compare() compara la contraseña de texto plano con el hash de forma segura
     return await bcrypt.compare(candidatePassword, this.password);
 };
 

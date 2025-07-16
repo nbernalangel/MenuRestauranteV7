@@ -1,97 +1,73 @@
-// app.js
+// app.js (Versión Final para Producción con Resend y Atlas)
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
-const bcrypt = require('bcryptjs'); // Usamos bcryptjs para consistencia
-const nodemailer = require('nodemailer'); // NUEVO: Importamos Nodemailer para envío de correos
-// const { Resend } = require('resend'); // Ya no es necesario, pero se deja comentado
+const bcrypt = require('bcryptjs'); 
+const { Resend } = require('resend');
+const ExcelJS = require('exceljs'); // Importamos ExcelJS
+const crypto = require('crypto'); // Importamos crypto para generar tokens
 require('dotenv').config(); 
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 // --- Middlewares ---
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// --- Conexión a MongoDB (Forzada a Local en fallback) ---
+// --- Conexión a MongoDB ---
 const dbUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/menu-restaurante-db';
-mongoose.connect(dbUri)
-    .then(() => console.log('✅ Conectado a MongoDB'))
-    .catch(err => console.error('❌ Error de conexión a MongoDB:', err.message || err)); // Mejorado el log de error
+mongoose.connect(dbUri, { serverSelectionTimeoutMS: 30000 })
+    .then(() => console.log('✅ Conectado a MongoDB Atlas'))
+    .catch(err => console.error('❌ Error de conexión a MongoDB:', err.message || err)); 
 
 // --- Importar Modelos ---
 const Plato = require('./models/Plato');
-const Especial = require('./models/Especial');
+const Especial = require('./models/Especial'); 
 const MenuCategoria = require('./models/MenuCategoria');
 const MenuDia = require('./models/MenuDia');
 const Restaurante = require('./models/Restaurante');
 const Usuario = require('./models/Usuario');
+const Pedido = require('./models/Pedido'); 
 
-// --- Configuración de Nodemailer (para Gmail SMTP) ---
-// Estas variables (EMAIL_USER, EMAIL_PASS) DEBEN configurarse en las variables de entorno de Render
-// EMAIL_USER: tu dirección de correo de Gmail (ej. tu.correo@gmail.com)
-// EMAIL_PASS: la Contraseña de Aplicación que generaste en Google (NO tu contraseña normal de Gmail)
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER, 
-        pass: process.env.EMAIL_PASS,
-    },
-});
+// --- Configuración de Resend ---
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Función para generar un código de verificación de 6 dígitos
 function generateVerificationCode() {
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-
 // ========================================================
 // === RUTAS DE REGISTRO Y VERIFICACIÓN ===================
 // ========================================================
 app.post('/api/register', async (req, res) => {
-    console.log("✅ Ejecutando registro.");
-    
     try {
         const { nombreRestaurante, email, password } = req.body;
-
         const usuarioExistente = await Usuario.findOne({ email });
-        if (usuarioExistente) {
-            return res.status(409).json({ message: 'Este correo electrónico ya está registrado.' });
-        }
+        if (usuarioExistente) { return res.status(409).json({ message: 'Este correo ya está registrado.' }); }
         
         const slug = nombreRestaurante.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '');
         const restauranteExistente = await Restaurante.findOne({ slug });
-        if (restauranteExistente) {
-            return res.status(409).json({ message: 'El nombre de este restaurante ya genera una URL que existe. Por favor, elige otro.' });
-        }
+        if (restauranteExistente) { return res.status(409).json({ message: 'El nombre de este restaurante ya genera una URL que existe. Por favor, elige otro.' }); }
 
         const nuevoRestaurante = new Restaurante({ nombre: nombreRestaurante, slug: slug });
         await nuevoRestaurante.save();
 
         const verificationCode = generateVerificationCode();
-        // Ajuste para la expiración: 15 minutos en lugar de 1 hora para pruebas
-        const verificationCodeExpires = new Date(Date.now() + 15 * 60 * 1000); 
+        const verificationCodeExpires = new Date(Date.now() + 15 * 60 * 1000); // Código válido por 15 minutos
 
         const nuevoUsuario = new Usuario({
-            email,
-            password, // La contraseña se hasheará en el middleware 'pre' de Usuario.js
-            rol: 'admin_restaurante',
-            restaurante: nuevoRestaurante._id,
-            isVerified: false, 
-            verificationCode: verificationCode,
-            verificationCodeExpires: verificationCodeExpires
+            email, password, rol: 'admin_restaurante', restaurante: nuevoRestaurante._id,
+            isVerified: false, verificationCode: verificationCode, verificationCodeExpires: verificationCodeExpires
         });
         await nuevoUsuario.save(); 
-
-        // NUEVO LOG: Para depurar el código generado y guardado
-        console.log(`DEBUG: Código generado para ${email}: ${verificationCode}. Expira: ${verificationCodeExpires.toISOString()}`);
-
-        // Enviar correo de verificación
-        const mailOptions = {
-            from: process.env.EMAIL_USER, 
+        
+        // Enviar correo de verificación con Resend
+        await resend.emails.send({
+            from: `Tu Menú Digital <verificacion@ting-col.com>`, // ¡Usando tu dominio verificado!
             to: email,
             subject: 'Verifica tu cuenta de Menú Digital',
             html: `
@@ -102,13 +78,10 @@ app.post('/api/register', async (req, res) => {
                 <p>Ingresa este código en la página de verificación: <a href="${process.env.APP_URL || 'http://localhost:3000'}/verify.html?email=${encodeURIComponent(email)}">${process.env.APP_URL || 'http://localhost:3000'}/verify.html</a></p>
                 <p>Si no te registraste en Menú Digital, puedes ignorar este correo.</p>
             `,
-        };
+        });
+        console.log(`✅ Correo de verificación enviado a ${email} usando Resend.`);
 
-        await transporter.sendMail(mailOptions);
-        console.log(`✅ Correo de verificación enviado a ${email}`);
-
-        res.status(201).json({ message: '¡Usuario registrado con éxito! Por favor, verifica tu correo electrónico para activar tu cuenta.' });
-
+        res.status(201).json({ message: '¡Registro exitoso! Revisa tu correo para el código de verificación.' });
     } catch (e) {
         console.error("❌ Error en /api/register:", e.message || e);
         res.status(500).json({ message: 'Ocurrió un error en el servidor al registrar el usuario.' });
@@ -117,30 +90,24 @@ app.post('/api/register', async (req, res) => {
 
 app.post('/api/verify', async (req, res) => {
     try {
-        const { email, code } = req.body;
+        const { email, code } = req.body; 
         const usuario = await Usuario.findOne({ email });
 
-        if (!usuario) {
-            return res.status(404).json({ message: 'Usuario no encontrado.' });
-        }
-
-        // --- ESPÍA DE VERIFICACIÓN ---
-        console.log('--- DIAGNÓSTICO DE VERIFICACIÓN ---');
+        console.log('--- ESPÍA DE VERIFICACIÓN ---');
         console.log('Email:', email);
         console.log('Código Recibido del Formulario:', code);
-        console.log('Código Guardado en la Base de Datos:', usuario.verificationCode);
-        console.log('¿Coinciden?:', String(usuario.verificationCode) === String(code));
+        console.log('Código Guardado en la Base de Datos:', usuario ? usuario.verificationCode : 'N/A');
+        console.log('¿Coinciden?:', usuario ? (String(usuario.verificationCode) === String(code)) : 'N/A');
+        console.log('Hora de Expiración:', usuario ? usuario.verificationCodeExpires.toISOString() : 'N/A');
+        console.log('Hora Actual del Servidor:', new Date().toISOString());
         console.log('------------------------------------');
 
-        if (usuario.isVerified) {
-            return res.status(400).json({ message: 'Esta cuenta ya ha sido verificada.' });
-        }
+        if (!usuario) { return res.status(404).json({ message: 'Usuario no encontrado.' }); }
+        if (usuario.isVerified) { return res.status(400).json({ message: 'Esta cuenta ya ha sido verificada.' }); }
         
-        if (new Date() > usuario.verificationCodeExpires) {
-            return res.status(400).json({ message: 'El código de verificación ha expirado.' });
-        }
+        if (new Date() > usuario.verificationCodeExpires) { return res.status(400).json({ message: 'El código de verificación ha expirado.' });}
         
-        if (String(usuario.verificationCode) !== String(code)) {
+        if (String(usuario.verificationCode) !== String(code)) { 
             return res.status(400).json({ message: 'Código de verificación incorrecto.' });
         }
 
@@ -150,10 +117,100 @@ app.post('/api/verify', async (req, res) => {
         await usuario.save();
 
         res.status(200).json({ message: 'Cuenta verificada con éxito. Ya puedes iniciar sesión.' });
-
     } catch (e) {
         console.error("❌ Error en /api/verify:", e.message || e);
-        res.status(500).json({ message: 'Ocurrió un error en el servidor.' });
+        res.status(500).json({ message: 'Ocurrió un error en el servidor durante la verificación.' });
+    }
+});
+
+// ========================================================
+// === RUTAS PARA "OLVIDÓ SU CONTRASEÑA" ==================
+// ========================================================
+
+// RUTA 1: SOLICITAR RESTABLECIMIENTO DE CONTRASEÑA (Envía correo con token)
+app.post('/api/forgot-password', async (req, res) => {
+    try {
+        const { email } = req.body;
+        const usuario = await Usuario.findOne({ email });
+
+        if (!usuario) {
+            // Por seguridad, siempre respondemos con un mensaje genérico para no revelar si el email existe o no
+            return res.status(200).json({ message: 'Si el correo electrónico está registrado, recibirás un enlace para restablecer tu contraseña.' });
+        }
+
+        const resetToken = crypto.randomBytes(20).toString('hex'); 
+        const resetTokenExpires = new Date(Date.now() + 3600000); // Token válido por 1 hora
+
+        usuario.resetToken = resetToken;
+        usuario.resetTokenExpires = resetTokenExpires;
+        await usuario.save();
+
+        const resetUrl = `${process.env.APP_URL || 'http://localhost:3000'}/reset-password.html?token=${resetToken}`;
+
+        await resend.emails.send({
+            from: `Tu Menú Digital <noreply@ting-col.com>`, 
+            to: email,
+            subject: 'Restablecer tu Contraseña de Menú Digital',
+            html: `
+                <p>Hola,</p>
+                <p>Hemos recibido una solicitud para restablecer la contraseña de tu cuenta de Menú Digital.</p>
+                <p>Haz clic en el siguiente enlace para restablecer tu contraseña:</p>
+                <p><a href="${resetUrl}">${resetUrl}</a></p>
+                <p>Este enlace es válido por 1 hora.</p>
+                <p>Si no solicitaste un restablecimiento de contraseña, puedes ignorar este correo.</p>
+            `,
+        });
+        console.log(`✅ Correo de restablecimiento de contraseña enviado a ${email} con token: ${resetToken}`);
+
+        res.status(200).json({ message: 'Si el correo electrónico está registrado, recibirás un enlace para restablecer tu contraseña.' });
+
+    } catch (e) {
+        console.error("❌ Error en /api/forgot-password:", e.message || e);
+        res.status(500).json({ message: 'Ocurrió un error en el servidor al solicitar el restablecimiento de contraseña.' });
+    }
+});
+
+// RUTA 2: RESTABLECER CONTRASEÑA (Valida token y actualiza contraseña)
+app.post('/api/reset-password/:token', async (req, res) => {
+    try {
+        const { token } = req.params;
+        const { password } = req.body;
+
+        const usuario = await Usuario.findOne({
+            resetToken: token,
+            resetTokenExpires: { $gt: new Date() } // Token no expirado
+        });
+
+        // --- ESPÍA DE RESTABLECIMIENTO ---
+        console.log('--- DIAGNÓSTICO DE RESTABLECIMIENTO ---');
+        console.log('Token recibido:', token);
+        console.log('Usuario encontrado por token:', usuario ? usuario.email : 'N/A');
+        console.log('Contraseña nueva (sin hashear):', password); 
+        console.log('Contraseña actual del usuario (antes de actualizar):', usuario ? usuario.password : 'N/A');
+        console.log('------------------------------------');
+
+
+        if (!usuario) {
+            return res.status(400).json({ message: 'El token de restablecimiento es inválido o ha expirado.' });
+        }
+
+        // NO HASHEAR AQUÍ. El middleware pre('save') en Usuario.js lo hará.
+        usuario.password = password; // Asignar la contraseña en texto plano
+
+        // Limpiar el token y la fecha de expiración
+        usuario.resetToken = undefined;
+        usuario.resetTokenExpires = undefined;
+        usuario.isVerified = true; // Asegurarse de que la cuenta esté verificada al restablecer
+
+        await usuario.save();
+        console.log(`✅ Contraseña restablecida con éxito para ${usuario.email}`);
+        console.log('DEBUG: Nueva contraseña hasheada guardada (después de save):', usuario.password); 
+
+        res.status(200).json({ message: 'Contraseña restablecida con éxito. Ya puedes iniciar sesión.' });
+
+    } catch (e) {
+        console.error("❌ Error en /api/reset-password:", e.message || e);
+        res.status(500).json({ message: 'Ocurrió un error en el servidor al restablecer la contraseña.' });
     }
 });
 
@@ -253,7 +310,7 @@ app.post('/api/usuarios', async (req, res) => {
             password, // La contraseña se hasheará en el middleware 'pre' de Usuario.js
             rol, 
             restaurante, 
-            isVerified: true // CAMBIO: El usuario NO está verificado al crearse por superadmin
+            isVerified: true // El usuario NO está verificado al crearse por superadmin
         }); 
         await item.save(); // Aquí es donde el middleware en Usuario.js actuará.
         
@@ -299,7 +356,7 @@ app.put('/api/usuarios/:id', async (req, res) => {
         }
         res.json(item);
     } catch (e) {
-        console.error("❌ ERROR al actualizar usuario:", e.message || e);
+        console.error("❌ Error al actualizar usuario:", e.message || e);
         if (e.name === 'ValidationError') {
             return res.status(400).json({ message: e.message });
         }
@@ -316,7 +373,7 @@ app.delete('/api/usuarios/:id', async (req, res) => {
         }
         res.status(204).send(); // 204 No Content: éxito sin devolver contenido
     } catch (e) {
-        console.error("❌ ERROR al eliminar usuario:", e.message || e);
+        console.error("❌ Error al eliminar usuario:", e.message || e);
         res.status(500).json({ message: 'Error interno del servidor al eliminar usuario.' });
     }
 });
@@ -346,8 +403,16 @@ app.post('/api/login', async (req, res) => {
             return res.status(401).json({ message: 'Tu cuenta no ha sido verificada. Por favor, revisa tu correo.'}); 
         } 
         
+        // --- ESPÍA DE LOGIN ---
+        console.log('--- DIAGNÓSTICO DE LOGIN ---');
+        console.log('Email recibido:', email);
+        console.log('Contraseña recibida (sin hashear):', password); // ¡NO HACER ESTO EN PRODUCCIÓN! Solo para depuración
+        console.log('Contraseña hasheada en DB:', usuario.password);
         const esValida = await usuario.comparePassword(password); 
-        
+        console.log('Resultado de bcrypt.compare():', esValida);
+        console.log('----------------------------');
+        // --- FIN ESPÍA DE LOGIN ---
+
         if (!esValida) { 
             return res.status(401).json({ message: 'Credenciales incorrectas' }); 
         } 
@@ -498,6 +563,8 @@ app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public', 'log
 app.get('/super_admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'super_admin.html')));
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
 app.get('/r/:slug', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+app.get('/forgot-password', (req, res) => res.sendFile(path.join(__dirname, 'public', 'forgot-password.html'))); 
+app.get('/reset-password', (req, res) => res.sendFile(path.join(__dirname, 'public', 'reset-password.html'))); 
 
 // --- Iniciar Servidor ---
 app.listen(port, () => { console.log(`🚀 Servidor funcionando en http://localhost:${port}`); });
