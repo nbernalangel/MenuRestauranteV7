@@ -41,6 +41,22 @@ function generateVerificationCode() {
 }
 
 // ========================================================
+// === RUTA PARA CREAR UN NUEVO PEDIDO (PÚBLICA) ==========
+// ========================================================
+app.post('/api/pedidos', async (req, res) => {
+    try {
+        const nuevoPedido = new Pedido(req.body);
+        await nuevoPedido.save();
+        console.log(`✅ Nuevo pedido ${nuevoPedido.numeroPedido} guardado con éxito.`);
+        res.status(201).json({ message: 'Pedido creado con éxito', pedido: nuevoPedido });
+    } catch (error) {
+        console.error("❌ Error al crear el pedido:", error.message || error);
+        res.status(500).json({ message: 'Error interno del servidor al crear el pedido.' });
+    }
+});
+
+
+// ========================================================
 // === RUTAS DE REGISTRO Y VERIFICACIÓN ===================
 // ========================================================
 app.post('/api/register', async (req, res) => {
