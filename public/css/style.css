@@ -40,7 +40,7 @@ h1, h2, h3 {
 }
 h1 { font-size: 1.4em; margin: 0; }
 h2 { font-size: 1.2em; border-bottom: 2px solid var(--color-verde-lima); padding-bottom: 8px; margin-top: 25px; margin-bottom: 20px; }
-h3 { font-size: 1em; margin-top: 25px; color: var(--color-texto-principal); } /* Corregido var(--color-texto) */
+h3 { font-size: 1em; margin-top: 25px; color: var(--color-texto-principal); }
 hr { border: none; border-top: 1px solid var(--color-borde); margin: 30px 0; }
 .admin-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; margin-bottom: 15px; }
 
@@ -53,9 +53,18 @@ form {
 label {
     font-weight: 600;
     font-size: 0.9em;
+    /* FIX: Asegurar que las etiquetas usen la fuente principal */
+    font-family: 'Poppins', sans-serif;
 }
 input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="date"], textarea, select {
-    width: 100%; padding: 10px; border: 1px solid var(--color-borde); border-radius: var(--radio-borde); font-size: 1em; box-sizing: border-box;
+    width: 100%; 
+    padding: 10px; 
+    border: 1px solid var(--color-borde); 
+    border-radius: var(--radio-borde); 
+    font-size: 1em; 
+    box-sizing: border-box;
+    /* FIX: Asegurar que los campos de formulario hereden la fuente principal */
+    font-family: inherit; 
 }
 input:focus, textarea:focus {
     outline: none;
@@ -87,7 +96,6 @@ input:focus, textarea:focus {
     box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
 
-/* Botones dentro de un formulario se alinean a la derecha */
 form .btn {
     align-self: flex-end;
 }
@@ -137,23 +145,22 @@ td button {
     -webkit-overflow-scrolling: touch;
 }
 .table-responsive table {
-    min-width: unset; /* Deja que la tabla se ajuste, o define uno más pequeño con media queries */
+    min-width: unset;
 }
-/* Media query para asegurar que las tablas sean desplazables solo cuando la pantalla es pequeña */
 @media (max-width: 768px) {
     .table-responsive table {
-        min-width: 500px; /* Un min-width para que la tabla sea desplazable horizontalmente en pantallas pequeñas si es necesario */
+        min-width: 500px;
     }
 }
 
 
 /* --- Switch de Disponibilidad --- */
-.switch { position: relative; display: inline-block; width: 40px; height: 20px; } /* Ajustado a más pequeño */
+.switch { position: relative; display: inline-block; width: 40px; height: 20px; }
 .switch input { opacity: 0; width: 0; height: 0; }
-.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 20px; } /* Ajustado el radio */
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 20px; }
 .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
 input:checked + .slider { background-color: var(--color-verde-lima); }
-input:checked + .slider:before { transform: translateX(20px); } /* Ajustado el translateX */
+input:checked + .slider:before { transform: translateX(20px); }
 
 
 /* --- PÁGINA DEL CLIENTE (index.html) --- */
@@ -161,16 +168,32 @@ input:checked + .slider:before { transform: translateX(20px); } /* Ajustado el t
     font-size: 2.5em;
     text-align: center;
     color: var(--color-azul-oscuro);
-    margin-bottom: 1em;
+    margin-bottom: 0.25em;
+    font-weight: 400;
+}
+
+.public-menu-header h1 span {
+    font-weight: 700;
+}
+
+.welcome-message {
+    text-align: center;
+    font-size: 1.1em;
+    color: var(--color-texto-secundario);
+    margin-top: 0;
+    margin-bottom: 1.5em;
+    line-height: 1.5;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .public-menu-grid {
     display: grid;
-    grid-template-columns: 1fr; /* Por defecto, en móviles, una columna */
+    grid-template-columns: 1fr;
     gap: 2em;
 }
 
-/* Títulos de sección como "Menú del día", "Especiales", etc. */
 .menu-section h2 {
     font-size: 2em;
     color: var(--color-azul-oscuro);
@@ -179,25 +202,23 @@ input:checked + .slider:before { transform: translateX(20px); } /* Ajustado el t
     margin-bottom: 25px;
 }
 
-/* --- CONTENEDORES DE PLATOS/ESPECIALES (Flexbox para disposición interna) --- */
 .menu-items-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Por defecto, 2-3 columnas flexibles */
-    gap: 20px; /* Espacio entre las tarjetas de menú */
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
 }
 
 .menu-card {
     background-color: var(--color-superficie);
     border-radius: var(--radio-borde);
-    padding: 20px; /* Ligeramente reducido el padding */
-    margin-bottom: 0; /* Eliminado margin-bottom para usar gap del grid */
+    padding: 20px;
     box-shadow: var(--sombra-suave);
     transition: all 0.3s ease;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    min-height: 200px; /* Ligeramente reducido min-height */
-    text-align: left; /* Alineado a la izquierda para mejor lectura */
+    min-height: 200px;
+    text-align: left;
 }
 
 .menu-card:hover {
@@ -206,22 +227,22 @@ input:checked + .slider:before { transform: translateX(20px); } /* Ajustado el t
 }
 
 .menu-card h3 {
-    font-size: 1.4em; /* Ligeramente reducido */
+    font-size: 1.4em;
     color: var(--color-azul-oscuro);
     margin-top: 0;
-    margin-bottom: 8px; /* Ajustado */
+    margin-bottom: 8px;
 }
 
 .menu-card .description {
     color: var(--color-texto-secundario);
-    font-size: 0.95em; /* Ligeramente reducido */
-    line-height: 1.4; /* Ligeramente reducido */
+    font-size: 0.95em;
+    line-height: 1.4;
     flex-grow: 1; 
-    margin-bottom: 15px; /* Espacio antes del footer */
+    margin-bottom: 15px;
 }
 
 .menu-card .price {
-    font-size: 1.5em; /* Ligeramente reducido */
+    font-size: 1.5em;
     font-weight: 700;
     color: var(--color-azul-oscuro);
 }
@@ -231,11 +252,11 @@ input:checked + .slider:before { transform: translateX(20px); } /* Ajustado el t
     color: var(--color-azul-oscuro);
     font-weight: 700;
     border: none;
-    padding: 10px 20px; /* Ligeramente reducido el padding */
+    padding: 10px 20px;
     border-radius: var(--radio-borde);
     cursor: pointer;
     transition: all 0.2s ease-in-out;
-    font-size: 0.9em; /* Ligeramente reducido */
+    font-size: 0.9em;
 }
 
 .menu-card .add-btn:hover {
@@ -310,11 +331,21 @@ input:checked + .slider:before { transform: translateX(20px); } /* Ajustado el t
     gap: 5px; 
 }
 
-.customer-info input[type="text"],
-.customer-info input[type="tel"],
-.customer-info textarea {
+.form-input {
     width: 100%;
-    box-sizing: border-box; 
+    padding: 12px;
+    border: 1px solid var(--color-borde);
+    border-radius: var(--radio-borde);
+    font-size: 1em;
+    font-family: 'Poppins', sans-serif;
+    box-sizing: border-box;
+    transition: all 0.2s ease-in-out;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--color-verde-lima);
+    box-shadow: 0 0 0 3px rgba(137, 211, 65, 0.2);
 }
 
 
@@ -322,27 +353,26 @@ input:checked + .slider:before { transform: translateX(20px); } /* Ajustado el t
 /* === AJUSTES DE RESPONSIVIDAD PARA LA PÁGINA DEL CLIENTE (index.html) === */
 /* ======================================================== */
 
-/* Media Query para pantallas medianas (tabletas, laptops pequeñas) */
 @media (min-width: 768px) and (max-width: 1023px) {
     .container {
-        padding: 1em 1.5em; /* Ligeramente menos padding */
+        padding: 1em 1.5em;
     }
     body {
         padding: 1em;
     }
     .public-menu-header h1 {
-        font-size: 2em; /* Reducir tamaño del título principal */
+        font-size: 2em;
     }
     .menu-section h2 {
-        font-size: 1.8em; /* Reducir tamaño de títulos de sección */
+        font-size: 1.8em;
     }
     .menu-items-container {
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* 2-3 columnas más pequeñas */
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 15px;
     }
     .menu-card {
-        padding: 15px; /* Reducir padding de la tarjeta */
-        min-height: 180px; /* Reducir altura mínima */
+        padding: 15px;
+        min-height: 180px;
     }
     .menu-card h3 {
         font-size: 1.3em;
@@ -357,99 +387,91 @@ input:checked + .slider:before { transform: translateX(20px); } /* Ajustado el t
         padding: 8px 15px;
         font-size: 0.8em;
     }
-    /* El carrito sigue siendo una columna principal */
 }
 
-/* Media Query para pantallas pequeñas (móviles) */
-@media (max-width: 480px) { /* Más agresivo: apuntar directamente a pantallas de móvil más pequeñas */
+@media (max-width: 480px) {
     .container {
-        padding: 0.5em 0.8em; /* Más reducción de padding del contenedor */
+        padding: 0.5em 0.8em;
     }
     body {
-        padding: 0.3em; /* Menos padding general */
-        font-size: 14px; /* Reducir tamaño de fuente base */
+        padding: 0.3em;
+        font-size: 14px;
     }
     .public-menu-header h1 {
-        font-size: 1.6em; /* Aún más pequeño el título principal */
+        font-size: 1.6em;
         margin-bottom: 0.5em;
     }
     .menu-section h2 {
-        font-size: 1.3em; /* Aún más pequeño los títulos de sección */
+        font-size: 1.3em;
         margin-bottom: 10px;
-        padding-bottom: 5px; /* Menos padding inferior */
+        padding-bottom: 5px;
     }
     .public-menu-grid {
-        grid-template-columns: 1fr; /* Fuerza una sola columna si la pantalla es muy pequeña */
-        gap: 1em; /* Reducir espacio entre secciones */
+        grid-template-columns: 1fr;
+        gap: 1em;
     }
     .menu-items-container {
-        grid-template-columns: 1fr; /* Una sola columna de tarjetas en móviles */
-        gap: 10px; /* Reducir espacio entre tarjetas */
+        grid-template-columns: 1fr;
+        gap: 10px;
     }
     .menu-card {
-        padding: 12px; /* Más reducción de padding de la tarjeta */
-        min-height: unset; /* Quitar min-height, dejar que el contenido defina la altura */
-        margin-bottom: 0; /* Asegurar que no hay margen */
+        padding: 12px;
+        min-height: unset;
+        margin-bottom: 0;
     }
     .menu-card h3 {
-        font-size: 1.2em; /* Reducir título de plato */
+        font-size: 1.2em;
         margin-bottom: 5px;
     }
     .menu-card .description {
-        font-size: 0.85em; /* Reducir descripción */
+        font-size: 0.85em;
         line-height: 1.3;
         margin-bottom: 10px;
     }
     .menu-card .price {
-        font-size: 1.3em; /* Reducir precio */
+        font-size: 1.3em;
     }
     .menu-card .add-btn {
-        padding: 8px 15px; /* Ajustar botón añadir */
+        padding: 8px 15px;
         font-size: 0.85em;
     }
     
-    /* Menú del Día: Ajustes específicos para que quepa mejor */
-    .menu-card h4 { /* Asumiendo que los títulos de categorías del menú del día son h4 */
+    .menu-card h4 {
         font-size: 1em;
         margin-top: 10px;
         margin-bottom: 5px;
     }
-    .menu-card label { /* Ajustar tamaño de labels de radio buttons */
+    .menu-card label {
         font-size: 0.9em;
         margin-bottom: 3px;
     }
     .menu-card input[type="radio"] {
-        transform: scale(0.8); /* Hacer los radio buttons un poco más pequeños */
+        transform: scale(0.8);
         margin-right: 3px;
     }
     
     #cart-section {
-        position: relative; /* Quitar sticky para que se desplace con el scroll */
+        position: relative;
         top: 0;
-        margin-top: 1.5em; /* Espacio arriba del carrito */
-        padding: 15px; /* Reducir padding del carrito */
+        margin-top: 1.5em;
+        padding: 15px;
     }
     .cart-item {
-        padding: 8px 0; /* Reducir padding de items del carrito */
+        padding: 8px 0;
         font-size: 0.85em;
     }
     .customer-info {
-        gap: 10px; /* Reducir espacio entre campos */
+        gap: 10px;
     }
     .customer-info .form-group label {
-        font-size: 0.8em; /* Reducir tamaño de labels del formulario de cliente */
+        font-size: 0.8em;
     }
-    .customer-info input[type="text"],
-    .customer-info input[type="tel"],
-    .customer-info textarea {
-        padding: 8px; /* Reducir padding de inputs del formulario de cliente */
+    .customer-info .form-input { /* Ajustar inputs en móvil */
+        padding: 8px;
         font-size: 0.9em;
     }
     #checkout-btn {
-        padding: 10px; /* Reducir padding del botón de WhatsApp */
+        padding: 10px;
         font-size: 0.9em;
     }
 }
-
-/* @media (max-width: 480px) { ... } */
-/* Tu Media Query anterior para 480px, la he expandido y reubicado arriba */

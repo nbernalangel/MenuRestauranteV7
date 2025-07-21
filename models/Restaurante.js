@@ -17,7 +17,11 @@ const restauranteSchema = new mongoose.Schema({
     telefono: { 
         type: String 
     },
-    // Aquí puedes añadir más datos como dirección, logo, etc.
+    // FIX: Añadido el campo para el mensaje de bienvenida
+    mensajeBienvenida: {
+        type: String,
+        trim: true // Buena práctica para quitar espacios al inicio/final
+    }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Restaurante', restauranteSchema);

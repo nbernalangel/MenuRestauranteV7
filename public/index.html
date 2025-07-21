@@ -9,7 +9,9 @@
 <body>
     <div class="container public-menu-container">
         <header class="public-menu-header">
-            <h1 id="nombre-restaurante">Cargando...</h1>
+            <!-- FIX: Modificado el H1 y añadido un párrafo para el mensaje -->
+            <h1>Bienvenidos a <span id="nombre-restaurante">Cargando...</span></h1>
+            <p id="mensaje-bienvenida" class="welcome-message"></p>
         </header>
 
         <div class="public-menu-grid">
@@ -40,22 +42,22 @@
                 <div class="customer-info">
                     <div class="form-group">
                         <label for="nombre-cliente">Tu Nombre</label>
-                        <input type="text" id="nombre-cliente" placeholder="Nombre (requerido)">
+                        <input type="text" id="nombre-cliente" class="form-input" placeholder="Nombre (requerido)">
                     </div>
                     
                     <div class="form-group">
                         <label for="telefono-cliente">Tu Teléfono</label>
-                        <input type="tel" id="telefono-cliente" placeholder="Teléfono de contacto">
+                        <input type="tel" id="telefono-cliente" class="form-input" placeholder="Teléfono de contacto">
                     </div>
 
                     <div class="form-group">
                         <label for="direccion-cliente">Dirección</label>
-                        <input type="text" id="direccion-cliente" placeholder="Dirección para domicilio (opcional)">
+                        <input type="text" id="direccion-cliente" class="form-input" placeholder="Dirección para domicilio (opcional)">
                     </div>
                     
                     <div class="form-group">
                         <label for="notas-cliente">Notas Adicionales</label>
-                        <textarea id="notas-cliente" placeholder="Alergias, sin cebolla, etc." rows="2"></textarea>
+                        <textarea id="notas-cliente" class="form-input" placeholder="Alergias, sin cebolla, etc." rows="2"></textarea>
                     </div>
                 </div>
                 

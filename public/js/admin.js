@@ -20,7 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const editRestauranteNombreInput = document.getElementById('edit-restaurante-nombre');
     const editRestauranteTelefonoInput = document.getElementById('edit-restaurante-telefono');
     const restauranteQrBtn = document.getElementById('restaurante-qr-btn'); // Nuevo: Botón para generar QR del restaurante
-
+    const restauranteMensajeTextarea = document.getElementById('restaurante-mensaje');
+    
     // Contenedor del QR (similar a super_admin)
     const qrcodeContainer = document.getElementById('qrcode-container');
     const qrcodeDiv = document.getElementById('qrcode');
@@ -105,6 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (restaurante) {
                 editRestauranteNombreInput.value = restaurante.nombre;
                 editRestauranteTelefonoInput.value = restaurante.telefono;
+                restauranteMensajeTextarea.value = restaurante.mensajeBienvenida || '';
                 adminRestauranteNombre.textContent = `Gestionando: ${restaurante.nombre}`;
                 currentRestauranteSlug = restaurante.slug; // Guarda el slug para el QR
             }
@@ -117,7 +119,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Maneja la actualización de datos del restaurante
     editRestauranteForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const data = { nombre: editRestauranteNombreInput.value, telefono: editRestauranteTelefonoInput.value };
+        const data = { nombre: editRestauranteNombreInput.value, telefono: editRestauranteTelefonoInput.value, mensajeBienvenida: restauranteMensajeTextarea.value };
+        
         try {
             const updated = await fetchData(`/api/restaurantes/${RESTAURANTE_ID}`, {
                 method: 'PUT',

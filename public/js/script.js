@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', async () => {
     // 1. REFERENCIAS AL DOM
     const nombreRestauranteElem = document.getElementById('nombre-restaurante');
+    // FIX: Añadida la referencia para el mensaje de bienvenida
+    const mensajeBienvenidaElem = document.getElementById('mensaje-bienvenida');
     const menuDelDiaContent = document.getElementById('menu-del-dia-content');
     const especialesContent = document.getElementById('especiales-content');
     const platosALaCartaContent = document.getElementById('platos-a-la-carta-content');
@@ -16,7 +18,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     let cart = [];
     let restauranteInfo = {};
 
-    // 3. LÓGICA DEL CARRITO
+    // 3. FUNCIÓN AUXILIAR PARA FORMATEAR MONEDA
+    // FIX: Nueva función para añadir separadores de miles y el símbolo de peso.
+    function formatCurrency(value) {
+        return new Intl.NumberFormat('es-CO', {
+            style: 'currency',
+            currency: 'COP',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0,
+        }).format(value);
+    }
+
+    // 4. LÓGICA DEL CARRITO
     function addToCart(item) {
         const precio = parseFloat(item.precio);
         if (isNaN(precio)) {
@@ -48,7 +61,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         cartItemsContainer.innerHTML = '';
         if (cart.length === 0) {
             cartItemsContainer.innerHTML = '<p>Tu carrito está vacío.</p>';
-            cartTotalPriceDisplay.textContent = '0.00';
+            cartTotalPriceDisplay.textContent = formatCurrency(0); // FIX: Usar formato
             return;
         }
         let total = 0;
@@ -59,13 +72,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             itemDiv.innerHTML = `
                 <div class="cart-item-details">
                     <span class="item-name">${item.quantity}x ${item.nombre}</span>
-                    <span class="item-price">$${(item.precio * item.quantity).toFixed(2)}</span>
+                    <span class="item-price">${formatCurrency(item.precio * item.quantity)}</span>
                 </div>
                 <button class="remove-btn" data-id="${item.id}">×</button>
-            `;
+            `; // FIX: Usar formato
             cartItemsContainer.appendChild(itemDiv);
         });
-        cartTotalPriceDisplay.textContent = total.toFixed(2);
+        cartTotalPriceDisplay.textContent = formatCurrency(total); // FIX: Usar formato
     }
     
     cartItemsContainer.addEventListener('click', (e) => {
@@ -75,7 +88,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // 4. RENDERIZADO DE MENÚS (Con el nuevo diseño de tarjetas)
+    // 5. RENDERIZADO DE MENÚS
     function renderMenuDelDia(menu) {
         if (!menu) {
             menuDelDiaContent.parentElement.style.display = 'none';
@@ -103,13 +116,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <div class="description">${opcionesHtml}</div>
                 </div>
                 <div class="card-footer">
-                    <span class="price">$${menu.precioMenuGlobal.toFixed(2)}</span>
+                    <span class="price">${formatCurrency(menu.precioMenuGlobal)}</span>
                     <button class="add-btn add-menu-to-cart-btn" data-precio="${menu.precioMenuGlobal}" data-nombre-base="${menu.nombreMenu}">Añadir Menú</button>
                 </div>
-            </div>`;
+            </div>`; // FIX: Usar formato
     }
     
-    function renderPlatos(platos, container, tipoPlato) {
+    function renderPlatos(platos, container) {
         if (!platos || platos.length === 0) {
             container.parentElement.style.display = 'none';
             return;
@@ -125,15 +138,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <p class="description">${plato.descripcion || ''}</p>
                 </div>
                 <div class="card-footer">
-                    <span class="price">$${plato.precio.toFixed(2)}</span>
+                    <span class="price">${formatCurrency(plato.precio)}</span>
                     <button class="add-btn add-plato-to-cart-btn" data-id="${plato._id}" data-nombre="${plato.nombre}" data-precio="${plato.precio}">Añadir</button>
                 </div>
-            `;
+            `; // FIX: Usar formato
             container.appendChild(platoDiv);
         });
     }
 
-    // 5. LÓGICA DE EVENTOS DE AÑADIR AL CARRITO
+    // 6. LÓGICA DE EVENTOS DE AÑADIR AL CARRITO
     document.querySelector('.public-menu-grid').addEventListener('click', (e) => {
         if (e.target.classList.contains('add-plato-to-cart-btn')) {
             const { id, nombre, precio } = e.target.dataset;
@@ -159,76 +172,66 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-   // 6. LÓGICA DE WHATSAPP
-checkoutBtn.addEventListener('click', async () => { // <-- Se añade 'async'
-    if (cart.length === 0) { return alert('Tu carrito está vacío.'); }
-    const nombreCliente = nombreClienteInput.value.trim();
-    if (!nombreCliente) { return alert('Por favor, ingresa tu nombre.'); }
-    
-    const telefono = telefonoClienteInput.value.trim();
-    const direccion = direccionClienteInput.value.trim();
-    const notas = notasClienteInput.value.trim();
+   // 7. LÓGICA DE WHATSAPP Y GUARDADO DE PEDIDO
+    checkoutBtn.addEventListener('click', async () => {
+        if (cart.length === 0) { return alert('Tu carrito está vacío.'); }
+        const nombreCliente = nombreClienteInput.value.trim();
+        if (!nombreCliente) { return alert('Por favor, ingresa tu nombre.'); }
+        
+        const telefono = telefonoClienteInput.value.trim();
+        const direccion = direccionClienteInput.value.trim();
+        const notas = notasClienteInput.value.trim();
+        const totalPedido = cart.reduce((sum, item) => sum + (item.precio * item.quantity), 0);
 
-    // --- INICIO DE LA CORRECCIÓN ---
+        const pedidoParaGuardar = {
+            restaurante: restauranteInfo._id,
+            items: cart.map(item => ({
+                nombre: item.nombre,
+                cantidad: item.quantity,
+                precio: item.precio
+            })),
+            total: totalPedido,
+            cliente: { nombre: nombreCliente, telefono, direccion },
+            notas: notas
+        };
 
-    // 1. Preparamos el objeto del pedido para guardarlo
-    const pedidoParaGuardar = {
-        restaurante: restauranteInfo._id, // Usamos el ID guardado en restauranteInfo
-        items: cart.map(item => ({
-            nombre: item.nombre,
-            cantidad: item.quantity,
-            precio: item.precio
-        })),
-        total: cart.reduce((sum, item) => sum + (item.precio * item.quantity), 0),
-        cliente: {
-            nombre: nombreCliente,
-            telefono: telefono,
-            direccion: direccion
+        try {
+            const registroResponse = await fetch('/api/pedidos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(pedidoParaGuardar)
+            });
+
+            if (registroResponse.ok) {
+                console.log('✅ Pedido registrado para estadísticas.');
+            } else {
+                console.error('No se pudo registrar el pedido para estadísticas.');
+            }
+        } catch (error) {
+            console.error('Error de red al registrar el pedido:', error);
         }
-    };
 
-    try {
-        // 2. Enviamos el pedido al backend para registrarlo
-        const registroResponse = await fetch('/api/pedidos', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(pedidoParaGuardar)
-        });
-
-        if (registroResponse.ok) {
-            console.log('✅ Pedido registrado para estadísticas.');
-        } else {
-            console.error('No se pudo registrar el pedido para estadísticas.');
-        }
-    } catch (error) {
-        console.error('Error de red al registrar el pedido:', error);
-    }
-
-    // --- FIN DE LA CORRECCIÓN ---
-
-
-    // 3. La lógica de WhatsApp continúa igual que antes
-    let message = `*¡Nuevo Pedido para ${restauranteInfo.nombre}!* \n\n`;
-    message += `*Cliente:* ${nombreCliente}\n`;
-    if (telefono) message += `*Teléfono:* ${telefono}\n`;
-    if (direccion) message += `*Dirección:* ${direccion}\n`;
-    
-    message += `\n*--- Detalle del Pedido ---*\n`;
-    cart.forEach(item => {
-        message += `${item.quantity}x ${item.nombre} - $${(item.precio * item.quantity).toFixed(2)}\n`;
+        let message = `*¡Nuevo Pedido para ${restauranteInfo.nombre}!* \n\n`;
+        message += `*Cliente:* ${nombreCliente}\n`;
+        if (telefono) message += `*Teléfono:* ${telefono}\n`;
+        if (direccion) message += `*Dirección:* ${direccion}\n`;
+        
+        message += `\n*--- Detalle del Pedido ---*\n`;
+        cart.forEach(item => {
+            message += `${item.quantity}x ${item.nombre} - ${formatCurrency(item.precio * item.quantity)}\n`;
+        }); // FIX: Usar formato
+        message += `\n*Total: ${formatCurrency(totalPedido)}*`; // FIX: Usar formato
+        if (notas) message += `\n\n*Notas:* ${notas}`;
+        
+        const whatsappNumber = restauranteInfo.telefono;
+        if (!whatsappNumber) { return alert('Este restaurante no tiene un número de WhatsApp configurado.'); }
+        
+        const encodedMessage = encodeURIComponent(message);
+        const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
+        window.open(whatsappUrl, '_blank');
     });
-    message += `\n*Total: $${cartTotalPriceDisplay.textContent}*`;
-    if (notas) message += `\n\n*Notas:* ${notas}`;
-    
-    const whatsappNumber = restauranteInfo.telefono;
-    if (!whatsappNumber) { return alert('Este restaurante no tiene un número de WhatsApp configurado.'); }
-    
-    const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
-    window.open(whatsappUrl, '_blank');
-});
 
-    // 7. CARGA INICIAL (CORREGIDO PARA USAR EL SLUG ORIGINAL)
+    // 8. CARGA INICIAL
     async function loadPage() {
         const pathParts = window.location.pathname.split('/');
         const slug = pathParts.pop() || pathParts.pop(); 
@@ -243,11 +246,13 @@ checkoutBtn.addEventListener('click', async () => { // <-- Se añade 'async'
 
             restauranteInfo = data.restaurante;
             document.title = restauranteInfo.nombre;
+            // FIX: Actualizar los nuevos elementos del header
             nombreRestauranteElem.textContent = restauranteInfo.nombre;
+            mensajeBienvenidaElem.textContent = restauranteInfo.mensajeBienvenida || ''; // Muestra el mensaje
 
             renderMenuDelDia(data.menuDelDia);
-            renderPlatos(data.platosEspeciales, especialesContent, 'especiales');
-            renderPlatos(data.platosALaCarta, platosALaCartaContent, 'platos a la carta');
+            renderPlatos(data.platosEspeciales, especialesContent);
+            renderPlatos(data.platosALaCarta, platosALaCartaContent);
 
         } catch (error) {
             console.error('Error al cargar el menú:', error);
