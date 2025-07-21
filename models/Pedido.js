@@ -1,8 +1,6 @@
 // models/Pedido.js
 const mongoose = require('mongoose');
 
-// FIX: Se modifica el sub-esquema para que coincida con la estructura de la base de datos.
-// Ahora se guardará el nombre y el precio directamente, en lugar de una referencia.
 const itemPedidoSchema = new mongoose.Schema({
     nombre: {
         type: String,
@@ -29,7 +27,7 @@ const pedidoSchema = new mongoose.Schema({
         type: String,
         unique: true,
     },
-    items: [itemPedidoSchema], // <-- Usamos el sub-esquema corregido
+    items: [itemPedidoSchema],
     total: {
         type: Number,
         required: true
@@ -49,10 +47,26 @@ const pedidoSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
+// FIX: Middleware mejorado para generar un número de pedido único por restaurante
 pedidoSchema.pre('save', async function(next) {
     if (this.isNew && !this.numeroPedido) {
-        const count = await mongoose.model('Pedido').countDocuments({ restaurante: this.restaurante });
-        this.numeroPedido = `PED-${(count + 1).toString().padStart(5, '0')}`;
+        try {
+            // 1. Contar cuántos pedidos ya tiene este restaurante
+            const count = await mongoose.model('Pedido').countDocuments({ restaurante: this.restaurante });
+            
+            // 2. Obtener el restaurante para usar su nombre como prefijo
+            const restaurante = await mongoose.model('Restaurante').findById(this.restaurante);
+            
+            // 3. Crear un prefijo de 4 letras (o 'PED' si no se encuentra el restaurante)
+            const prefix = restaurante ? restaurante.nombre.substring(0, 4).toUpperCase().replace(/\s+/g, '') : 'PED';
+
+            // 4. Combinar el prefijo y el contador para un ID único (ej: ORIO-00001)
+            this.numeroPedido = `${prefix}-${(count + 1).toString().padStart(5, '0')}`;
+        } catch (error) {
+            console.error("Error generando número de pedido:", error);
+            // Si hay un error, pasarlo para que no se guarde un pedido corrupto
+            return next(error);
+        }
     }
     next();
 });
