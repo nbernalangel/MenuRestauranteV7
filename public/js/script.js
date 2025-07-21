@@ -174,62 +174,88 @@ document.addEventListener('DOMContentLoaded', async () => {
 
    // 7. LÓGICA DE WHATSAPP Y GUARDADO DE PEDIDO
     checkoutBtn.addEventListener('click', async () => {
-        if (cart.length === 0) { return alert('Tu carrito está vacío.'); }
-        const nombreCliente = nombreClienteInput.value.trim();
-        if (!nombreCliente) { return alert('Por favor, ingresa tu nombre.'); }
-        
-        const telefono = telefonoClienteInput.value.trim();
-        const direccion = direccionClienteInput.value.trim();
-        const notas = notasClienteInput.value.trim();
-        const totalPedido = cart.reduce((sum, item) => sum + (item.precio * item.quantity), 0);
+    if (cart.length === 0) {
+        return alert('Tu carrito está vacío.');
+    }
+    const nombreCliente = nombreClienteInput.value.trim();
+    if (!nombreCliente) {
+        return alert('Por favor, ingresa tu nombre.');
+    }
 
-        const pedidoParaGuardar = {
-            restaurante: restauranteInfo._id,
-            items: cart.map(item => ({
-                nombre: item.nombre,
-                cantidad: item.quantity,
-                precio: item.precio
-            })),
-            total: totalPedido,
-            cliente: { nombre: nombreCliente, telefono, direccion },
-            notas: notas
-        };
+    const telefono = telefonoClienteInput.value.trim();
+    const direccion = direccionClienteInput.value.trim();
+    const notas = notasClienteInput.value.trim();
+    const totalPedido = cart.reduce((sum, item) => sum + (item.precio * item.quantity), 0);
 
-        try {
-            const registroResponse = await fetch('/api/pedidos', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(pedidoParaGuardar)
-            });
+    // --- Lógica para guardar el pedido en la base de datos (sin cambios) ---
+    const pedidoParaGuardar = {
+        restaurante: restauranteInfo._id,
+        items: cart.map(item => ({
+            nombre: item.nombre,
+            cantidad: item.quantity,
+            precio: item.precio
+        })),
+        total: totalPedido,
+        cliente: { nombre: nombreCliente, telefono, direccion },
+        notas: notas
+    };
 
-            if (registroResponse.ok) {
-                console.log('✅ Pedido registrado para estadísticas.');
-            } else {
-                console.error('No se pudo registrar el pedido para estadísticas.');
-            }
-        } catch (error) {
-            console.error('Error de red al registrar el pedido:', error);
+    try {
+        const registroResponse = await fetch('/api/pedidos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(pedidoParaGuardar)
+        });
+        if (registroResponse.ok) {
+            console.log('✅ Pedido registrado para estadísticas.');
+        } else {
+            console.error('No se pudo registrar el pedido para estadísticas.');
         }
+    } catch (error) {
+        console.error('Error de red al registrar el pedido:', error);
+    }
 
-        let message = `*¡Nuevo Pedido para ${restauranteInfo.nombre}!* \n\n`;
-        message += `*Cliente:* ${nombreCliente}\n`;
-        if (telefono) message += `*Teléfono:* ${telefono}\n`;
-        if (direccion) message += `*Dirección:* ${direccion}\n`;
-        
-        message += `\n*--- Detalle del Pedido ---*\n`;
-        cart.forEach(item => {
-            message += `${item.quantity}x ${item.nombre} - ${formatCurrency(item.precio * item.quantity)}\n`;
-        }); // FIX: Usar formato
-        message += `\n*Total: ${formatCurrency(totalPedido)}*`; // FIX: Usar formato
-        if (notas) message += `\n\n*Notas:* ${notas}`;
-        
-        const whatsappNumber = restauranteInfo.telefono;
-        if (!whatsappNumber) { return alert('Este restaurante no tiene un número de WhatsApp configurado.'); }
-        
-        const encodedMessage = encodeURIComponent(message);
-        const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
-        window.open(whatsappUrl, '_blank');
+    // --- INICIO DE LA CORRECCIÓN PARA WHATSAPP EN SAFARI ---
+
+    // 1. Construir el mensaje de texto (sin cambios)
+    let message = `*¡Nuevo Pedido para ${restauranteInfo.nombre}!* \n\n`;
+    message += `*Cliente:* ${nombreCliente}\n`;
+    if (telefono) message += `*Teléfono:* ${telefono}\n`;
+    if (direccion) message += `*Dirección:* ${direccion}\n`;
+    message += `\n*--- Detalle del Pedido ---*\n`;
+    cart.forEach(item => {
+        message += `${item.quantity}x ${item.nombre} - ${formatCurrency(item.precio * item.quantity)}\n`;
     });
+    message += `\n*Total: ${formatCurrency(totalPedido)}*`;
+    if (notas) message += `\n\n*Notas:* ${notas}`;
+
+    // 2. Formatear el número de teléfono del restaurante (sin cambios)
+    let whatsappNumber = restauranteInfo.telefono;
+    if (!whatsappNumber) {
+        return alert('Este restaurante no tiene un número de WhatsApp configurado.');
+    }
+    whatsappNumber = whatsappNumber.replace(/[\s\-()]/g, ''); 
+    if (whatsappNumber.length === 10) {
+        whatsappNumber = `57${whatsappNumber}`;
+    }
+
+    // 3. Construir la URL de WhatsApp (sin cambios)
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodedMessage}`;
+
+    // 4. FIX: Detectar si es un dispositivo móvil para decidir cómo abrir el enlace
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+    if (isMobile) {
+        // En móviles, redirigir la página actual. Es más compatible con Safari.
+        window.location.href = whatsappUrl;
+    } else {
+        // En computadores, abrir en una nueva pestaña para no perder la página del menú.
+        window.open(whatsappUrl, '_blank');
+    }
+    
+    // --- FIN DE LA CORRECCIÓN ---
+});
 
     // 8. CARGA INICIAL
     async function loadPage() {
