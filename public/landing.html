@@ -7,20 +7,38 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- FIX: Configuración de Tailwind para usar tus colores personalizados -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'ting-green': '#94C120',
+                        'ting-blue': '#00183A',
+                    }
+                }
+            }
+        }
+    </script>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
         }
         .hero-bg {
-            background-image: linear-gradient(rgba(0, 43, 77, 0.8), rgba(0, 43, 77, 0.8)), url('https://images.unsplash.com/photo-1579751626658-d548f38a56c2?q=80&w=2070&auto=format&fit=crop');
+            /* FIX: Actualizado el color del gradiente al nuevo azul oscuro */
+            background-image: linear-gradient(rgba(0, 24, 58, 0.8), rgba(0, 24, 58, 0.8)), url('https://images.unsplash.com/photo-1579751626658-d548f38a56c2?q=80&w=2070&auto=format&fit=crop');
             background-size: cover;
             background-position: center;
         }
-        .feature-icon {
-            transition: transform 0.3s ease;
+        /* Estilos para las animaciones de scroll */
+        .scroll-animate {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
         }
-        .feature-card:hover .feature-icon {
-            transform: scale(1.1);
+        .scroll-animate.in-view {
+            opacity: 1;
+            transform: translateY(0);
         }
     </style>
 </head>
@@ -32,21 +50,36 @@
             <a href="/" class="flex items-center">
                 <img src="/img/logo.png" alt="Ting Logo" class="h-10">
             </a>
-            <div>
-                <a href="#pricing" class="text-gray-600 hover:text-green-500 px-4">Precios</a>
-                <a href="/login.html" class="text-gray-600 hover:text-green-500 px-4">Iniciar Sesión</a>
-                <a href="/register.html" class="bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600 transition duration-300">Crear mi Menú Gratis</a>
+            <!-- Menú de escritorio -->
+            <div class="hidden md:flex items-center space-x-4">
+                <a href="#pricing" class="text-gray-600 hover:text-ting-green px-3 py-2 rounded-md text-sm font-medium">Precios</a>
+                <a href="#contact" class="text-gray-600 hover:text-ting-green px-3 py-2 rounded-md text-sm font-medium">Contacto</a>
+                <a href="/login.html" class="text-gray-600 hover:text-ting-green px-3 py-2 rounded-md text-sm font-medium">Iniciar Sesión</a>
+                <a href="/register.html" class="text-ting-green hover:text-ting-blue font-bold px-3 py-2 rounded-md text-sm">Crear mi Menú Gratis</a>
             </div>
+            <!-- Botón de Menú Hamburguesa -->
+            <div class="md:hidden flex items-center">
+                <button id="menu-button" class="outline-none mobile-menu-button">
+                    <i class="fas fa-bars text-gray-600 text-2xl"></i>
+                </button>
+            </div>
+        </div>
+        <!-- Menú móvil -->
+        <div id="mobile-menu" class="hidden md:hidden">
+            <a href="#pricing" class="block py-2 px-4 text-sm hover:bg-gray-200">Precios</a>
+            <a href="#contact" class="block py-2 px-4 text-sm hover:bg-gray-200">Contacto</a>
+            <a href="/login.html" class="block py-2 px-4 text-sm hover:bg-gray-200">Iniciar Sesión</a>
+            <a href="/register.html" class="block py-2 px-4 text-sm text-ting-green font-bold hover:bg-gray-200">Crear mi Menú Gratis</a>
         </div>
     </nav>
 
     <!-- Sección Héroe -->
     <header class="hero-bg text-white">
         <div class="container mx-auto px-6 py-24 text-center">
-            <h1 class="text-4xl md:text-6xl font-extrabold leading-tight mb-4">Tu Menú Digital para Domicilios. <br> <span class="text-green-400">Gratis. Para Siempre.</span></h1>
-            <p class="text-lg md:text-xl mb-8 text-gray-200 max-w-3xl mx-auto">Deja de perder tiempo en llamadas. Recibe pedidos por WhatsApp de forma clara, rápida y sin errores. Sin comisiones ni costos ocultos.</p>
-            <div>
-                <a href="/register.html" class="bg-green-500 text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-green-600 transition duration-300">Empezar Ahora (Es Gratis)</a>
+            <h1 class="text-4xl md:text-6xl font-extrabold leading-tight mb-4 scroll-animate">Tu Menú Digital para Domicilios. <br> <span class="text-ting-green">Gratis. Para Siempre.</span></h1>
+            <p class="text-lg md:text-xl mb-8 text-gray-200 max-w-3xl mx-auto scroll-animate" style="transition-delay: 100ms;">Deja de perder tiempo en llamadas. Recibe pedidos por WhatsApp de forma clara, rápida y sin errores. Sin comisiones ni costos ocultos.</p>
+            <div class="scroll-animate" style="transition-delay: 200ms;">
+                <a href="/register.html" class="bg-ting-green text-ting-blue font-bold py-3 px-8 rounded-lg text-lg hover:bg-opacity-90 transition duration-300">Empezar Ahora (Es Gratis)</a>
             </div>
         </div>
     </header>
@@ -54,21 +87,21 @@
     <!-- Sección de Características -->
     <section id="features" class="py-20">
         <div class="container mx-auto px-6 text-center">
-            <h2 class="text-3xl font-bold text-gray-800 mb-2">Menos tiempo al teléfono, más tiempo en la cocina.</h2>
-            <p class="text-gray-600 mb-12">Una solución simple para un problema complejo.</p>
+            <h2 class="text-3xl font-bold text-ting-blue mb-2 scroll-animate">Menos tiempo al teléfono, más tiempo en la cocina.</h2>
+            <p class="text-gray-600 mb-12 scroll-animate">Una solución simple para un problema complejo.</p>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
-                <div class="bg-white p-8 rounded-lg shadow-lg feature-card">
-                    <div class="text-5xl text-green-500 mb-4 feature-icon"><i class="fa-solid fa-mobile-screen-button"></i></div>
+                <div class="bg-white p-8 rounded-lg shadow-lg feature-card scroll-animate">
+                    <div class="text-5xl text-ting-green mb-4 feature-icon"><i class="fa-solid fa-mobile-screen-button"></i></div>
                     <h3 class="text-xl font-bold mb-2">Menú Fácil de Pedir</h3>
                     <p class="text-gray-600">Tus clientes ven tu menú y hacen su pedido desde su celular, sin instalar nada. Simple, visual y directo.</p>
                 </div>
-                <div class="bg-white p-8 rounded-lg shadow-lg feature-card">
-                    <div class="text-5xl text-green-500 mb-4 feature-icon"><i class="fa-solid fa-list-check"></i></div>
+                <div class="bg-white p-8 rounded-lg shadow-lg feature-card scroll-animate" style="transition-delay: 100ms;">
+                    <div class="text-5xl text-ting-green mb-4 feature-icon"><i class="fa-solid fa-list-check"></i></div>
                     <h3 class="text-xl font-bold mb-2">Pedidos Claros y Completos</h3>
                     <p class="text-gray-600">Recibe cada pedido en WhatsApp con todos los detalles, eliminando errores y confusiones de las llamadas.</p>
                 </div>
-                <div class="bg-white p-8 rounded-lg shadow-lg feature-card">
-                    <div class="text-5xl text-green-500 mb-4 feature-icon"><i class="fa-solid fa-clock"></i></div>
+                <div class="bg-white p-8 rounded-lg shadow-lg feature-card scroll-animate" style="transition-delay: 200ms;">
+                    <div class="text-5xl text-ting-green mb-4 feature-icon"><i class="fa-solid fa-clock"></i></div>
                     <h3 class="text-xl font-bold mb-2">Maximiza el Tiempo de tu Equipo</h3>
                     <p class="text-gray-600">Tu personal se enfoca en cocinar y despachar, no en contestar el teléfono. Aumenta tu eficiencia y tus ventas.</p>
                 </div>
@@ -79,20 +112,20 @@
     <!-- Sección de Precios -->
     <section id="pricing" class="bg-white py-20">
         <div class="container mx-auto px-6 text-center">
-            <h2 class="text-3xl font-bold text-gray-800 mb-4">Un precio tan simple como nuestra plataforma.</h2>
-            <div class="flex justify-center">
-                <div class="bg-white p-8 rounded-lg shadow-2xl border-2 border-green-500 max-w-md">
+            <h2 class="text-3xl font-bold text-ting-blue mb-4 scroll-animate">Un precio tan simple como nuestra plataforma.</h2>
+            <div class="flex justify-center scroll-animate">
+                <div class="bg-white p-8 rounded-lg shadow-2xl border-2 border-ting-green max-w-md">
                     <h3 class="text-2xl font-bold mb-2">El Plan Simple</h3>
-                    <p class="text-6xl font-extrabold text-gray-800 mb-4">$0</p>
+                    <p class="text-6xl font-extrabold text-ting-blue mb-4">$0</p>
                     <p class="text-gray-600 mb-6">Completamente gratis. Sin comisiones. Sin costos ocultos. Sin periodo de prueba.</p>
                     <ul class="text-left space-y-2 mb-8">
-                        <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> Menú digital ilimitado</li>
-                        <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> Platos y categorías ilimitadas</li>
-                        <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> Pedidos directos a tu WhatsApp</li>
-                        <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> Código QR para tu negocio</li>
-                        <li class="flex items-center"><i class="fa-solid fa-check text-green-500 mr-2"></i> Panel de autogestión fácil</li>
+                        <li class="flex items-center"><i class="fa-solid fa-check text-ting-green mr-2"></i> Menú digital ilimitado</li>
+                        <li class="flex items-center"><i class="fa-solid fa-check text-ting-green mr-2"></i> Platos y categorías ilimitadas</li>
+                        <li class="flex items-center"><i class="fa-solid fa-check text-ting-green mr-2"></i> Pedidos directos a tu WhatsApp</li>
+                        <li class="flex items-center"><i class="fa-solid fa-check text-ting-green mr-2"></i> Código QR para tu negocio</li>
+                        <li class="flex items-center"><i class="fa-solid fa-check text-ting-green mr-2"></i> Panel de autogestión fácil</li>
                     </ul>
-                    <a href="/register.html" class="w-full bg-green-500 text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-green-600 transition duration-300">Empezar a usarlo Gratis</a>
+                    <a href="/register.html" class="w-full bg-ting-green text-ting-blue font-bold py-3 px-8 rounded-lg text-lg hover:bg-opacity-90 transition duration-300">Empezar a usarlo Gratis</a>
                 </div>
             </div>
         </div>
@@ -101,20 +134,20 @@
     <!-- Sección "Cómo Funciona" -->
     <section class="py-20">
         <div class="container mx-auto px-6">
-            <h2 class="text-3xl font-bold text-gray-800 text-center mb-12">Tu operación de domicilios, simplificada.</h2>
+            <h2 class="text-3xl font-bold text-ting-blue text-center mb-12 scroll-animate">Tu operación de domicilios, simplificada.</h2>
             <div class="flex flex-col md:flex-row items-center justify-center gap-12">
-                <div class="text-center md:w-1/3">
-                    <div class="bg-green-500 text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">1</div>
+                <div class="text-center md:w-1/3 scroll-animate">
+                    <div class="bg-ting-green text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">1</div>
                     <h3 class="text-xl font-bold mb-2">Crea tu Menú</h3>
                     <p class="text-gray-600">Regístrate y añade tus platos en una interfaz súper simple.</p>
                 </div>
-                <div class="text-center md:w-1/3">
-                    <div class="bg-green-500 text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">2</div>
+                <div class="text-center md:w-1/3 scroll-animate" style="transition-delay: 100ms;">
+                    <div class="bg-ting-green text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">2</div>
                     <h3 class="text-xl font-bold mb-2">Comparte tu Link</h3>
                     <p class="text-gray-600">Pon tu link o QR en tus redes sociales, empaques o donde quieras.</p>
                 </div>
-                <div class="text-center md:w-1/3">
-                    <div class="bg-green-500 text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">3</div>
+                <div class="text-center md:w-1/3 scroll-animate" style="transition-delay: 200ms;">
+                    <div class="bg-ting-green text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">3</div>
                     <h3 class="text-xl font-bold mb-2">Recibe Pedidos</h3>
                     <p class="text-gray-600">Los pedidos llegan a tu WhatsApp, listos para preparar.</p>
                 </div>
@@ -122,39 +155,37 @@
         </div>
     </section>
 
-    <!-- FIX: Nueva Sección de Contacto -->
+    <!-- Sección de Contacto -->
     <section id="contact" class="bg-white py-20">
         <div class="container mx-auto px-6">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold text-gray-800">¿Tienes preguntas?</h2>
+            <div class="text-center mb-12 scroll-animate">
+                <h2 class="text-3xl font-bold text-ting-blue">¿Tienes preguntas?</h2>
                 <p class="text-gray-600">Estamos aquí para ayudarte. Escríbenos y te responderemos lo antes posible.</p>
             </div>
-            <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 bg-gray-50 p-8 rounded-lg shadow-lg">
-                <!-- Columna del Formulario -->
-                <form action="mailto:hola@ting-col.com" method="post" enctype="text/plain">
+            <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 bg-gray-50 p-8 rounded-lg shadow-lg scroll-animate">
+                <form action="mailto:hola@ting-col.com" method="post" enctype="text/plain" class="space-y-4">
                     <div>
                         <label for="name" class="block text-sm font-bold text-gray-700 mb-2">Tu Nombre</label>
-                        <input type="text" name="name" id="name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" required>
+                        <input type="text" name="name" id="name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-ting-green focus:border-ting-green" required>
                     </div>
                     <div>
                         <label for="email" class="block text-sm font-bold text-gray-700 mb-2">Tu Correo Electrónico</label>
-                        <input type="email" name="email" id="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" required>
+                        <input type="email" name="email" id="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-ting-green focus:border-ting-green" required>
                     </div>
                     <div>
                         <label for="message" class="block text-sm font-bold text-gray-700 mb-2">Mensaje</label>
-                        <textarea name="message" id="message" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500" required></textarea>
+                        <textarea name="message" id="message" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-ting-green focus:border-ting-green" required></textarea>
                     </div>
                     <div>
-                        <button type="submit" class="w-full bg-green-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600 transition duration-300">Enviar Mensaje</button>
+                        <button type="submit" class="w-full bg-ting-green text-ting-blue font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition duration-300">Enviar Mensaje</button>
                     </div>
                 </form>
-                <!-- Columna de Información -->
                 <div class="flex flex-col justify-center">
-                    <h3 class="text-2xl font-bold text-gray-800 mb-4">Información de Contacto</h3>
+                    <h3 class="text-2xl font-bold text-ting-blue mb-4">Información de Contacto</h3>
                     <p class="text-gray-600 mb-4">Si prefieres, puedes escribirnos directamente a nuestro correo electrónico.</p>
                     <div class="flex items-center text-lg">
-                        <i class="fa-solid fa-envelope text-green-500 mr-3"></i>
-                        <a href="mailto:hola@ting-col.com" class="text-gray-800 hover:text-green-500">hola@ting-col.com</a>
+                        <i class="fa-solid fa-envelope text-ting-green mr-3"></i>
+                        <a href="mailto:hola@ting-col.com" class="text-gray-800 hover:text-ting-green">hola@ting-col.com</a>
                     </div>
                 </div>
             </div>
@@ -162,11 +193,35 @@
     </section>
 
     <!-- Footer -->
-    <footer class="bg-white py-6">
-        <div class="container mx-auto px-6 text-center text-gray-600">
+    <footer class="bg-ting-blue text-white py-6">
+        <div class="container mx-auto px-6 text-center text-gray-300">
             <p>&copy; 2025 Ting. Todos los derechos reservados.</p>
         </div>
     </footer>
+
+    <!-- Script para menú móvil y animaciones -->
+    <script>
+        // Menú móvil
+        const menuButton = document.getElementById('menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        menuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Animaciones al hacer scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('in-view');
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+
+        const animatedElements = document.querySelectorAll('.scroll-animate');
+        animatedElements.forEach(el => observer.observe(el));
+    </script>
 
 </body>
 </html>
