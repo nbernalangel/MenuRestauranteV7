@@ -32,6 +32,9 @@ cloudinary.config({
     secure: true,
 });
 
+// --- Configuración de Resend ---
+const resend = new Resend(process.env.RESEND_API_KEY);
+
 // --- Importar Modelos ---
 const Plato = require('./models/Plato');
 const Especial = require('./models/Especial'); 
@@ -119,11 +122,6 @@ app.post('/api/pedidos', async (req, res) => {
     }
 });
 
-// ... (Aquí va el resto completo de tu código de app.js: register, verify, login, platos, etc.)
-// Asegúrate de que todo tu código anterior esté presente a partir de aquí.
-
-
-
 // RUTAS DE REGISTRO Y VERIFICACIÓN
 app.post('/api/register', async (req, res) => {
     try {
@@ -164,9 +162,29 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
-// ========================================================
-// === RUTAS PARA "OLVIDÓ SU CONTRASEÑA" ==================
-// ========================================================
+app.post('/api/verify', async (req, res) => {
+    try {
+        const { email, code } = req.body; 
+        const usuario = await Usuario.findOne({ email });
+
+        if (!usuario) { return res.status(404).json({ message: 'Usuario no encontrado.' }); }
+        if (usuario.isVerified) { return res.status(400).json({ message: 'Esta cuenta ya ha sido verificada.' }); }
+        if (new Date() > usuario.verificationCodeExpires) { return res.status(400).json({ message: 'El código de verificación ha expirado.' });}
+        if (String(usuario.verificationCode) !== String(code)) { return res.status(400).json({ message: 'Código de verificación incorrecto.' });}
+
+        usuario.isVerified = true;
+        usuario.verificationCode = undefined; 
+        usuario.verificationCodeExpires = undefined; 
+        await usuario.save();
+
+        res.status(200).json({ message: 'Cuenta verificada con éxito. Ya puedes iniciar sesión.' });
+    } catch (e) {
+        console.error("❌ Error en /api/verify:", e.message || e);
+        res.status(500).json({ message: 'Ocurrió un error en el servidor durante la verificación.' });
+    }
+});
+
+// RUTAS PARA "OLVIDÓ SU CONTRASEÑA"
 app.post('/api/forgot-password', async (req, res) => {
     try {
         const { email } = req.body;
@@ -232,18 +250,13 @@ app.post('/api/reset-password/:token', async (req, res) => {
     }
 });
 
-// ========================================================
-// === RUTAS DEL SUPER-ADMIN - GESTIÓN DE RESTAURANTES ====
-// ========================================================
+// RUTAS DEL SUPER-ADMIN - GESTIÓN DE RESTAURANTES
 app.post('/api/restaurantes', async (req, res) => { 
     try { 
-        console.log("✅ Petición recibida para crear restaurante con los datos:", req.body);
         const item = new Restaurante(req.body); 
         await item.save(); 
-        console.log("✅ Restaurante guardado con éxito en la base de datos.");
         res.status(201).json(item); 
     } catch (e) { 
-        console.error("❌ ERROR al crear restaurante:", e.message || e);
         if (e.name === 'ValidationError') {
             return res.status(400).json({ message: e.message });
         }
@@ -255,7 +268,6 @@ app.get('/api/restaurantes', async (req, res) => {
         const items = await Restaurante.find();
         res.json(items);
     } catch (e) {
-        console.error("❌ ERROR al obtener restaurantes:", e.message || e);
         res.status(500).json({ message: 'Error interno del servidor al obtener restaurantes.' });
     }
 });
@@ -267,7 +279,6 @@ app.get('/api/restaurantes/:id', async (req, res) => {
         }
         res.json(item);
     } catch (e) {
-        console.error("❌ ERROR al obtener restaurante por ID:", e.message || e);
         res.status(500).json({ message: 'Error interno del servidor al obtener restaurante por ID.' });
     }
 });
@@ -279,7 +290,6 @@ app.put('/api/restaurantes/:id', async (req, res) => {
         }
         res.json(item);
     } catch (e) {
-        console.error("❌ ERROR al actualizar restaurante:", e.message || e);
         if (e.name === 'ValidationError') {
             return res.status(400).json({ message: e.message });
         }
@@ -294,14 +304,11 @@ app.delete('/api/restaurantes/:id', async (req, res) => {
         }
         res.status(204).send();
     } catch (e) {
-        console.error("❌ ERROR al eliminar restaurante:", e.message || e);
         res.status(500).json({ message: 'Error interno del servidor al eliminar restaurante.' });
     }
 });
 
-// ========================================================
-// === RUTAS DEL SUPER-ADMIN - GESTIÓN DE USUARIOS ========
-// ========================================================
+// RUTAS DEL SUPER-ADMIN - GESTIÓN DE USUARIOS
 app.post('/api/usuarios', async (req, res) => { 
     try { 
         const { email, password, rol, restaurante } = req.body; 
@@ -309,7 +316,6 @@ app.post('/api/usuarios', async (req, res) => {
         await item.save();
         res.status(201).json(item); 
     } catch (e) { 
-        console.error("❌ Error al crear usuario (superadmin):", e.message || e);
         if (e.name === 'ValidationError') {
             return res.status(400).json({ message: e.message });
         }
@@ -321,7 +327,6 @@ app.get('/api/usuarios', async (req, res) => {
         const items = await Usuario.find().populate('restaurante', 'nombre'); 
         res.json(items); 
     } catch (e) { 
-        console.error("❌ Error al obtener usuarios:", e.message || e);
         res.status(500).json({ message: 'Error interno del servidor al obtener usuarios.' }); 
     } 
 });
@@ -333,7 +338,6 @@ app.get('/api/usuarios/:id', async (req, res) => {
         }
         res.json(item);
     } catch (e) {
-        console.error("❌ ERROR al obtener usuario por ID:", e.message || e);
         res.status(500).json({ message: 'Error interno del servidor al obtener usuario por ID.' });
     }
 });
@@ -351,7 +355,6 @@ app.put('/api/usuarios/:id', async (req, res) => {
         }
         res.json(item);
     } catch (e) {
-        console.error("❌ Error al actualizar usuario:", e.message || e);
         if (e.name === 'ValidationError') {
             return res.status(400).json({ message: e.message });
         }
@@ -366,14 +369,11 @@ app.delete('/api/usuarios/:id', async (req, res) => {
         }
         res.status(204).send();
     } catch (e) {
-        console.error("❌ Error al eliminar usuario:", e.message || e);
         res.status(500).json({ message: 'Error interno del servidor al eliminar usuario.' });
     }
 });
 
-// ========================================================
-// === RUTA DE LOGIN (INICIO DE SESIÓN) ===================
-// ========================================================
+// RUTA DE LOGIN (INICIO DE SESIÓN)
 app.post('/api/login', async (req, res) => { 
     try { 
         const { email, password } = req.body; 
@@ -392,30 +392,25 @@ app.post('/api/login', async (req, res) => {
         }
         res.json({ userId: usuario._id, email: usuario.email, rol: usuario.rol, restauranteId: usuario.restaurante, nombreRestaurante }); 
     } catch (e) { 
-        console.error("❌ Error en el login del servidor:", e.message || e);
         res.status(500).json({ message: 'Error interno del servidor.' }); 
     }
 });
 
-// ========================================================
-// === RUTAS DEL ADMIN DE RESTAURANTE =====================
-// ========================================================
-
-// RUTAS PARA PLATOS
+// RUTAS DEL ADMIN DE RESTAURANTE
 app.post('/api/platos', async (req, res) => { 
-    try { const item = new Plato(req.body); await item.save(); res.status(201).json(item); } catch (e) { console.error("❌ Error al crear plato:", e.message || e); res.status(400).json({ message: e.message }); } 
+    try { const item = new Plato(req.body); await item.save(); res.status(201).json(item); } catch (e) { res.status(400).json({ message: e.message }); } 
 });
 app.get('/api/platos/restaurante/:restauranteId', async (req, res) => { 
-    try { const items = await Plato.find({ restaurante: req.params.restauranteId }); res.json(items); } catch (e) { console.error("❌ Error al obtener platos por restaurante:", e.message || e); res.status(500).json({ message: e.message }); } 
+    try { const items = await Plato.find({ restaurante: req.params.restauranteId }); res.json(items); } catch (e) { res.status(500).json({ message: e.message }); } 
 });
 app.get('/api/platos/:id', async (req, res) => { 
-    try { const item = await Plato.findById(req.params.id); if (!item) return res.status(404).json({ message: 'Plato no encontrado.' }); res.json(item); } catch (e) { console.error("❌ Error al obtener plato por ID:", e.message || e); res.status(500).json({ message: e.message }); } 
+    try { const item = await Plato.findById(req.params.id); if (!item) return res.status(404).json({ message: 'Plato no encontrado.' }); res.json(item); } catch (e) { res.status(500).json({ message: e.message }); } 
 });
 app.put('/api/platos/:id', async (req, res) => { 
-    try { const item = await Plato.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }); if (!item) return res.status(404).json({ message: 'Plato no encontrado para actualizar.' }); res.json(item); } catch (e) { console.error("❌ Error al actualizar plato:", e.message || e); res.status(400).json({ message: e.message }); } 
+    try { const item = await Plato.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }); if (!item) return res.status(404).json({ message: 'Plato no encontrado para actualizar.' }); res.json(item); } catch (e) { res.status(400).json({ message: e.message }); } 
 });
 app.delete('/api/platos/:id', async (req, res) => { 
-    try { const item = await Plato.findByIdAndDelete(req.params.id); if (!item) return res.status(404).json({ message: 'Plato no encontrado para eliminar.' }); res.status(204).send(); } catch (e) { console.error("❌ Error al eliminar plato:", e.message || e); res.status(500).json({ message: e.message }); } 
+    try { const item = await Plato.findByIdAndDelete(req.params.id); if (!item) return res.status(404).json({ message: 'Plato no encontrado para eliminar.' }); res.status(204).send(); } catch (e) { res.status(500).json({ message: e.message }); } 
 });
 app.patch('/api/platos/:id/toggle', async (req, res) => {
     try {
@@ -429,19 +424,19 @@ app.patch('/api/platos/:id/toggle', async (req, res) => {
 
 // RUTAS PARA ESPECIALES
 app.post('/api/especiales', async (req, res) => { 
-    try { const item = new Especial(req.body); await item.save(); res.status(201).json(item); } catch (e) { console.error("❌ Error al crear especial:", e.message || e); res.status(400).json({ message: e.message }); } 
+    try { const item = new Especial(req.body); await item.save(); res.status(201).json(item); } catch (e) { res.status(400).json({ message: e.message }); } 
 });
 app.get('/api/especiales/restaurante/:restauranteId', async (req, res) => { 
-    try { const items = await Especial.find({ restaurante: req.params.restauranteId }); res.json(items); } catch (e) { console.error("❌ Error al obtener especiales por restaurante:", e.message || e); res.status(500).json({ message: e.message }); } 
+    try { const items = await Especial.find({ restaurante: req.params.restauranteId }); res.json(items); } catch (e) { res.status(500).json({ message: e.message }); } 
 });
 app.get('/api/especiales/:id', async (req, res) => { 
-    try { const item = await Especial.findById(req.params.id); if (!item) return res.status(404).json({ message: 'Especial no encontrado.' }); res.json(item); } catch (e) { console.error("❌ Error al obtener especial por ID:", e.message || e); res.status(500).json({ message: e.message }); } 
+    try { const item = await Especial.findById(req.params.id); if (!item) return res.status(404).json({ message: 'Especial no encontrado.' }); res.json(item); } catch (e) { res.status(500).json({ message: e.message }); } 
 });
 app.put('/api/especiales/:id', async (req, res) => { 
-    try { const item = await Especial.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }); if (!item) return res.status(404).json({ message: 'Especial no encontrado para actualizar.' }); res.json(item); } catch (e) { console.error("❌ Error al actualizar especial:", e.message || e); res.status(400).json({ message: e.message }); } 
+    try { const item = await Especial.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }); if (!item) return res.status(404).json({ message: 'Especial no encontrado para actualizar.' }); res.json(item); } catch (e) { res.status(400).json({ message: e.message }); } 
 });
 app.delete('/api/especiales/:id', async (req, res) => { 
-    try { const item = await Especial.findByIdAndDelete(req.params.id); if (!item) return res.status(404).json({ message: 'Especial no encontrado para eliminar.' }); res.status(204).send(); } catch (e) { console.error("❌ Error al eliminar especial:", e.message || e); res.status(500).json({ message: e.message }); } 
+    try { const item = await Especial.findByIdAndDelete(req.params.id); if (!item) return res.status(404).json({ message: 'Especial no encontrado para eliminar.' }); res.status(204).send(); } catch (e) { res.status(500).json({ message: e.message }); } 
 });
 app.patch('/api/especiales/:id/toggle', async (req, res) => {
     try {
@@ -453,48 +448,45 @@ app.patch('/api/especiales/:id/toggle', async (req, res) => {
         await especial.save();
         res.json(especial);
     } catch (e) {
-        console.error("❌ Error al alternar disponibilidad de especial:", e.message || e);
         res.status(500).json({ message: 'Error interno del servidor al alternar disponibilidad del especial.' });
     }
 });
 
 // RUTAS PARA CATEGORÍAS DE MENÚ
 app.post('/api/menu-categorias', async (req, res) => { 
-    try { const item = new MenuCategoria(req.body); await item.save(); res.status(201).json(item); } catch (e) { console.error("❌ Error al crear categoría de menú:", e.message || e); res.status(400).json({ message: e.message }); } 
+    try { const item = new MenuCategoria(req.body); await item.save(); res.status(201).json(item); } catch (e) { res.status(400).json({ message: e.message }); } 
 });
 app.get('/api/menu-categorias/restaurante/:restauranteId', async (req, res) => { 
-    try { const items = await MenuCategoria.find({ restaurante: req.params.restauranteId }); res.json(items); } catch (e) { console.error("❌ Error al obtener categorías de menú por restaurante:", e.message || e); res.status(500).json({ message: e.message }); } 
+    try { const items = await MenuCategoria.find({ restaurante: req.params.restauranteId }); res.json(items); } catch (e) { res.status(500).json({ message: e.message }); } 
 });
 app.get('/api/menu-categorias/:id', async (req, res) => { 
-    try { const item = await MenuCategoria.findById(req.params.id); if (!item) return res.status(404).json({ message: 'Categoría de menú no encontrada.' }); res.json(item); } catch (e) { console.error("❌ Error al obtener categoría de menú por ID:", e.message || e); res.status(500).json({ message: e.message }); } 
+    try { const item = await MenuCategoria.findById(req.params.id); if (!item) return res.status(404).json({ message: 'Categoría de menú no encontrada.' }); res.json(item); } catch (e) { res.status(500).json({ message: e.message }); } 
 });
 app.put('/api/menu-categorias/:id', async (req, res) => { 
-    try { const item = await MenuCategoria.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }); if (!item) return res.status(404).json({ message: 'Categoría de menú no encontrada para actualizar.' }); res.json(item); } catch (e) { console.error("❌ Error al actualizar categoría de menú:", e.message || e); res.status(400).json({ message: e.message }); } 
+    try { const item = await MenuCategoria.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }); if (!item) return res.status(404).json({ message: 'Categoría de menú no encontrada para actualizar.' }); res.json(item); } catch (e) { res.status(400).json({ message: e.message }); } 
 });
 app.delete('/api/menu-categorias/:id', async (req, res) => { 
-    try { const item = await MenuCategoria.findByIdAndDelete(req.params.id); if (!item) return res.status(404).json({ message: 'Categoría de menú no encontrada para eliminar.' }); res.status(204).send(); } catch (e) { console.error("❌ Error al eliminar categoría de menú:", e.message || e); res.status(500).json({ message: e.message }); } 
+    try { const item = await MenuCategoria.findByIdAndDelete(req.params.id); if (!item) return res.status(404).json({ message: 'Categoría de menú no encontrada para eliminar.' }); res.status(204).send(); } catch (e) { res.status(500).json({ message: e.message }); } 
 });
 
 // RUTAS PARA MENÚS DEL DÍA
 app.post('/api/menus-dia', async (req, res) => { 
-    try { const item = new MenuDia(req.body); await item.save(); res.status(201).json(item); } catch (e) { console.error("❌ Error al crear menú del día:", e.message || e); res.status(400).json({ message: e.message }); } 
+    try { const item = new MenuDia(req.body); await item.save(); res.status(201).json(item); } catch (e) { res.status(400).json({ message: e.message }); } 
 });
 app.get('/api/menus-dia/restaurante/:restauranteId', async (req, res) => { 
-    try { const items = await MenuDia.find({ restaurante: req.params.restauranteId }); res.json(items); } catch (e) { console.error("❌ Error al obtener menús del día por restaurante:", e.message || e); res.status(500).json({ message: e.message }); } 
+    try { const items = await MenuDia.find({ restaurante: req.params.restauranteId }); res.json(items); } catch (e) { res.status(500).json({ message: e.message }); } 
 });
 app.get('/api/menus-dia/:id', async (req, res) => { 
-    try { const item = await MenuDia.findById(req.params.id); if (!item) return res.status(404).json({ message: 'Menú del día no encontrado.' }); res.json(item); } catch (e) { console.error("❌ Error al obtener menú del día por ID:", e.message || e); res.status(500).json({ message: e.message }); } 
+    try { const item = await MenuDia.findById(req.params.id); if (!item) return res.status(404).json({ message: 'Menú del día no encontrado.' }); res.json(item); } catch (e) { res.status(500).json({ message: e.message }); } 
 });
 app.put('/api/menus-dia/:id', async (req, res) => { 
-    try { const item = await MenuDia.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }); if (!item) return res.status(404).json({ message: 'Menú del día no encontrado para actualizar.' }); res.json(item); } catch (e) { console.error("❌ Error al actualizar menú del día:", e.message || e); res.status(400).json({ message: e.message }); } 
+    try { const item = await MenuDia.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }); if (!item) return res.status(404).json({ message: 'Menú del día no encontrado para actualizar.' }); res.json(item); } catch (e) { res.status(400).json({ message: e.message }); } 
 });
 app.delete('/api/menus-dia/:id', async (req, res) => { 
-    try { const item = await MenuDia.findByIdAndDelete(req.params.id); if (!item) return res.status(404).json({ message: 'Menú del día no encontrado para eliminar.' }); res.status(204).send(); } catch (e) { console.error("❌ Error al eliminar menú del día:", e.message || e); res.status(500).json({ message: e.message }); } 
+    try { const item = await MenuDia.findByIdAndDelete(req.params.id); if (!item) return res.status(404).json({ message: 'Menú del día no encontrado para eliminar.' }); res.status(204).send(); } catch (e) { res.status(500).json({ message: e.message }); } 
 });
 
-// ========================================================
-// === RUTA PARA DESCARGAR REPORTE DE PEDIDOS EN EXCEL ====
-// ========================================================
+// RUTA PARA DESCARGAR REPORTE DE PEDIDOS EN EXCEL
 app.get('/api/pedidos/descargar/:restauranteId', async (req, res) => {
     try {
         const { restauranteId } = req.params;
@@ -561,9 +553,7 @@ app.get('/api/pedidos/descargar/:restauranteId', async (req, res) => {
 });
 
 
-// ========================================================
-// === RUTAS PÚBLICAS Y PARA SERVIR ARCHIVOS HTML =========
-// ========================================================
+// RUTAS PÚBLICAS Y PARA SERVIR ARCHIVOS HTML
 app.get('/api/public/menu/:slug', async (req, res) => {
     try {
         const { slug } = req.params;
@@ -576,7 +566,6 @@ app.get('/api/public/menu/:slug', async (req, res) => {
         const platosEspeciales = await Especial.find({ restaurante: restaurante._id, disponible: true });
         res.json({ restaurante, menuDelDia, platosALaCarta, platosEspeciales });
     } catch (e) {
-        console.error("❌ Error en ruta de menú público:", e.message || e);
         res.status(500).json({ message: 'Error interno del servidor.' });
     }
 });
