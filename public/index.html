@@ -9,7 +9,8 @@
 <body>
     <div class="container public-menu-container">
         <header class="public-menu-header">
-            <!-- FIX: Modificado el H1 y añadido un párrafo para el mensaje -->
+            <!-- Espacio para el logo del restaurante -->
+            <div id="restaurant-logo-container" class="restaurant-logo-container"></div>
             <h1>Bienvenidos a <span id="nombre-restaurante">Cargando...</span></h1>
             <p id="mensaje-bienvenida" class="welcome-message"></p>
         </header>
@@ -36,23 +37,23 @@
                 <h2>Tu Pedido</h2>
                 <div id="cart-items"><p>Tu carrito está vacío.</p></div>
                 <div class="cart-summary">
-                    <strong>Total: $<span id="cart-total-price">0.00</span></strong>
+                    <strong>Total: <span id="cart-total-price">$0</span></strong>
                 </div>
 
                 <div class="customer-info">
                     <div class="form-group">
                         <label for="nombre-cliente">Tu Nombre</label>
-                        <input type="text" id="nombre-cliente" class="form-input" placeholder="Nombre (requerido)">
+                        <input type="text" id="nombre-cliente" class="form-input" placeholder="Nombre Completo" required>
                     </div>
                     
                     <div class="form-group">
                         <label for="telefono-cliente">Tu Teléfono</label>
-                        <input type="tel" id="telefono-cliente" class="form-input" placeholder="Teléfono de contacto">
+                        <input type="tel" id="telefono-cliente" class="form-input" placeholder="Número de contacto" required>
                     </div>
 
                     <div class="form-group">
                         <label for="direccion-cliente">Dirección</label>
-                        <input type="text" id="direccion-cliente" class="form-input" placeholder="Dirección para domicilio (opcional)">
+                        <input type="text" id="direccion-cliente" class="form-input" placeholder="Dirección para el domicilio" required>
                     </div>
                     
                     <div class="form-group">
@@ -65,6 +66,14 @@
             </aside>
         </div>
     </div>
+    
+    <footer class="ting-footer">
+        <a href="https://www.ting-col.com" target="_blank">
+            <span>Powered by</span>
+            <img src="/img/logo.png" alt="Ting Logo">
+        </a>
+    </footer>
+
     <script src="/js/script.js"></script>
 </body>
 </html>

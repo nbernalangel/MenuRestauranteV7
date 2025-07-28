@@ -1,6 +1,6 @@
 // admin.js
-document.addEventListener('DOMContentLoaded', () => {
-    // 1. AUTENTICACIÓN
+document.addEventListener('DOMContentLoaded', async () => {
+    // 1. AUTENTICACIÓN Y CONFIGURACIÓN
     const userData = JSON.parse(localStorage.getItem('userData'));
     if (!userData || !userData.restauranteId) {
         alert('No tienes permiso. Por favor, inicia sesión.');
@@ -9,26 +9,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const RESTAURANTE_ID = userData.restauranteId;
     let allMenuCategories = [];
+    let config = {}; // Para guardar la config de Cloudinary
+    let fileToUpload = null; // Para guardar el archivo de logo seleccionado
 
     // 2. REFERENCIAS AL DOM
-    // Dashboard General
     const adminRestauranteNombre = document.getElementById('admin-restaurante-nombre');
     const logoutBtn = document.getElementById('logout-btn');
-
-    // Sección de Datos de mi Restaurante
     const editRestauranteForm = document.getElementById('edit-restaurante-form');
     const editRestauranteNombreInput = document.getElementById('edit-restaurante-nombre');
     const editRestauranteTelefonoInput = document.getElementById('edit-restaurante-telefono');
-    const restauranteQrBtn = document.getElementById('restaurante-qr-btn'); // Nuevo: Botón para generar QR del restaurante
     const restauranteMensajeTextarea = document.getElementById('restaurante-mensaje');
     
-    // Contenedor del QR (similar a super_admin)
+    // Referencias para el logo
+    const logoPreview = document.getElementById('logo-preview');
+    const logoUploadInput = document.getElementById('logo-upload-input');
+
+    const restauranteQrBtn = document.getElementById('restaurante-qr-btn');
     const qrcodeContainer = document.getElementById('qrcode-container');
     const qrcodeDiv = document.getElementById('qrcode');
     const qrLink = document.getElementById('qr-link');
     const downloadQrBtn = document.getElementById('download-qr-btn');
-
-    // Sección de Platos
     const platoForm = document.getElementById('plato-form');
     const platoIdInput = document.getElementById('plato-id');
     const platoNombreInput = document.getElementById('plato-nombre');
@@ -36,44 +36,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const platoPrecioInput = document.getElementById('plato-precio');
     const platoCategoriaInput = document.getElementById('plato-categoria');
     const platosTableBody = document.querySelector('#platos-table tbody');
-    const platoSubmitBtn = document.getElementById('plato-submit-btn'); // Nuevo: botón de submit de plato
-
-    // Sección de Especiales
+    const platoSubmitBtn = document.getElementById('plato-submit-btn');
     const especialForm = document.getElementById('especial-form');
     const especialIdInput = document.getElementById('especial-id');
     const especialNombreInput = document.getElementById('especial-nombre');
     const especialDescripcionInput = document.getElementById('especial-descripcion');
     const especialPrecioInput = document.getElementById('especial-precio');
     const especialesTableBody = document.querySelector('#especiales-table tbody');
-    const especialSubmitBtn = document.getElementById('especial-submit-btn'); // Nuevo: botón de submit de especial
-
-    // Sección de Categorías
+    const especialSubmitBtn = document.getElementById('especial-submit-btn');
     const categoriaForm = document.getElementById('categoria-form');
     const categoriaIdInput = document.getElementById('categoria-id');
     const categoriaNombreInput = document.getElementById('categoria-nombre');
     const opcionesContainer = document.getElementById('opciones-container');
     const addOpcionBtn = document.getElementById('add-opcion-btn');
     const categoriasTableBody = document.querySelector('#categorias-table tbody');
-    const categoriaSubmitBtn = document.getElementById('categoria-submit-btn'); // Nuevo: botón de submit de categoría
-    
-    // Sección de Menús del Día
+    const categoriaSubmitBtn = document.getElementById('categoria-submit-btn');
     const menuDiaForm = document.getElementById('menu-dia-form');
     const menuDiaIdInput = document.getElementById('menu-dia-id');
     const menuFechaInput = document.getElementById('menu-fecha');
-    const menuNombreInput = document = document.getElementById('menu-nombre');
+    const menuNombreInput = document.getElementById('menu-nombre');
     const menuPrecioInput = document.getElementById('menu-precio');
     const menuItemsSelectionContainer = document.getElementById('menu-items-selection-container');
     const menusDiaTableBody = document.querySelector('#menus-dia-table tbody');
-    const menuDiaSubmitBtn = document.getElementById('menu-dia-submit-btn'); // Nuevo: botón de submit de menú del día
+    const menuDiaSubmitBtn = document.getElementById('menu-dia-submit-btn');
     
     // 3. LÓGICA PRINCIPAL
-    // Función de Utilidad para hacer Peticiones Fetch
     async function fetchData(url, options = {}) {
         try {
             const response = await fetch(url, options);
-            if (response.status === 204) { // No Content para DELETE
-                return null;
-            }
+            if (response.status === 204) { return null; }
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({ message: 'Error de red o respuesta no JSON' }));
                 throw new Error(errorData.message || 'Error desconocido del servidor.');
@@ -82,59 +73,95 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('Error en fetchData:', error);
             alert(`Error: ${error.message}`);
-            return null; // Devuelve null en caso de error para que la lógica posterior lo maneje
+            return null;
         }
     }
 
-    // Inicializa el nombre del restaurante en el dashboard
     if (userData.nombreRestaurante) {
         adminRestauranteNombre.textContent = `Gestionando: ${userData.nombreRestaurante}`;
     }
 
-    // Lógica para cerrar sesión
     logoutBtn.addEventListener('click', () => {
         localStorage.removeItem('userData');
         window.location.href = '/login.html';
     });
 
     // --- GESTIÓN DE DATOS DEL RESTAURANTE ---
-    let currentRestauranteSlug = null; // Para generar QR
+    let currentRestauranteSlug = null;
 
     async function loadRestauranteData() {
         try {
             const restaurante = await fetchData(`/api/restaurantes/${RESTAURANTE_ID}`);
             if (restaurante) {
                 editRestauranteNombreInput.value = restaurante.nombre;
-                editRestauranteTelefonoInput.value = restaurante.telefono;
+                editRestauranteTelefonoInput.value = restaurante.telefono || '';
                 restauranteMensajeTextarea.value = restaurante.mensajeBienvenida || '';
+                logoPreview.src = restaurante.logoUrl || 'https://placehold.co/150x80/e9ecef/6c757d?text=Sin+Logo';
                 adminRestauranteNombre.textContent = `Gestionando: ${restaurante.nombre}`;
-                currentRestauranteSlug = restaurante.slug; // Guarda el slug para el QR
+                currentRestauranteSlug = restaurante.slug;
             }
         } catch (error) {
             console.error("Error al cargar datos del restaurante:", error);
-            alert(`No se pudieron cargar los datos del restaurante: ${error.message}`);
         }
     }
 
-    // Maneja la actualización de datos del restaurante
+    logoUploadInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            fileToUpload = file;
+            const reader = new FileReader();
+            reader.onload = (event) => { logoPreview.src = event.target.result; };
+            reader.readAsDataURL(file);
+        }
+    });
+
     editRestauranteForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const data = { nombre: editRestauranteNombreInput.value, telefono: editRestauranteTelefonoInput.value, mensajeBienvenida: restauranteMensajeTextarea.value };
         
-        try {
-            const updated = await fetchData(`/api/restaurantes/${RESTAURANTE_ID}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            if (updated) {
-                alert('Datos del restaurante actualizados con éxito.');
-                adminRestauranteNombre.textContent = `Gestionando: ${updated.nombre}`;
-                currentRestauranteSlug = updated.slug; // Actualiza el slug si cambia
+        let currentData = await fetchData(`/api/restaurantes/${RESTAURANTE_ID}`);
+        let logoUrl = currentData.logoUrl || '';
+
+        if (fileToUpload) {
+            try {
+                const signData = await fetchData('/api/sign-upload', { method: 'POST' });
+                const formData = new FormData();
+                formData.append('file', fileToUpload);
+                formData.append('api_key', config.cloudinaryApiKey);
+                formData.append('timestamp', signData.timestamp);
+                formData.append('signature', signData.signature);
+                formData.append('folder', 'logos_restaurantes');
+
+                const cloudinaryResponse = await fetch(`https://api.cloudinary.com/v1_1/${config.cloudinaryCloudName}/image/upload`, {
+                    method: 'POST',
+                    body: formData,
+                }).then(res => res.json());
+
+                if (cloudinaryResponse.secure_url) {
+                    logoUrl = cloudinaryResponse.secure_url;
+                    fileToUpload = null;
+                } else { throw new Error('La subida a Cloudinary falló.'); }
+            } catch (uploadError) {
+                console.error('Error al subir el logo:', uploadError);
+                return alert('Hubo un error al subir el logo. Inténtalo de nuevo.');
             }
-        } catch(e) {
-            console.error("Error al actualizar datos del restaurante:", e);
-            alert(`Error al actualizar datos del restaurante: ${e.message}`);
+        }
+        
+        const dataToUpdate = { 
+            nombre: editRestauranteNombreInput.value, 
+            telefono: editRestauranteTelefonoInput.value,
+            mensajeBienvenida: restauranteMensajeTextarea.value,
+            logoUrl: logoUrl
+        };
+        
+        const updated = await fetchData(`/api/restaurantes/${RESTAURANTE_ID}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dataToUpdate)
+        });
+
+        if (updated) {
+            alert('Datos del restaurante actualizados con éxito.');
+            loadRestauranteData();
         }
     });
 
@@ -145,18 +172,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         const url = `${window.location.origin}/r/${currentRestauranteSlug}`;
-
-        qrcodeDiv.innerHTML = ''; // Limpia el QR anterior
-        
-        new QRCode(qrcodeDiv, {
-            text: url,
-            width: 256,
-            height: 256,
-            colorDark : "#002b4d",
-            colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.H
-        });
-
+        qrcodeDiv.innerHTML = '';
+        new QRCode(qrcodeDiv, { text: url, width: 256, height: 256, colorDark : "#002b4d", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H });
         qrLink.href = url;
         qrLink.textContent = `Enlace para: ${userData.nombreRestaurante || 'tu restaurante'}`;
         downloadQrBtn.dataset.filename = `qr-${currentRestauranteSlug}.png`;
@@ -164,7 +181,6 @@ document.addEventListener('DOMContentLoaded', () => {
         qrcodeContainer.scrollIntoView({ behavior: 'smooth' });
     });
 
-    // Descarga el QR del restaurante
     downloadQrBtn.addEventListener('click', () => {
         const canvas = qrcodeDiv.querySelector('canvas');
         if (canvas) {
@@ -223,23 +239,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (result) {
             alert(id ? 'Plato actualizado con éxito.' : 'Plato creado con éxito.');
             platoForm.reset(); 
-            platoIdInput.value = ''; // Limpia el ID para el próximo plato
-            platoSubmitBtn.textContent = 'Guardar Plato'; // Restaura el texto del botón
-            loadPlatos(); // Recarga la lista de platos
+            platoIdInput.value = '';
+            platoSubmitBtn.textContent = 'Guardar Plato';
+            loadPlatos();
         }
     });
 
     platosTableBody.addEventListener('click', async (e) => {
         const id = e.target.dataset.id;
-        // Lógica de toggle (activar/desactivar disponible)
         if (e.target.classList.contains('toggle-disponibilidad')) { 
-            const result = await fetchData(`/api/platos/${id}/toggle`, { method: 'PATCH' });
-            if (result) {
-                // Opcional: mostrar un mensaje o simplemente la UI se actualiza con el checkbox
-                // alert(`Plato ${result.disponible ? 'disponible' : 'agotado'} ahora.`);
-            }
+            await fetchData(`/api/platos/${id}/toggle`, { method: 'PATCH' });
         }
-        // Lógica de edición de plato
         else if (e.target.classList.contains('edit-plato')) {
             const p = await fetchData(`/api/platos/${id}`);
             if (p) {
@@ -248,17 +258,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 platoDescripcionInput.value = p.descripcion || ''; 
                 platoPrecioInput.value = p.precio; 
                 platoCategoriaInput.value = p.categoria || '';
-                platoSubmitBtn.textContent = 'Actualizar Plato'; // Cambia texto del botón
-                window.scrollTo({ top: platoForm.offsetTop, behavior: 'smooth' }); // Sube a la form
+                platoSubmitBtn.textContent = 'Actualizar Plato';
+                window.scrollTo({ top: platoForm.offsetTop, behavior: 'smooth' });
             }
         } 
-        // Lógica de eliminación de plato
         else if (e.target.classList.contains('delete-plato')) {
             if (confirm('¿Estás seguro de que quieres eliminar este plato?')) { 
                 const result = await fetchData(`/api/platos/${id}`, { method: 'DELETE' }); 
-                if (result === null) { // 204 No Content
+                if (result === null) {
                     alert('Plato eliminado con éxito.');
-                    loadPlatos(); // Recarga la lista
+                    loadPlatos();
                 }
             }
         }
@@ -311,22 +320,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (result) {
             alert(id ? 'Especial actualizado con éxito.' : 'Especial creado con éxito.');
             especialForm.reset(); 
-            especialIdInput.value = ''; // Limpia el ID para el próximo especial
-            especialSubmitBtn.textContent = 'Guardar Especial'; // Restaura el texto del botón
-            loadEspeciales(); // Recarga la lista de especiales
+            especialIdInput.value = '';
+            especialSubmitBtn.textContent = 'Guardar Especial';
+            loadEspeciales();
         }
     });
 
     especialesTableBody.addEventListener('click', async (e) => {
         const id = e.target.dataset.id;
-        // Lógica de toggle (activar/desactivar disponible)
         if (e.target.classList.contains('toggle-disponibilidad')) { 
-            const result = await fetchData(`/api/especiales/${id}/toggle`, { method: 'PATCH' });
-            if (result) {
-                // alert(`Especial ${result.disponible ? 'disponible' : 'agotado'} ahora.`);
-            }
+            await fetchData(`/api/especiales/${id}/toggle`, { method: 'PATCH' });
         }
-        // Lógica de edición de especial
         else if (e.target.classList.contains('edit-especial')) {
             const esp = await fetchData(`/api/especiales/${id}`);
             if (esp) {
@@ -334,17 +338,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 especialNombreInput.value = esp.nombre; 
                 especialDescripcionInput.value = esp.descripcion || ''; 
                 especialPrecioInput.value = esp.precio;
-                especialSubmitBtn.textContent = 'Actualizar Especial'; // Cambia texto del botón
-                window.scrollTo({ top: especialForm.offsetTop, behavior: 'smooth' }); // Sube a la form
+                especialSubmitBtn.textContent = 'Actualizar Especial';
+                window.scrollTo({ top: especialForm.offsetTop, behavior: 'smooth' });
             }
         } 
-        // Lógica de eliminación de especial
         else if (e.target.classList.contains('delete-especial')) {
             if (confirm('¿Estás seguro de que quieres eliminar este especial?')) { 
                 const result = await fetchData(`/api/especiales/${id}`, { method: 'DELETE' }); 
-                if (result === null) { // 204 No Content
+                if (result === null) {
                     alert('Especial eliminado con éxito.');
-                    loadEspeciales(); // Recarga la lista
+                    loadEspeciales();
                 }
             }
         }
@@ -378,7 +381,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
             });
         }
-        updateMenuDiaForm(); // Actualiza el formulario de menú del día con las categorías cargadas
+        updateMenuDiaForm();
     }
 
     categoriaForm.addEventListener('submit', async (e) => {
@@ -401,15 +404,14 @@ document.addEventListener('DOMContentLoaded', () => {
             categoriaForm.reset(); 
             categoriaIdInput.value = ''; 
             opcionesContainer.innerHTML = ''; 
-            createOpcionInput(); // Asegura al menos un input de opción
-            categoriaSubmitBtn.textContent = 'Guardar Categoría'; // Restaura texto del botón
-            loadCategorias(); // Recarga la lista de categorías
+            createOpcionInput();
+            categoriaSubmitBtn.textContent = 'Guardar Categoría';
+            loadCategorias();
         }
     });
 
     categoriasTableBody.addEventListener('click', async (e) => {
         const id = e.target.dataset.id;
-        // Edición de categoría
         if (e.target.classList.contains('edit-categoria')) {
             const categoria = await fetchData(`/api/menu-categorias/${id}`);
             if (categoria) {
@@ -419,19 +421,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (categoria.opciones.length > 0) {
                     categoria.opciones.forEach(opcion => createOpcionInput(opcion));
                 } else { 
-                    createOpcionInput(); // Si no hay opciones, añade una vacía
+                    createOpcionInput();
                 }
-                categoriaSubmitBtn.textContent = 'Actualizar Categoría'; // Cambia texto del botón
-                window.scrollTo({ top: categoriaForm.offsetTop, behavior: 'smooth' }); // Sube a la form
+                categoriaSubmitBtn.textContent = 'Actualizar Categoría';
+                window.scrollTo({ top: categoriaForm.offsetTop, behavior: 'smooth' });
             }
         } 
-        // Eliminación de categoría
         else if (e.target.classList.contains('delete-categoria')) {
             if (confirm('¿Estás seguro de que quieres eliminar esta categoría?')) { 
                 const result = await fetchData(`/api/menu-categorias/${id}`, { method: 'DELETE' }); 
-                if (result === null) { // 204 No Content
+                if (result === null) {
                     alert('Categoría eliminada con éxito.');
-                    loadCategorias(); // Recarga la lista
+                    loadCategorias();
                 }
             }
         }
@@ -490,9 +491,9 @@ document.addEventListener('DOMContentLoaded', () => {
             alert(id ? 'Menú del Día actualizado con éxito.' : 'Menú del Día creado con éxito.');
             menuDiaForm.reset(); 
             menuDiaIdInput.value = '';
-            menuDiaSubmitBtn.textContent = 'Guardar Menú del Día'; // Restaura texto del botón
-            updateMenuDiaForm(); // Limpia y actualiza los checkboxes
-            loadMenusDia(); // Recarga la lista de menús
+            menuDiaSubmitBtn.textContent = 'Guardar Menú del Día';
+            updateMenuDiaForm();
+            loadMenusDia();
         }
     });
 
@@ -500,7 +501,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const menus = await fetchData(`/api/menus-dia/restaurante/${RESTAURANTE_ID}`);
         menusDiaTableBody.innerHTML = '';
         if (menus && Array.isArray(menus)) {
-            // Ordenar por fecha, los más recientes primero
             menus.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
             menus.forEach(menu => {
                 const row = menusDiaTableBody.insertRow();
@@ -520,36 +520,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
     menusDiaTableBody.addEventListener('click', async (e) => {
         const id = e.target.dataset.id;
-        // Edición de menú del día
         if (e.target.classList.contains('edit-menu')) {
             const menu = await fetchData(`/api/menus-dia/${id}`);
             if (menu) {
                 menuDiaIdInput.value = menu._id;
-                menuFechaInput.value = new Date(menu.fecha).toISOString().split('T')[0]; // Formato para input type="date"
+                menuFechaInput.value = new Date(menu.fecha).toISOString().split('T')[0];
                 menuNombreInput.value = menu.nombreMenu;
                 menuPrecioInput.value = menu.precioMenuGlobal;
-                updateMenuDiaForm(menu); // Rellena los checkboxes
-                menuDiaSubmitBtn.textContent = 'Actualizar Menú del Día'; // Cambia texto del botón
-                window.scrollTo({ top: menuDiaForm.offsetTop, behavior: 'smooth' }); // Sube a la form
+                updateMenuDiaForm(menu);
+                menuDiaSubmitBtn.textContent = 'Actualizar Menú del Día';
+                window.scrollTo({ top: menuDiaForm.offsetTop, behavior: 'smooth' });
             }
         } 
-        // Eliminación de menú del día
         else if (e.target.classList.contains('delete-menu')) {
             if (confirm('¿Estás seguro de que quieres eliminar este menú del día?')) { 
                 const result = await fetchData(`/api/menus-dia/${id}`, { method: 'DELETE' }); 
-                if (result === null) { // 204 No Content
+                if (result === null) {
                     alert('Menú del Día eliminado con éxito.');
-                    loadMenusDia(); // Recarga la lista
+                    loadMenusDia();
                 }
             }
         }
     });
 
     // 4. CARGA INICIAL DE DATOS AL CARGAR LA PÁGINA
-    loadRestauranteData(); // Carga los datos del restaurante actual para el admin
-    loadPlatos(); // Carga todos los platos del restaurante
-    loadEspeciales(); // Carga todos los especiales del restaurante
-    loadCategorias(); // Carga todas las categorías de menú
-    loadMenusDia(); // Carga todos los menús del día
-    createOpcionInput(); // Asegura un campo de opción inicial para categorías
+    config = await fetchData('/api/config');
+    loadRestauranteData();
+    loadPlatos();
+    loadEspeciales();
+    loadCategorias();
+    loadMenusDia();
+    createOpcionInput();
 });

@@ -16,15 +16,20 @@
 
         <section class="card"> <h2>Datos de mi Restaurante</h2>
             <form id="edit-restaurante-form">
+                <!-- FIX: Añadida la sección completa para el logo -->
+                <label>Logo del Restaurante</label>
+                <div class="logo-preview-container">
+                    <img id="logo-preview" src="https://placehold.co/150x80/e9ecef/6c757d?text=Sin+Logo" alt="Vista previa del logo">
+                </div>
+                <input type="file" id="logo-upload-input" accept="image/png, image/jpeg, image/webp">
+                <small>Selecciona un archivo (PNG, JPG). El logo se guardará al hacer clic en "Actualizar Datos".</small>
+                
                 <label for="edit-restaurante-nombre">Nombre del Restaurante</label>
                 <input type="text" id="edit-restaurante-nombre" required>
                 <label for="edit-restaurante-telefono">Teléfono (para WhatsApp)</label>
                 <input type="text" id="edit-restaurante-telefono" required>
-                
-                <!-- FIX: Añadido el campo para el mensaje de bienvenida -->
                 <label for="restaurante-mensaje">Mensaje de Bienvenida (para clientes)</label>
                 <textarea id="restaurante-mensaje" rows="3" placeholder="Ej: ¡Bienvenidos a nuestro restaurante! Disfruta de nuestros platos caseros..."></textarea>
-
                 <button type="submit" class="btn btn-primary">Actualizar Datos</button>
                 <button type="button" id="restaurante-qr-btn" class="btn">Generar QR de mi Menú</button>
             </form>
@@ -108,7 +113,7 @@
                 <input type="hidden" id="menu-dia-id">
                 <div><label for="menu-fecha">Fecha</label><input type="date" id="menu-fecha" required></div>
                 <div><label for="menu-nombre">Nombre</label><input type="text" id="menu-nombre" value="Menú del Día"></div>
-                <div><label for="menu-precio">Precio</label><input type="number" id="menu-precio" value="0" step="0.01"></div>
+                <div><label for="menu-precio">Precio</label><input type="number" id="menu-precio" placeholder="15000" step="0.01"></div>
                 <h3>Selección de Platos para el Menú</h3>
                 <div id="menu-items-selection-container"><p>Cargando categorías...</p></div>
                 <button type="submit" id="menu-dia-submit-btn" class="btn btn-primary">Guardar Menú del Día</button>

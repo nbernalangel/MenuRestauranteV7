@@ -6,7 +6,6 @@ const restauranteSchema = new mongoose.Schema({
         required: true, 
         unique: true 
     },
-    // El 'slug' es el identificador único para la URL, ej: "la-trattoria-feliz"
     slug: { 
         type: String, 
         required: true, 
@@ -17,10 +16,14 @@ const restauranteSchema = new mongoose.Schema({
     telefono: { 
         type: String 
     },
-    // FIX: Añadido el campo para el mensaje de bienvenida
     mensajeBienvenida: {
         type: String,
-        trim: true // Buena práctica para quitar espacios al inicio/final
+        trim: true
+    },
+    // FIX: Añadido el campo para la URL del logo
+    logoUrl: {
+        type: String,
+        trim: true
     }
 }, { timestamps: true });
 

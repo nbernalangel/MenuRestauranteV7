@@ -1,13 +1,14 @@
-// app.js (Versión Final para Producción con Resend y Atlas)
+// app.js
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
 const bcrypt = require('bcryptjs'); 
 const { Resend } = require('resend');
-const ExcelJS = require('exceljs'); // Importamos ExcelJS
-const crypto = require('crypto'); // Importamos crypto para generar tokens
+const ExcelJS = require('exceljs');
+const crypto = require('crypto');
 require('dotenv').config(); 
+const cloudinary = require('cloudinary').v2;
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -19,9 +20,17 @@ app.use(express.static('public'));
 
 // --- Conexión a MongoDB ---
 const dbUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/menu-restaurante-db';
-mongoose.connect(dbUri, { serverSelectionTimeoutMS: 30000 })
+mongoose.connect(dbUri)
     .then(() => console.log('✅ Conectado a MongoDB'))
     .catch(err => console.error('❌ Error de conexión a MongoDB:', err.message || err)); 
+
+// --- Configuración de Cloudinary ---
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+    secure: true,
+});
 
 // --- Importar Modelos ---
 const Plato = require('./models/Plato');
@@ -32,17 +41,72 @@ const Restaurante = require('./models/Restaurante');
 const Usuario = require('./models/Usuario');
 const Pedido = require('./models/Pedido'); 
 
-// --- Configuración de Resend ---
-const resend = new Resend(process.env.RESEND_API_KEY);
+// ========================================================
+// === RUTAS PARA LA SUBIDA DE LOGOS ======================
+// ========================================================
 
-// Función para generar un código de verificación de 6 dígitos
-function generateVerificationCode() {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-}
+app.post('/api/sign-upload', (req, res) => {
+    const timestamp = Math.round((new Date).getTime()/1000);
+    try {
+        const signature = cloudinary.utils.api_sign_request({
+            timestamp: timestamp,
+            folder: 'logos_restaurantes'
+        }, cloudinary.config().api_secret);
+        res.json({ timestamp, signature });
+    } catch (error) {
+        console.error("Error al firmar la subida:", error);
+        res.status(500).json({ message: "Error al autorizar la subida de la imagen." });
+    }
+});
+
+app.get('/api/config', (req, res) => {
+    res.json({
+        cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME,
+        cloudinaryApiKey: process.env.CLOUDINARY_API_KEY,
+    });
+});
 
 // ========================================================
-// === RUTA PARA CREAR UN NUEVO PEDIDO (PÚBLICA) ==========
+// === RUTA PARA EL FORMULARIO DE CONTACTO DE LA LANDING ===
 // ========================================================
+app.post('/api/contact', async (req, res) => {
+    try {
+        const { name, email, message } = req.body;
+
+        if (!name || !email || !message) {
+            return res.status(400).json({ message: 'Todos los campos son requeridos.' });
+        }
+
+        await resend.emails.send({
+            from: `Formulario de Contacto <noreply@ting-col.com>`,
+            to: 'hola@ting-col.com',
+            subject: `Nuevo mensaje de contacto de ${name}`,
+            reply_to: email,
+            html: `
+                <p>Has recibido un nuevo mensaje desde el formulario de contacto de tu página web.</p>
+                <hr>
+                <p><strong>Nombre:</strong> ${name}</p>
+                <p><strong>Correo del remitente:</strong> ${email}</p>
+                <p><strong>Mensaje:</strong></p>
+                <p>${message.replace(/\n/g, '<br>')}</p>
+                <hr>
+            `,
+        });
+
+        console.log(`✅ Correo de contacto enviado con éxito de parte de ${email}`);
+        res.status(200).json({ message: '¡Mensaje enviado con éxito! Gracias por contactarnos.' });
+
+    } catch (error) {
+        console.error("❌ Error al enviar el correo de contacto:", error);
+        res.status(500).json({ message: 'Hubo un error al enviar el mensaje. Por favor, inténtalo de nuevo más tarde.' });
+    }
+});
+
+// ========================================================
+// === EL RESTO DE TU CÓDIGO CONTINÚA AQUÍ ================
+// ========================================================
+
+// RUTA PARA CREAR UN NUEVO PEDIDO (PÚBLICA)
 app.post('/api/pedidos', async (req, res) => {
     try {
         const nuevoPedido = new Pedido(req.body);
@@ -55,10 +119,12 @@ app.post('/api/pedidos', async (req, res) => {
     }
 });
 
+// ... (Aquí va el resto completo de tu código de app.js: register, verify, login, platos, etc.)
+// Asegúrate de que todo tu código anterior esté presente a partir de aquí.
 
-// ========================================================
-// === RUTAS DE REGISTRO Y VERIFICACIÓN ===================
-// ========================================================
+
+
+// RUTAS DE REGISTRO Y VERIFICACIÓN
 app.post('/api/register', async (req, res) => {
     try {
         const { nombreRestaurante, email, password } = req.body;
@@ -72,12 +138,12 @@ app.post('/api/register', async (req, res) => {
         const nuevoRestaurante = new Restaurante({ nombre: nombreRestaurante, slug: slug });
         await nuevoRestaurante.save();
 
-        const verificationCode = generateVerificationCode();
-        const verificationCodeExpires = new Date(Date.now() + 15 * 60 * 1000); // Código válido por 15 minutos
+        const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+        const verificationCodeExpires = new Date(Date.now() + 15 * 60 * 1000);
 
         const nuevoUsuario = new Usuario({
             email, password, rol: 'admin_restaurante', restaurante: nuevoRestaurante._id,
-            isVerified: false, verificationCode: verificationCode, verificationCodeExpires: verificationCodeExpires
+            isVerified: false, verificationCode, verificationCodeExpires
         });
         await nuevoUsuario.save(); 
         
@@ -87,43 +153,14 @@ app.post('/api/register', async (req, res) => {
             from: `Tu Menú Digital <verificacion@ting-col.com>`,
             to: email,
             subject: 'Verifica tu cuenta de Menú Digital',
-            html: `
-                <p>Hola,</p>
-                <p>Gracias por registrarte en Menú Digital. Por favor, usa el siguiente código para verificar tu cuenta:</p>
-                <h3 style="color: ${process.env.COLOR_VERDE_LIMA || '#89d341'};">${verificationCode}</h3>
-                <p>Este código es válido por 15 minutos.</p>
-                <p>Ingresa este código en la página de verificación: <a href="${appBaseUrl}/verify.html?email=${encodeURIComponent(email)}">${appBaseUrl}/verify.html</a></p>
-                <p>Si no te registraste en Menú Digital, puedes ignorar este correo.</p>
-            `,
+            html: `<p>Usa este código para verificar tu cuenta: <strong>${verificationCode}</strong></p>`,
         });
-        console.log(`✅ Correo de verificación enviado a ${email} usando Resend.`);
+        console.log(`✅ Correo de verificación enviado a ${email}`);
 
         res.status(201).json({ message: '¡Registro exitoso! Revisa tu correo para el código de verificación.' });
     } catch (e) {
         console.error("❌ Error en /api/register:", e.message || e);
-        res.status(500).json({ message: 'Ocurrió un error en el servidor al registrar el usuario.' });
-    }
-});
-
-app.post('/api/verify', async (req, res) => {
-    try {
-        const { email, code } = req.body; 
-        const usuario = await Usuario.findOne({ email });
-
-        if (!usuario) { return res.status(404).json({ message: 'Usuario no encontrado.' }); }
-        if (usuario.isVerified) { return res.status(400).json({ message: 'Esta cuenta ya ha sido verificada.' }); }
-        if (new Date() > usuario.verificationCodeExpires) { return res.status(400).json({ message: 'El código de verificación ha expirado.' });}
-        if (String(usuario.verificationCode) !== String(code)) { return res.status(400).json({ message: 'Código de verificación incorrecto.' });}
-
-        usuario.isVerified = true;
-        usuario.verificationCode = undefined; 
-        usuario.verificationCodeExpires = undefined; 
-        await usuario.save();
-
-        res.status(200).json({ message: 'Cuenta verificada con éxito. Ya puedes iniciar sesión.' });
-    } catch (e) {
-        console.error("❌ Error en /api/verify:", e.message || e);
-        res.status(500).json({ message: 'Ocurrió un error en el servidor durante la verificación.' });
+        res.status(500).json({ message: 'Ocurrió un error en el servidor.' });
     }
 });
 

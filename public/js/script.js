@@ -1,8 +1,8 @@
 document.addEventListener('DOMContentLoaded', async () => {
     // 1. REFERENCIAS AL DOM
     const nombreRestauranteElem = document.getElementById('nombre-restaurante');
-    // FIX: Añadida la referencia para el mensaje de bienvenida
     const mensajeBienvenidaElem = document.getElementById('mensaje-bienvenida');
+    const logoContainer = document.getElementById('restaurant-logo-container'); // Logo del restaurante
     const menuDelDiaContent = document.getElementById('menu-del-dia-content');
     const especialesContent = document.getElementById('especiales-content');
     const platosALaCartaContent = document.getElementById('platos-a-la-carta-content');
@@ -19,7 +19,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     let restauranteInfo = {};
 
     // 3. FUNCIÓN AUXILIAR PARA FORMATEAR MONEDA
-    // FIX: Nueva función para añadir separadores de miles y el símbolo de peso.
     function formatCurrency(value) {
         return new Intl.NumberFormat('es-CO', {
             style: 'currency',
@@ -61,7 +60,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         cartItemsContainer.innerHTML = '';
         if (cart.length === 0) {
             cartItemsContainer.innerHTML = '<p>Tu carrito está vacío.</p>';
-            cartTotalPriceDisplay.textContent = formatCurrency(0); // FIX: Usar formato
+            cartTotalPriceDisplay.textContent = formatCurrency(0);
             return;
         }
         let total = 0;
@@ -75,10 +74,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <span class="item-price">${formatCurrency(item.precio * item.quantity)}</span>
                 </div>
                 <button class="remove-btn" data-id="${item.id}">×</button>
-            `; // FIX: Usar formato
+            `;
             cartItemsContainer.appendChild(itemDiv);
         });
-        cartTotalPriceDisplay.textContent = formatCurrency(total); // FIX: Usar formato
+        cartTotalPriceDisplay.textContent = formatCurrency(total);
     }
     
     cartItemsContainer.addEventListener('click', (e) => {
@@ -100,12 +99,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         menu.itemsPorCategoria.forEach((cat, index) => {
             opcionesHtml += `<div><strong>${cat.categoriaNombre}:</strong></div>`;
             const opciones = cat.platosEscogidos;
-            if (opciones.length > 1) {
-                opciones.forEach((plato, i) => {
-                    opcionesHtml += `<label style="font-weight:normal; display:inline-block; margin-right:15px;"><input type="radio" name="menu-cat-${index}" value="${plato.nombre}" ${i === 0 ? 'checked' : ''}> ${plato.nombre}</label>`;
+            if (opciones.length > 0) {
+                let radioButtonsHtml = '';
+                opciones.forEach((plato) => {
+                    radioButtonsHtml += `<label class="radio-option-label"><input type="radio" name="menu-cat-${index}" value="${plato.nombre}"> ${plato.nombre}</label>`;
                 });
-            } else if (opciones.length === 1) {
-                opcionesHtml += `<span data-opcion-unica="true" data-nombre="${opciones[0].nombre}">${opciones[0].nombre}</span>`;
+                opcionesHtml += `<div class="radio-options-container">${radioButtonsHtml}</div>`;
             }
         });
 
@@ -119,7 +118,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <span class="price">${formatCurrency(menu.precioMenuGlobal)}</span>
                     <button class="add-btn add-menu-to-cart-btn" data-precio="${menu.precioMenuGlobal}" data-nombre-base="${menu.nombreMenu}">Añadir Menú</button>
                 </div>
-            </div>`; // FIX: Usar formato
+            </div>`;
     }
     
     function renderPlatos(platos, container) {
@@ -141,7 +140,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <span class="price">${formatCurrency(plato.precio)}</span>
                     <button class="add-btn add-plato-to-cart-btn" data-id="${plato._id}" data-nombre="${plato.nombre}" data-precio="${plato.precio}">Añadir</button>
                 </div>
-            `; // FIX: Usar formato
+            `;
             container.appendChild(platoDiv);
         });
     }
@@ -156,16 +155,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             const precio = parseFloat(e.target.dataset.precio);
             
             let selecciones = [];
-            const radioGroups = menuDelDiaContent.querySelectorAll('input[type="radio"]');
-            radioGroups.forEach(radio => {
-                if (radio.checked) {
-                    selecciones.push(radio.value);
+            const categorias = menuDelDiaContent.querySelectorAll('input[type="radio"]');
+            const gruposDeCategorias = new Set([...categorias].map(radio => radio.name));
+
+            for (const groupName of gruposDeCategorias) {
+                const checkedRadio = menuDelDiaContent.querySelector(`input[name="${groupName}"]:checked`);
+                if (!checkedRadio) {
+                    const categoriaLabel = menuDelDiaContent.querySelector(`input[name="${groupName}"]`).closest('.description').querySelector('strong').textContent;
+                    return alert(`Por favor, selecciona una opción para "${categoriaLabel.replace(':', '')}".`);
                 }
-            });
-            
-            menuDelDiaContent.querySelectorAll('[data-opcion-unica]').forEach(opcion => {
-                selecciones.push(opcion.dataset.nombre);
-            });
+                selecciones.push(checkedRadio.value);
+            }
             
             const nombreCompleto = `${nombreBase} (${selecciones.join(', ')})`;
             addToCart({ id: `menu-${Date.now()}`, nombre: nombreCompleto, precio: precio });
@@ -174,88 +174,72 @@ document.addEventListener('DOMContentLoaded', async () => {
 
    // 7. LÓGICA DE WHATSAPP Y GUARDADO DE PEDIDO
     checkoutBtn.addEventListener('click', async () => {
-    if (cart.length === 0) {
-        return alert('Tu carrito está vacío.');
-    }
-    const nombreCliente = nombreClienteInput.value.trim();
-    if (!nombreCliente) {
-        return alert('Por favor, ingresa tu nombre.');
-    }
+        if (cart.length === 0) { return alert('Tu carrito está vacío.'); }
+        const nombreCliente = nombreClienteInput.value.trim();
+        if (!nombreCliente) { return alert('El campo "Nombre" es obligatorio.'); }
+        const telefono = telefonoClienteInput.value.trim();
+        if (!telefono) { return alert('El campo "Teléfono" es obligatorio.'); }
+        const direccion = direccionClienteInput.value.trim();
+        if (!direccion) { return alert('El campo "Dirección" es obligatorio para el domicilio.'); }
+        
+        const notas = notasClienteInput.value.trim();
+        const totalPedido = cart.reduce((sum, item) => sum + (item.precio * item.quantity), 0);
 
-    const telefono = telefonoClienteInput.value.trim();
-    const direccion = direccionClienteInput.value.trim();
-    const notas = notasClienteInput.value.trim();
-    const totalPedido = cart.reduce((sum, item) => sum + (item.precio * item.quantity), 0);
+        const pedidoParaGuardar = {
+            restaurante: restauranteInfo._id,
+            items: cart.map(item => ({
+                nombre: item.nombre,
+                cantidad: item.quantity,
+                precio: item.precio
+            })),
+            total: totalPedido,
+            cliente: { nombre: nombreCliente, telefono, direccion },
+            notas: notas
+        };
 
-    // --- Lógica para guardar el pedido en la base de datos (sin cambios) ---
-    const pedidoParaGuardar = {
-        restaurante: restauranteInfo._id,
-        items: cart.map(item => ({
-            nombre: item.nombre,
-            cantidad: item.quantity,
-            precio: item.precio
-        })),
-        total: totalPedido,
-        cliente: { nombre: nombreCliente, telefono, direccion },
-        notas: notas
-    };
-
-    try {
-        const registroResponse = await fetch('/api/pedidos', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(pedidoParaGuardar)
-        });
-        if (registroResponse.ok) {
-            console.log('✅ Pedido registrado para estadísticas.');
-        } else {
-            console.error('No se pudo registrar el pedido para estadísticas.');
+        try {
+            const registroResponse = await fetch('/api/pedidos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(pedidoParaGuardar)
+            });
+            if (registroResponse.ok) {
+                console.log('✅ Pedido registrado para estadísticas.');
+            } else {
+                console.error('No se pudo registrar el pedido para estadísticas.');
+            }
+        } catch (error) {
+            console.error('Error de red al registrar el pedido:', error);
         }
-    } catch (error) {
-        console.error('Error de red al registrar el pedido:', error);
-    }
 
-    // --- INICIO DE LA CORRECCIÓN PARA WHATSAPP EN SAFARI ---
-
-    // 1. Construir el mensaje de texto (sin cambios)
-    let message = `*¡Nuevo Pedido para ${restauranteInfo.nombre}!* \n\n`;
-    message += `*Cliente:* ${nombreCliente}\n`;
-    if (telefono) message += `*Teléfono:* ${telefono}\n`;
-    if (direccion) message += `*Dirección:* ${direccion}\n`;
-    message += `\n*--- Detalle del Pedido ---*\n`;
-    cart.forEach(item => {
-        message += `${item.quantity}x ${item.nombre} - ${formatCurrency(item.precio * item.quantity)}\n`;
+        let message = `*¡Nuevo Pedido para ${restauranteInfo.nombre}!* \n\n`;
+        message += `*Cliente:* ${nombreCliente}\n`;
+        message += `*Teléfono:* ${telefono}\n`;
+        message += `*Dirección:* ${direccion}\n`;
+        message += `\n*--- Detalle del Pedido ---*\n`;
+        cart.forEach(item => {
+            message += `${item.quantity}x ${item.nombre} - ${formatCurrency(item.precio * item.quantity)}\n`;
+        });
+        message += `\n*Total: ${formatCurrency(totalPedido)}*`;
+        if (notas) message += `\n\n*Notas:* ${notas}`;
+        
+        let whatsappNumber = restauranteInfo.telefono;
+        if (!whatsappNumber) { return alert('Este restaurante no tiene un número de WhatsApp configurado.'); }
+        whatsappNumber = whatsappNumber.replace(/[\s\-()]/g, ''); 
+        if (whatsappNumber.length === 10) {
+            whatsappNumber = `57${whatsappNumber}`;
+        }
+        
+        const encodedMessage = encodeURIComponent(message);
+        const whatsappUrl = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodedMessage}`;
+        
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        if (isMobile) {
+            window.location.href = whatsappUrl;
+        } else {
+            window.open(whatsappUrl, '_blank');
+        }
     });
-    message += `\n*Total: ${formatCurrency(totalPedido)}*`;
-    if (notas) message += `\n\n*Notas:* ${notas}`;
-
-    // 2. Formatear el número de teléfono del restaurante (sin cambios)
-    let whatsappNumber = restauranteInfo.telefono;
-    if (!whatsappNumber) {
-        return alert('Este restaurante no tiene un número de WhatsApp configurado.');
-    }
-    whatsappNumber = whatsappNumber.replace(/[\s\-()]/g, ''); 
-    if (whatsappNumber.length === 10) {
-        whatsappNumber = `57${whatsappNumber}`;
-    }
-
-    // 3. Construir la URL de WhatsApp (sin cambios)
-    const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodedMessage}`;
-
-    // 4. FIX: Detectar si es un dispositivo móvil para decidir cómo abrir el enlace
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-    if (isMobile) {
-        // En móviles, redirigir la página actual. Es más compatible con Safari.
-        window.location.href = whatsappUrl;
-    } else {
-        // En computadores, abrir en una nueva pestaña para no perder la página del menú.
-        window.open(whatsappUrl, '_blank');
-    }
-    
-    // --- FIN DE LA CORRECCIÓN ---
-});
 
     // 8. CARGA INICIAL
     async function loadPage() {
@@ -272,9 +256,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             restauranteInfo = data.restaurante;
             document.title = restauranteInfo.nombre;
-            // FIX: Actualizar los nuevos elementos del header
+
+            if (restauranteInfo.logoUrl) {
+                logoContainer.innerHTML = `<img src="${restauranteInfo.logoUrl}" alt="Logo de ${restauranteInfo.nombre}" class="restaurant-logo">`;
+            } else {
+                logoContainer.innerHTML = '';
+            }
+
             nombreRestauranteElem.textContent = restauranteInfo.nombre;
-            mensajeBienvenidaElem.textContent = restauranteInfo.mensajeBienvenida || ''; // Muestra el mensaje
+            mensajeBienvenidaElem.textContent = restauranteInfo.mensajeBienvenida || '';
 
             renderMenuDelDia(data.menuDelDia);
             renderPlatos(data.platosEspeciales, especialesContent);
