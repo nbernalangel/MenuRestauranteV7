@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ting - Instagram Post</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'ting-green': '#94C120',
+                        'ting-blue': '#00183A',
+                        'ting-red': '#E53E3E',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+        .instagram-post-container {
+            width: 800px;
+            height: auto;
+            max-height: 1200px;
+            background-color: #ffffff;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+        .instagram-post-container .p-content { padding: 20px; }
+        .instagram-post-container h1 { font-size: 2em; line-height: 1.1; margin-bottom: 10px; }
+        .instagram-post-container h2 { font-size: 1.5em; margin-bottom: 15px; }
+        .instagram-post-container h3 { font-size: 1.1em; }
+        .instagram-post-container p { font-size: 0.85em; line-height: 1.4; }
+        .instagram-post-container .text-lg { font-size: 0.85em; }
+        .instagram-post-container .text-2xl { font-size: 1.5em; }
+        .instagram-post-container .text-3xl { font-size: 2em; }
+        .instagram-post-container .h-20 { height: 50px; }
+        .instagram-post-container .w-16, .instagram-post-container .h-16 { width: 50px; height: 50px; }
+        .instagram-post-container .mb-6 { margin-bottom: 15px !important; }
+        .instagram-post-container .mb-8 { margin-bottom: 20px !important; }
+        .instagram-post-container .space-y-8 > :not([hidden]) ~ :not([hidden]) { margin-top: 20px !important; }
+        .instagram-post-container .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 8px !important; }
+        .cta-button {
+            padding: 10px 20px;
+            font-size: 1em;
+        }
+        .footer-text-sm { font-size: 0.8em; }
+        .grid-3-cols-wide {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            text-align: center;
+        }
+        .grid-2-cols-wide {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+        }
+        .flex-row-center {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 20px;
+            text-align: left;
+        }
+        .flex-row-center > div {
+            flex: 1;
+            max-width: 50%;
+            text-align: left;
+        }
+        .flex-row-center .text-left { text-align: left; }
+        .flex-row-center .w-6 { margin-right: 1rem; }
+    </style>
+</head>
+<body>
+    <div class="instagram-post-container">
+        <header class="bg-ting-blue p-content text-center flex-shrink-0">
+            <img src="https://app.ting-col.com/img/logo.png" alt="Ting Logo" class="h-20 mx-auto mb-6">
+            <h1 class="text-4xl font-bold text-white leading-tight">
+                Deja de perder pedidos. <br> <span class="text-ting-green">Automatiza tus domicilios.</span>
+            </h1>
+        </header>
+        <main class="flex-grow p-content flex flex-col">
+            <section class="mb-8">
+                <h2 class="text-2xl font-bold text-ting-blue text-center mb-6">Tan fácil como 1, 2, 3</h2>
+                <div class="grid-3-cols-wide">
+                    <div>
+                        <div class="bg-ting-green text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-3">1</div>
+                        <h3 class="font-semibold text-ting-blue text-lg">Crea tu Menú</h3>
+                        <p class="text-gray-600">Regístrate gratis y añade tus platos en minutos.</p>
+                    </div>
+                    <div>
+                        <div class="bg-ting-green text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-3">2</div>
+                        <h3 class="font-semibold text-ting-blue text-lg">Comparte tu Link</h3>
+                        <p class="text-gray-600">Recibe un enlace y un QR único para tu negocio.</p>
+                    </div>
+                    <div>
+                        <div class="bg-ting-green text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-3">3</div>
+                        <h3 class="font-semibold text-ting-blue text-lg">Recibe Pedidos</h3>
+                        <p class="text-gray-600">Los pedidos llegan a tu WhatsApp, claros y sin errores.</p>
+                    </div>
+                </div>
+            </section>
+            <hr class="mb-8">
+            <section class="text-center bg-gray-50 p-6 rounded-lg shadow-inner mb-8">
+                <h2 class="text-2xl font-bold text-ting-blue mb-4">¡Más cerca de tus clientes con Google Maps!</h2>
+                <p class="text-gray-700 text-lg mb-6">
+                    Ahora, tus clientes pueden encontrarte fácilmente. Posiciona tu restaurante en el mapa y haz que tus domicilios lleguen a más personas cercanas.
+                </p>
+                <div class="flex-row-center">
+                    <div class="flex items-center text-left text-gray-700 text-lg">
+                        <i class="fas fa-map-marker-alt text-ting-red text-3xl mr-4"></i>
+                        <span>Tus clientes te localizan al instante.</span>
+                    </div>
+                    <div class="flex items-center text-left text-gray-700 text-lg">
+                        <i class="fas fa-compass text-ting-green text-3xl mr-4"></i>
+                        <span>¡Aumenta la visibilidad de tu negocio!</span>
+                    </div>
+                </div>
+            </section>
+            <hr class="mb-8">
+            <section class="grid-2-cols-wide">
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-ting-blue mb-4 text-center">Beneficios Clave</h2>
+                    <ul class="space-y-4 text-gray-700 text-lg text-left">
+                        <li class="flex items-start"><i class="fas fa-clock text-ting-green mt-1 mr-4 w-6 text-center"></i><span><strong>Ahorra Tiempo Valioso:</strong> Tu personal se enfoca en cocinar, no en el teléfono.</span></li>
+                        <li class="flex items-start"><i class="fas fa-check-circle text-ting-green mt-1 mr-4 w-6 text-center"></i><span><strong>Cero Errores:</strong> Recibe pedidos escritos y detallados, sin confusiones.</span></li>
+                        <li class="flex items-start"><i class="fas fa-dollar-sign text-ting-green mt-1 mr-4 w-6 text-center"></i><span><strong>Sin Comisiones:</strong> Es 100% <span class="font-bold text-2xl text-ting-green">GRATIS</span>. Lo que vendes es 100% tuyo.</span></li>
+                    </ul>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-ting-blue mb-4 text-center">Características</h2>
+                    <ul class="space-y-4 text-gray-700 text-lg text-left">
+                        <li class="flex items-start"><i class="fas fa-mobile-alt text-ting-green mt-1 mr-4 w-6 text-center"></i><span>Intuitivo y fácil de usar.</span></li>
+                        <li class="flex items-start"><i class="fas fa-calendar-alt text-ting-green mt-1 mr-4 w-6 text-center"></i><span>Gestiona los menús diarios en solo unos minutos.</span></li>
+                        <li class="flex items-start"><i class="fas fa-toggle-on text-ting-green mt-1 mr-4 w-6 text-center"></i><span>Control de agotados a un solo clic.</span></li>
+                        <li class="flex items-start"><i class="fas fa-qrcode text-ting-green mt-1 mr-4 w-6 text-center"></i><span>Menú digital con código QR.</span></li>
+                        <li class="flex items-start"><i class="fab fa-whatsapp text-ting-green mt-1 mr-4 w-6 text-center"></i><span>Integración directa con WhatsApp.</span></li>
+                        <li class="flex items-start"><i class="fas fa-edit text-ting-green mt-1 mr-4 w-6 text-center"></i><span>Panel para que actualices tus platos al instante.</span></li>
+                    </ul>
+                </div>
+            </section>
+        </main>
+        <footer class="bg-gray-100 p-content text-center mt-auto">
+            <h3 class="text-xl font-bold text-ting-blue mb-2">¿Listo para optimizar tus domicilios?</h3>
+            <p class="text-gray-600 mb-4">Es rápido y fácil.</p>
+            <div class="mt-4 text-sm text-gray-500 footer-text-sm">
+                <p>Visítanos en <a href="https://app.ting-col.com" target="_blank" class="text-ting-green font-semibold">www.ting-col.com</a></p>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>
