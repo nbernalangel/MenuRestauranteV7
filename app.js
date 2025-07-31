@@ -635,7 +635,7 @@ app.get('/verify', (req, res) => res.sendFile(path.join(__dirname, 'public', 've
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
 app.get('/super_admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'super_admin.html')));
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
-app.get('/r/:slug', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+app.get('/r/:slug', (req, res) => res.sendFile(path.join(__dirname, 'public', 'menu_template.html')));
 app.get('/forgot-password', (req, res) => res.sendFile(path.join(__dirname, 'public', 'forgot-password.html')));
 app.get('/reset-password', (req, res) => res.sendFile(path.join(__dirname, 'public', 'reset-password.html')));
 
