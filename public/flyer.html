@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ting - Optimiza tus Domicilios</title>
+    <title>Ting - Tutorial: Crea tu Restaurante</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -22,90 +22,105 @@
     <style>
         body {
             font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
         }
-        @media print {
-            body {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-            .no-print {
-                display: none;
-            }
+        .tutorial-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+        }
+        .tutorial-step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            background-color: #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+        .tutorial-step-number {
+            width: 3rem;
+            height: 3rem;
+            min-width: 3rem;
+            min-height: 3rem;
+            background-color: #94C120;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 9999px;
+            margin-right: 1.5rem;
+        }
+        .tutorial-step-content h3 {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #00183A;
+            margin-bottom: 0.25rem;
+        }
+        .tutorial-step-content p {
+            font-size: 1rem;
+            color: #4a5568;
         }
     </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
-
-    <div class="w-full max-w-2xl bg-white rounded-lg shadow-2xl overflow-hidden">
-        
-        <!-- Encabezado -->
-        <header class="bg-ting-blue p-8 text-center">
-            <img src="/img/logo.png" alt="Ting Logo" class="h-16 mx-auto mb-4">
-            <h1 class="text-3xl font-bold text-white leading-tight">Deja de perder pedidos. <br> <span class="text-ting-green">Automatiza tus domicilios.</span></h1>
+<body class="p-4 md:p-8">
+    <div class="tutorial-container">
+        <header class="bg-ting-blue text-center pb-8 pt-8 rounded-t-lg">
+            <img src="https://app.ting-col.com/img/logo.png" alt="Ting Logo" class="h-20 mx-auto mb-2">
+            <h1 class="text-4xl font-bold text-white mb-2">Tutorial: Crea tu Menú Digital en Minutos</h1>
+            <p class="text-gray-300 text-lg">Sigue estos simples pasos y empieza a recibir pedidos por WhatsApp.</p>
         </header>
 
-        <main class="p-8 md:p-10">
-
-            <!-- Cómo Funciona -->
-            <section class="mb-8">
-                <h2 class="text-2xl font-bold text-ting-blue text-center mb-6">Tan fácil como 1, 2, 3</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-                    <div>
-                        <div class="bg-ting-green text-white w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-3">1</div>
-                        <h3 class="font-semibold text-ting-blue">Crea tu Menú</h3>
-                        <p class="text-sm text-gray-600">Regístrate gratis y añade tus platos en minutos.</p>
-                    </div>
-                    <div>
-                        <div class="bg-ting-green text-white w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-3">2</div>
-                        <h3 class="font-semibold text-ting-blue">Comparte tu Link</h3>
-                        <p class="text-sm text-gray-600">Recibe un enlace y un QR único para tu negocio.</p>
-                    </div>
-                    <div>
-                        <div class="bg-ting-green text-white w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-3">3</div>
-                        <h3 class="font-semibold text-ting-blue">Recibe Pedidos</h3>
-                        <p class="text-sm text-gray-600">Los pedidos llegan a tu WhatsApp, claros y sin errores.</p>
-                    </div>
+        <main class="py-8">
+            <div class="tutorial-step">
+                <div class="tutorial-step-number">1</div>
+                <div class="tutorial-step-content">
+                    <h3>Regístrate y Verifica tu Cuenta</h3>
+                    <p>Completa el formulario de registro con el nombre de tu restaurante, correo y contraseña para acceder. Una vez que te registres, recibirás un código de verificación en tu correo para activar tu cuenta.</p>
                 </div>
-            </section>
+            </div>
 
-            <hr class="my-8">
-
-            <!-- Beneficios y Características -->
-            <section class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
-                    <h2 class="text-2xl font-bold text-ting-blue mb-4">Beneficios Clave</h2>
-                    <ul class="space-y-3 text-gray-700">
-                        <li class="flex items-start"><i class="fas fa-clock text-ting-green mt-1 mr-3"></i><span><strong>Ahorra Tiempo Valioso:</strong> Tu personal se enfoca en cocinar, no en contestar el teléfono.</span></li>
-                        <li class="flex items-start"><i class="fas fa-check-circle text-ting-green mt-1 mr-3"></i><span><strong>Cero Errores:</strong> Recibe pedidos escritos y detallados, eliminando confusiones.</span></li>
-                        <li class="flex items-start"><i class="fas fa-dollar-sign text-ting-green mt-1 mr-3"></i><span><strong>Sin Comisiones:</strong> Es 100% gratis. Lo que vendes es 100% tuyo.</span></li>
-                         <li class="flex items-start"><i class="fas fa-arrow-up-right-dots text-ting-green mt-1 mr-3"></i><span><strong>Aumenta tus Ventas:</strong> Un proceso de pedido fácil anima a más clientes a comprar.</span></li>
-                    </ul>
+            <div class="tutorial-step">
+                <div class="tutorial-step-number">2</div>
+                <div class="tutorial-step-content">
+                    <h3>Ingresa a tu Panel y Añade tus Datos</h3>
+                    <p>Accede a tu panel de administración. Allí podrás ingresar la **dirección exacta** de tu restaurante para que tus clientes te encuentren fácilmente en el mapa, además de otras informaciones como tu teléfono y mensaje de bienvenida.</p>
                 </div>
-                <div>
-                    <h2 class="text-2xl font-bold text-ting-blue mb-4">Características</h2>
-                    <ul class="space-y-3 text-gray-700">
-                        <li class="flex items-start"><i class="fas fa-qrcode text-ting-green mt-1 mr-3"></i><span>Menú digital con código QR.</span></li>
-                        <li class="flex items-start"><i class="fab fa-whatsapp text-ting-green mt-1 mr-3"></i><span>Integración directa con WhatsApp.</span></li>
-                        <li class="flex items-start"><i class="fas fa-edit text-ting-green mt-1 mr-3"></i><span>Panel para que actualices tus platos al instante.</span></li>
-                        <li class="flex items-start"><i class="fas fa-toggle-on text-ting-green mt-1 mr-3"></i><span>Opción para marcar platos como "agotados".</span></li>
-                    </ul>
-                </div>
-            </section>
+            </div>
 
+            <div class="tutorial-step">
+                <div class="tutorial-step-number">3</div>
+                <div class="tutorial-step-content">
+                    <h3>Añade tus Platos y Menús</h3>
+                    <p>En el panel, podrás añadir todos tus platos a la carta, gestionar los menús diarios, subir imágenes y organizar tus productos en categorías de forma intuitiva.</p>
+                </div>
+            </div>
+            
+            <div class="tutorial-step">
+                <div class="tutorial-step-number">4</div>
+                <div class="tutorial-step-content">
+                    <h3>Controla el Inventario y Disponibilidad</h3>
+                    <p>Con un solo clic, puedes marcar un plato como "agotado". Esto lo oculta automáticamente de tu menú digital, evitando pedidos de productos que ya no tienes disponibles.</p>
+                </div>
+            </div>
+
+            <div class="tutorial-step">
+                <div class="tutorial-step-number">5</div>
+                <div class="tutorial-step-content">
+                    <h3>Comparte y Recibe Pedidos</h3>
+                    <p>Una vez que tu menú esté listo, recibirás un enlace único y un código QR. Compártelo en tus redes sociales y con tus clientes. ¡Los pedidos llegarán directamente a tu WhatsApp, claros y sin errores!</p>
+                </div>
+            </div>
         </main>
 
-        <!-- Footer y Llamada a la Acción -->
-        <footer class="bg-gray-50 p-8 text-center">
-            <h2 class="text-2xl font-bold text-ting-blue mb-4">¿Listo para optimizar tus domicilios?</h2>
-            <p class="text-gray-600 mb-6">Únete a la nueva forma de gestionar pedidos. Es gratis, rápido y fácil.</p>
-            <a href="https://app.ting-col.com/register.html" target="_blank" class="inline-block bg-ting-green text-ting-blue font-bold py-3 px-8 rounded-lg text-lg hover:bg-opacity-90 transition duration-300">
-                Crear mi Menú Gratis Ahora
-            </a>
-            <div class="mt-6 text-sm text-gray-500">
-                <p>Visítanos en <a href="https://www.ting-col.com" target="_blank" class="text-ting-green font-semibold">www.ting-col.com</a></p>
-            </div>
+        <footer class="bg-ting-green text-ting-blue text-center py-6 mt-auto">
+            <h3 class="text-2xl font-bold mb-1">Es 100% GRATIS.</h3>
+            <p class="text-ting-blue text-sm">Visítanos en <a href="https://app.ting-col.com" target="_blank" class="font-semibold">www.ting-col.com</a></p>
         </footer>
     </div>
-
 </body>
 </html>
