@@ -19,6 +19,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const editRestauranteNombreInput = document.getElementById('edit-restaurante-nombre');
     const editRestauranteTelefonoInput = document.getElementById('edit-restaurante-telefono');
     const restauranteMensajeTextarea = document.getElementById('restaurante-mensaje');
+    const restauranteDireccionInput = document.getElementById('restaurante-direccion');
+    const restauranteDescripcionInput = document.getElementById('restaurante-descripcion');
+
     
     // Referencias para el logo
     const logoPreview = document.getElementById('logo-preview');
@@ -96,6 +99,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 editRestauranteNombreInput.value = restaurante.nombre;
                 editRestauranteTelefonoInput.value = restaurante.telefono || '';
                 restauranteMensajeTextarea.value = restaurante.mensajeBienvenida || '';
+                restauranteDireccionInput.value = restaurante.direccion || '';
+                restauranteDescripcionInput.value = restaurante.descripcion || '';  
                 logoPreview.src = restaurante.logoUrl || 'https://placehold.co/150x80/e9ecef/6c757d?text=Sin+Logo';
                 adminRestauranteNombre.textContent = `Gestionando: ${restaurante.nombre}`;
                 currentRestauranteSlug = restaurante.slug;
@@ -149,6 +154,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const dataToUpdate = { 
             nombre: editRestauranteNombreInput.value, 
             telefono: editRestauranteTelefonoInput.value,
+            direccion: restauranteDireccionInput.value,
+            descripcion: restauranteDescripcionInput.value,
             mensajeBienvenida: restauranteMensajeTextarea.value,
             logoUrl: logoUrl
         };

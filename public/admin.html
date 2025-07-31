@@ -16,7 +16,6 @@
 
         <section class="card"> <h2>Datos de mi Restaurante</h2>
             <form id="edit-restaurante-form">
-                <!-- FIX: Añadida la sección completa para el logo -->
                 <label>Logo del Restaurante</label>
                 <div class="logo-preview-container">
                     <img id="logo-preview" src="https://placehold.co/150x80/e9ecef/6c757d?text=Sin+Logo" alt="Vista previa del logo">
@@ -26,10 +25,18 @@
                 
                 <label for="edit-restaurante-nombre">Nombre del Restaurante</label>
                 <input type="text" id="edit-restaurante-nombre" required>
+                
                 <label for="edit-restaurante-telefono">Teléfono (para WhatsApp)</label>
                 <input type="text" id="edit-restaurante-telefono" required>
+                
+                <label for="restaurante-direccion">Dirección (para el mapa)</label>
+                <input type="text" id="restaurante-direccion" placeholder="Ej: Calle 100 # 19-54, Bogotá">
+
+                <label for="restaurante-descripcion">Descripción Corta (para el mapa y clientes)</label>
+                <textarea id="restaurante-descripcion" rows="3" placeholder="Ej: El mejor corrientazo de la zona..."></textarea>
                 <label for="restaurante-mensaje">Mensaje de Bienvenida (para clientes)</label>
                 <textarea id="restaurante-mensaje" rows="3" placeholder="Ej: ¡Bienvenidos a nuestro restaurante! Disfruta de nuestros platos caseros..."></textarea>
+                
                 <button type="submit" class="btn btn-primary">Actualizar Datos</button>
                 <button type="button" id="restaurante-qr-btn" class="btn">Generar QR de mi Menú</button>
             </form>
@@ -128,6 +135,6 @@
         </section>
     </div>
 
-    <script src="js/admin.js?v=32"></script> 
+    <script src="js/admin.js"></script> 
 </body>
 </html>

@@ -20,11 +20,29 @@ const restauranteSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
-    // FIX: Añadido el campo para la URL del logo
     logoUrl: {
         type: String,
         trim: true
+    },
+    direccion: { // Mantén este campo para la dirección de texto
+        type: String,
+        trim: true
+    },
+    // === ¡¡¡CAMBIO CLAVE AQUÍ: AÑADIR EL CAMPO 'location' para GeoJSON Point!!! ===
+    location: {
+        type: {
+            type: String, // Debe ser 'Point' para un punto GeoJSON
+            enum: ['Point'], // Asegura que solo se acepte el valor 'Point'
+            required: false // No es estrictamente necesario que siempre haya una ubicación
+        },
+        coordinates: {
+            type: [Number], // Array de números [longitud, latitud]
+            required: false // No es estrictamente necesario que siempre haya coordenadas
+            // Si planeas hacer búsquedas geospaciales complejas, considera añadir:
+            // index: '2dsphere'
+        }
     }
+    // =========================================================================
 }, { timestamps: true });
 
 module.exports = mongoose.model('Restaurante', restauranteSchema);

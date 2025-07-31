@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ting - Optimiza tus Domicilios</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'ting-green': '#94C120',
+                        'ting-blue': '#00183A',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #e2e8f0; /* Fondo gris para que la "hoja" resalte */
+        }
+        .flyer-container {
+            /* FIX: Dimensiones exactas de una hoja A4 */
+            width: 21cm;
+            height: 29.7cm;
+            margin: 2rem auto; /* Centrado en la pantalla con margen para verlo mejor */
+            display: flex;
+            flex-direction: column;
+        }
+        /* Estilos específicos para la impresión */
+        @media print {
+            body, html {
+                background: white;
+                margin: 0;
+                padding: 0;
+            }
+            .flyer-container {
+                box-shadow: none;
+                border: none;
+                margin: 0;
+                width: 100%;
+                height: 100%;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="flyer-container bg-white shadow-2xl overflow-hidden">
+        
+        <!-- Encabezado -->
+        <header class="bg-ting-blue p-10 text-center flex-shrink-0">
+            <img src="/img/logo.png" alt="Ting Logo" class="h-20 mx-auto mb-6">
+            <h1 class="text-4xl font-bold text-white leading-tight">
+                Deja de perder pedidos. <br> <span class="text-ting-green">Automatiza tus domicilios.</span>
+            </h1>
+        </header>
+
+        <!-- Contenido Principal -->
+        <main class="flex-grow p-10 flex flex-col space-y-8">
+
+            <!-- Cómo Funciona -->
+            <section>
+                <h2 class="text-3xl font-bold text-ting-blue text-center mb-6">Tan fácil como 1, 2, 3</h2>
+                <div class="grid grid-cols-3 gap-8 text-center">
+                    <div>
+                        <div class="bg-ting-green text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-3">1</div>
+                        <h3 class="font-semibold text-ting-blue text-lg">Crea tu Menú</h3>
+                        <p class="text-gray-600">Regístrate gratis y añade tus platos en minutos.</p>
+                    </div>
+                    <div>
+                        <div class="bg-ting-green text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-3">2</div>
+                        <h3 class="font-semibold text-ting-blue text-lg">Comparte tu Link</h3>
+                        <p class="text-gray-600">Recibe un enlace y un QR único para tu negocio.</p>
+                    </div>
+                    <div>
+                        <div class="bg-ting-green text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-3">3</div>
+                        <h3 class="font-semibold text-ting-blue text-lg">Recibe Pedidos</h3>
+                        <p class="text-gray-600">Los pedidos llegan a tu WhatsApp, claros y sin errores.</p>
+                    </div>
+                </div>
+            </section>
+            
+            <hr>
+
+            <!-- Beneficios y Características en dos columnas -->
+            <section class="grid grid-cols-2 gap-10">
+                 <div>
+                    <h2 class="text-3xl font-bold text-ting-blue mb-4">Beneficios Clave</h2>
+                    <ul class="space-y-4 text-gray-700 text-lg">
+                        <li class="flex items-start"><i class="fas fa-clock text-ting-green mt-1 mr-4 w-6 text-center"></i><span><strong>Ahorra Tiempo Valioso:</strong> Tu personal se enfoca en cocinar, no en el teléfono.</span></li>
+                        <li class="flex items-start"><i class="fas fa-check-circle text-ting-green mt-1 mr-4 w-6 text-center"></i><span><strong>Cero Errores:</strong> Recibe pedidos escritos y detallados, sin confusiones.</span></li>
+                        <li class="flex items-start"><i class="fas fa-dollar-sign text-ting-green mt-1 mr-4 w-6 text-center"></i><span><strong>Sin Comisiones:</strong> Es 100% gratis. Lo que vendes es 100% tuyo.</span></li>
+                    </ul>
+                </div>
+                <div>
+                    <h2 class="text-3xl font-bold text-ting-blue mb-4">Características</h2>
+                    <ul class="space-y-4 text-gray-700 text-lg">
+                        <li class="flex items-start"><i class="fas fa-qrcode text-ting-green mt-1 mr-4 w-6 text-center"></i><span>Menú digital con código QR.</span></li>
+                        <li class="flex items-start"><i class="fab fa-whatsapp text-ting-green mt-1 mr-4 w-6 text-center"></i><span>Integración directa con WhatsApp.</span></li>
+                        <li class="flex items-start"><i class="fas fa-edit text-ting-green mt-1 mr-4 w-6 text-center"></i><span>Panel para que actualices tus platos al instante.</span></li>
+                    </ul>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer y Llamada a la Acción -->
+        <footer class="bg-gray-100 p-8 text-center mt-auto">
+            <h3 class="text-2xl font-bold text-ting-blue mb-2">¿Listo para optimizar tus domicilios?</h3>
+            <p class="text-gray-600 mb-4">Es gratis, rápido y fácil.</p>
+            <a href="https://app.ting-col.com/register.html" target="_blank" class="inline-block bg-ting-green text-ting-blue font-bold py-3 px-8 rounded-lg text-lg hover:bg-opacity-90 transition duration-300">
+                Crear mi Menú Gratis Ahora
+            </a>
+            <div class="mt-4 text-sm text-gray-500">
+                <p>Visítanos en <a href="https://www.ting-col.com" target="_blank" class="text-ting-green font-semibold">www.ting-col.com</a></p>
+            </div>
+        </footer>
+    </div>
+
+</body>
+</html>

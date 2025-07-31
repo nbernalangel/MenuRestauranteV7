@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ting - Optimiza tus Domicilios</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'ting-green': '#94C120',
+                        'ting-blue': '#00183A',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-2xl bg-white rounded-lg shadow-2xl overflow-hidden">
+        
+        <!-- Encabezado -->
+        <header class="bg-ting-blue p-8 text-center">
+            <img src="/img/logo.png" alt="Ting Logo" class="h-16 mx-auto mb-4">
+            <h1 class="text-3xl font-bold text-white leading-tight">Deja de perder pedidos. <br> <span class="text-ting-green">Automatiza tus domicilios.</span></h1>
+        </header>
+
+        <main class="p-8 md:p-10">
+
+            <!-- Cómo Funciona -->
+            <section class="mb-8">
+                <h2 class="text-2xl font-bold text-ting-blue text-center mb-6">Tan fácil como 1, 2, 3</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                    <div>
+                        <div class="bg-ting-green text-white w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-3">1</div>
+                        <h3 class="font-semibold text-ting-blue">Crea tu Menú</h3>
+                        <p class="text-sm text-gray-600">Regístrate gratis y añade tus platos en minutos.</p>
+                    </div>
+                    <div>
+                        <div class="bg-ting-green text-white w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-3">2</div>
+                        <h3 class="font-semibold text-ting-blue">Comparte tu Link</h3>
+                        <p class="text-sm text-gray-600">Recibe un enlace y un QR único para tu negocio.</p>
+                    </div>
+                    <div>
+                        <div class="bg-ting-green text-white w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-3">3</div>
+                        <h3 class="font-semibold text-ting-blue">Recibe Pedidos</h3>
+                        <p class="text-sm text-gray-600">Los pedidos llegan a tu WhatsApp, claros y sin errores.</p>
+                    </div>
+                </div>
+            </section>
+
+            <hr class="my-8">
+
+            <!-- Beneficios y Características -->
+            <section class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <h2 class="text-2xl font-bold text-ting-blue mb-4">Beneficios Clave</h2>
+                    <ul class="space-y-3 text-gray-700">
+                        <li class="flex items-start"><i class="fas fa-clock text-ting-green mt-1 mr-3"></i><span><strong>Ahorra Tiempo Valioso:</strong> Tu personal se enfoca en cocinar, no en contestar el teléfono.</span></li>
+                        <li class="flex items-start"><i class="fas fa-check-circle text-ting-green mt-1 mr-3"></i><span><strong>Cero Errores:</strong> Recibe pedidos escritos y detallados, eliminando confusiones.</span></li>
+                        <li class="flex items-start"><i class="fas fa-dollar-sign text-ting-green mt-1 mr-3"></i><span><strong>Sin Comisiones:</strong> Es 100% gratis. Lo que vendes es 100% tuyo.</span></li>
+                         <li class="flex items-start"><i class="fas fa-arrow-up-right-dots text-ting-green mt-1 mr-3"></i><span><strong>Aumenta tus Ventas:</strong> Un proceso de pedido fácil anima a más clientes a comprar.</span></li>
+                    </ul>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-ting-blue mb-4">Características</h2>
+                    <ul class="space-y-3 text-gray-700">
+                        <li class="flex items-start"><i class="fas fa-qrcode text-ting-green mt-1 mr-3"></i><span>Menú digital con código QR.</span></li>
+                        <li class="flex items-start"><i class="fab fa-whatsapp text-ting-green mt-1 mr-3"></i><span>Integración directa con WhatsApp.</span></li>
+                        <li class="flex items-start"><i class="fas fa-edit text-ting-green mt-1 mr-3"></i><span>Panel para que actualices tus platos al instante.</span></li>
+                        <li class="flex items-start"><i class="fas fa-toggle-on text-ting-green mt-1 mr-3"></i><span>Opción para marcar platos como "agotados".</span></li>
+                    </ul>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Footer y Llamada a la Acción -->
+        <footer class="bg-gray-50 p-8 text-center">
+            <h2 class="text-2xl font-bold text-ting-blue mb-4">¿Listo para optimizar tus domicilios?</h2>
+            <p class="text-gray-600 mb-6">Únete a la nueva forma de gestionar pedidos. Es gratis, rápido y fácil.</p>
+            <a href="https://app.ting-col.com/register.html" target="_blank" class="inline-block bg-ting-green text-ting-blue font-bold py-3 px-8 rounded-lg text-lg hover:bg-opacity-90 transition duration-300">
+                Crear mi Menú Gratis Ahora
+            </a>
+            <div class="mt-6 text-sm text-gray-500">
+                <p>Visítanos en <a href="https://www.ting-col.com" target="_blank" class="text-ting-green font-semibold">www.ting-col.com</a></p>
+            </div>
+        </footer>
+    </div>
+
+</body>
+</html>

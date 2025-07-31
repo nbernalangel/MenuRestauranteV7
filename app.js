@@ -3,13 +3,13 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
-const bcrypt = require('bcryptjs'); 
+const bcrypt = require('bcryptjs');
 const { Resend } = require('resend');
 const ExcelJS = require('exceljs');
 const crypto = require('crypto');
-require('dotenv').config(); 
+require('dotenv').config();
 const cloudinary = require('cloudinary').v2;
-
+const { Client } = require("@googlemaps/google-maps-services-js");
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -18,11 +18,13 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
+const mapsClient = new Client({});
+
 // --- Conexión a MongoDB ---
 const dbUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/menu-restaurante-db';
 mongoose.connect(dbUri)
     .then(() => console.log('✅ Conectado a MongoDB'))
-    .catch(err => console.error('❌ Error de conexión a MongoDB:', err.message || err)); 
+    .catch(err => console.error('❌ Error de conexión a MongoDB:', err.message || err));
 
 // --- Configuración de Cloudinary ---
 cloudinary.config({
@@ -37,12 +39,12 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 // --- Importar Modelos ---
 const Plato = require('./models/Plato');
-const Especial = require('./models/Especial'); 
+const Especial = require('./models/Especial');
 const MenuCategoria = require('./models/MenuCategoria');
 const MenuDia = require('./models/MenuDia');
 const Restaurante = require('./models/Restaurante');
 const Usuario = require('./models/Usuario');
-const Pedido = require('./models/Pedido'); 
+const Pedido = require('./models/Pedido');
 
 // ========================================================
 // === RUTAS PARA LA SUBIDA DE LOGOS ======================
@@ -101,7 +103,7 @@ app.post('/api/contact', async (req, res) => {
 
     } catch (error) {
         console.error("❌ Error al enviar el correo de contacto:", error);
-        res.status(500).json({ message: 'Hubo un error al enviar el mensaje. Por favor, inténtalo de nuevo más tarde.' });
+        res.status(500).json({ message: 'Hubo un error al enviar el mensaje. Por favor, inténtalo de nuevo más horrible.' });
     }
 });
 
@@ -129,7 +131,7 @@ app.post('/api/register', async (req, res) => {
         const { nombreRestaurante, email, password } = req.body;
         const usuarioExistente = await Usuario.findOne({ email });
         if (usuarioExistente) { return res.status(409).json({ message: 'Este correo ya está registrado.' }); }
-        
+
         const slug = nombreRestaurante.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '');
         const restauranteExistente = await Restaurante.findOne({ slug });
         if (restauranteExistente) { return res.status(409).json({ message: 'El nombre de este restaurante ya genera una URL que existe. Por favor, elige otro.' }); }
@@ -144,8 +146,8 @@ app.post('/api/register', async (req, res) => {
             email, password, rol: 'admin_restaurante', restaurante: nuevoRestaurante._id,
             isVerified: false, verificationCode, verificationCodeExpires
         });
-        await nuevoUsuario.save(); 
-        
+        await nuevoUsuario.save();
+
         const appBaseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
 
         await resend.emails.send({
@@ -165,7 +167,7 @@ app.post('/api/register', async (req, res) => {
 
 app.post('/api/verify', async (req, res) => {
     try {
-        const { email, code } = req.body; 
+        const { email, code } = req.body;
         const usuario = await Usuario.findOne({ email });
 
         if (!usuario) { return res.status(404).json({ message: 'Usuario no encontrado.' }); }
@@ -174,8 +176,8 @@ app.post('/api/verify', async (req, res) => {
         if (String(usuario.verificationCode) !== String(code)) { return res.status(400).json({ message: 'Código de verificación incorrecto.' });}
 
         usuario.isVerified = true;
-        usuario.verificationCode = undefined; 
-        usuario.verificationCodeExpires = undefined; 
+        usuario.verificationCode = undefined;
+        usuario.verificationCodeExpires = undefined;
         await usuario.save();
 
         res.status(200).json({ message: 'Cuenta verificada con éxito. Ya puedes iniciar sesión.' });
@@ -195,7 +197,7 @@ app.post('/api/forgot-password', async (req, res) => {
             return res.status(200).json({ message: 'Si el correo electrónico está registrado, recibirás un enlace para restablecer tu contraseña.' });
         }
 
-        const resetToken = crypto.randomBytes(20).toString('hex'); 
+        const resetToken = crypto.randomBytes(20).toString('hex');
         const resetTokenExpires = new Date(Date.now() + 3600000); // 1 hora
 
         usuario.resetToken = resetToken;
@@ -206,7 +208,7 @@ app.post('/api/forgot-password', async (req, res) => {
         const resetUrl = `${appBaseUrl}/reset-password.html?token=${resetToken}`;
 
         await resend.emails.send({
-            from: `Tu Menú Digital <noreply@ting-col.com>`, 
+            from: `Tu Menú Digital <noreply@ting-col.com>`,
             to: email,
             subject: 'Restablecer tu Contraseña de Menú Digital',
             html: `<p>Para restablecer tu contraseña, haz clic en este enlace: <a href="${resetUrl}">${resetUrl}</a></p>`,
@@ -252,18 +254,22 @@ app.post('/api/reset-password/:token', async (req, res) => {
 });
 
 // RUTAS DEL SUPER-ADMIN - GESTIÓN DE RESTAURANTES
-app.post('/api/restaurantes', async (req, res) => { 
-    try { 
-        const item = new Restaurante(req.body); 
-        await item.save(); 
-        res.status(201).json(item); 
-    } catch (e) { 
+// Importante: Las rutas más específicas deben ir ANTES de las rutas más generales
+// como las que tienen parámetros (:id).
+
+app.post('/api/restaurantes', async (req, res) => {
+    try {
+        const item = new Restaurante(req.body);
+        await item.save();
+        res.status(201).json(item);
+    } catch (e) {
         if (e.name === 'ValidationError') {
             return res.status(400).json({ message: e.message });
         }
-        res.status(500).json({ message: 'Error interno del servidor al crear restaurante.' }); 
-    } 
+        res.status(500).json({ message: 'Error interno del servidor al crear restaurante.' });
+    }
 });
+
 app.get('/api/restaurantes', async (req, res) => {
     try {
         const items = await Restaurante.find();
@@ -272,6 +278,27 @@ app.get('/api/restaurantes', async (req, res) => {
         res.status(500).json({ message: 'Error interno del servidor al obtener restaurantes.' });
     }
 });
+
+// === CAMBIO CLAVE AQUÍ: ESTA RUTA DEBE IR ANTES DE '/api/restaurantes/:id' ===
+// RUTA PÚBLICA PARA OBTENER LAS UBICACIONES DE LOS RESTAURANTES
+app.get('/api/restaurantes/locations', async (req, res) => {
+    try {
+        const restaurantes = await Restaurante.find({
+            'location.coordinates': { $exists: true, $ne: [] }
+        });
+        // Si no hay restaurantes, la variable será un array vacío [], lo cual es correcto.
+        res.json(restaurantes);
+
+    } catch (e) {
+        console.error("❌ Error al obtener ubicaciones:", e.message);
+        // Si hay un error, respondemos con un status 500 pero enviamos un array vacío
+        // para que el frontend no se rompa.
+        res.status(500).json([]);
+    }
+});
+// ==============================================================================
+
+
 app.get('/api/restaurantes/:id', async (req, res) => {
     try {
         const item = await Restaurante.findById(req.params.id);
@@ -283,18 +310,49 @@ app.get('/api/restaurantes/:id', async (req, res) => {
         res.status(500).json({ message: 'Error interno del servidor al obtener restaurante por ID.' });
     }
 });
+// RUTA PARA ACTUALIZAR UN RESTAURANTE POR ID (CON GEOCODIFICACIÓN)
 app.put('/api/restaurantes/:id', async (req, res) => {
     try {
-        const item = await Restaurante.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+        const { id } = req.params;
+        const updateData = req.body;
+
+        // --- INICIO DE LA LÓGICA DE GEOCODIFICACIÓN ---
+        if (updateData.direccion) {
+            try {
+                const response = await mapsClient.geocode({
+                    params: {
+                        address: updateData.direccion,
+                        key: process.env.Maps_API_KEY // Lee la clave desde tu archivo .env
+                    }
+                });
+
+                if (response.data.results && response.data.results.length > 0) {
+                    const location = response.data.results[0].geometry.location;
+                    updateData.location = {
+                        type: 'Point',
+                        coordinates: [location.lng, location.lat] // [longitud, latitud]
+                    };
+                    console.log(`✅ Coordenadas obtenidas para "${updateData.direccion}":`, updateData.location.coordinates);
+                }
+            } catch (geocodeError) {
+                console.error("❌ Error de geocodificación:", geocodeError.message);
+            }
+        }
+        // --- FIN DE LA LÓGICA DE GEOCODIFICACIÓN ---
+
+        const item = await Restaurante.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+
         if (!item) {
             return res.status(404).json({ message: 'Restaurante no encontrado para actualizar.' });
         }
         res.json(item);
+
     } catch (e) {
+        console.error("❌ ERROR al actualizar restaurante:", e.message || e);
         if (e.name === 'ValidationError') {
             return res.status(400).json({ message: e.message });
         }
-        res.status(500).json({ message: 'Error interno del servidor al actualizar restaurante.' });
+        res.status(500).json({ message: 'Error interno del servidor.' });
     }
 });
 app.delete('/api/restaurantes/:id', async (req, res) => {
@@ -310,26 +368,26 @@ app.delete('/api/restaurantes/:id', async (req, res) => {
 });
 
 // RUTAS DEL SUPER-ADMIN - GESTIÓN DE USUARIOS
-app.post('/api/usuarios', async (req, res) => { 
-    try { 
-        const { email, password, rol, restaurante } = req.body; 
-        const item = new Usuario({ email, password, rol, restaurante, isVerified: true }); 
+app.post('/api/usuarios', async (req, res) => {
+    try {
+        const { email, password, rol, restaurante } = req.body;
+        const item = new Usuario({ email, password, rol, restaurante, isVerified: true });
         await item.save();
-        res.status(201).json(item); 
-    } catch (e) { 
+        res.status(201).json(item);
+    } catch (e) {
         if (e.name === 'ValidationError') {
             return res.status(400).json({ message: e.message });
         }
-        res.status(500).json({ message: 'Error interno del servidor al crear usuario.' }); 
+        res.status(500).json({ message: 'Error interno del servidor al crear usuario.' });
     }
 });
-app.get('/api/usuarios', async (req, res) => { 
-    try { 
-        const items = await Usuario.find().populate('restaurante', 'nombre'); 
-        res.json(items); 
-    } catch (e) { 
-        res.status(500).json({ message: 'Error interno del servidor al obtener usuarios.' }); 
-    } 
+app.get('/api/usuarios', async (req, res) => {
+    try {
+        const items = await Usuario.find().populate('restaurante', 'nombre');
+        res.json(items);
+    } catch (e) {
+        res.status(500).json({ message: 'Error interno del servidor al obtener usuarios.' });
+    }
 });
 app.get('/api/usuarios/:id', async (req, res) => {
     try {
@@ -375,43 +433,43 @@ app.delete('/api/usuarios/:id', async (req, res) => {
 });
 
 // RUTA DE LOGIN (INICIO DE SESIÓN)
-app.post('/api/login', async (req, res) => { 
-    try { 
-        const { email, password } = req.body; 
-        const usuario = await Usuario.findOne({ email }); 
-        if (!usuario || !usuario.isVerified) { 
-            return res.status(401).json({ message: 'Credenciales incorrectas o cuenta no verificada.' }); 
+app.post('/api/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const usuario = await Usuario.findOne({ email });
+        if (!usuario || !usuario.isVerified) {
+            return res.status(401).json({ message: 'Credenciales incorrectas o cuenta no verificada.' });
         }
-        const esValida = await usuario.comparePassword(password); 
-        if (!esValida) { 
-            return res.status(401).json({ message: 'Credenciales incorrectas.' }); 
+        const esValida = await usuario.comparePassword(password);
+        if (!esValida) {
+            return res.status(401).json({ message: 'Credenciales incorrectas.' });
         }
-        let nombreRestaurante = null; 
-        if(usuario.restaurante) { 
-            const rest = await Restaurante.findById(usuario.restaurante); 
-            nombreRestaurante = rest ? rest.nombre : null; 
+        let nombreRestaurante = null;
+        if(usuario.restaurante) {
+            const rest = await Restaurante.findById(usuario.restaurante);
+            nombreRestaurante = rest ? rest.nombre : null;
         }
-        res.json({ userId: usuario._id, email: usuario.email, rol: usuario.rol, restauranteId: usuario.restaurante, nombreRestaurante }); 
-    } catch (e) { 
-        res.status(500).json({ message: 'Error interno del servidor.' }); 
+        res.json({ userId: usuario._id, email: usuario.email, rol: usuario.rol, restauranteId: usuario.restaurante, nombreRestaurante });
+    } catch (e) {
+        res.status(500).json({ message: 'Error interno del servidor.' });
     }
 });
 
 // RUTAS DEL ADMIN DE RESTAURANTE
-app.post('/api/platos', async (req, res) => { 
-    try { const item = new Plato(req.body); await item.save(); res.status(201).json(item); } catch (e) { res.status(400).json({ message: e.message }); } 
+app.post('/api/platos', async (req, res) => {
+    try { const item = new Plato(req.body); await item.save(); res.status(201).json(item); } catch (e) { res.status(400).json({ message: e.message }); }
 });
-app.get('/api/platos/restaurante/:restauranteId', async (req, res) => { 
-    try { const items = await Plato.find({ restaurante: req.params.restauranteId }); res.json(items); } catch (e) { res.status(500).json({ message: e.message }); } 
+app.get('/api/platos/restaurante/:restauranteId', async (req, res) => {
+    try { const items = await Plato.find({ restaurante: req.params.restauranteId }); res.json(items); } catch (e) { res.status(500).json({ message: e.message }); }
 });
-app.get('/api/platos/:id', async (req, res) => { 
-    try { const item = await Plato.findById(req.params.id); if (!item) return res.status(404).json({ message: 'Plato no encontrado.' }); res.json(item); } catch (e) { res.status(500).json({ message: e.message }); } 
+app.get('/api/platos/:id', async (req, res) => {
+    try { const item = await Plato.findById(req.params.id); if (!item) return res.status(404).json({ message: 'Plato no encontrado.' }); res.json(item); } catch (e) { res.status(500).json({ message: e.message }); }
 });
-app.put('/api/platos/:id', async (req, res) => { 
-    try { const item = await Plato.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }); if (!item) return res.status(404).json({ message: 'Plato no encontrado para actualizar.' }); res.json(item); } catch (e) { res.status(400).json({ message: e.message }); } 
+app.put('/api/platos/:id', async (req, res) => {
+    try { const item = await Plato.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }); if (!item) return res.status(404).json({ message: 'Plato no encontrado para actualizar.' }); res.json(item); } catch (e) { res.status(400).json({ message: e.message }); }
 });
-app.delete('/api/platos/:id', async (req, res) => { 
-    try { const item = await Plato.findByIdAndDelete(req.params.id); if (!item) return res.status(404).json({ message: 'Plato no encontrado para eliminar.' }); res.status(204).send(); } catch (e) { res.status(500).json({ message: e.message }); } 
+app.delete('/api/platos/:id', async (req, res) => {
+    try { const item = await Plato.findByIdAndDelete(req.params.id); if (!item) return res.status(404).json({ message: 'Plato no encontrado para eliminar.' }); res.status(204).send(); } catch (e) { res.status(500).json({ message: e.message }); }
 });
 app.patch('/api/platos/:id/toggle', async (req, res) => {
     try {
@@ -424,20 +482,20 @@ app.patch('/api/platos/:id/toggle', async (req, res) => {
 });
 
 // RUTAS PARA ESPECIALES
-app.post('/api/especiales', async (req, res) => { 
-    try { const item = new Especial(req.body); await item.save(); res.status(201).json(item); } catch (e) { res.status(400).json({ message: e.message }); } 
+app.post('/api/especiales', async (req, res) => {
+    try { const item = new Especial(req.body); await item.save(); res.status(201).json(item); } catch (e) { res.status(400).json({ message: e.message }); }
 });
-app.get('/api/especiales/restaurante/:restauranteId', async (req, res) => { 
-    try { const items = await Especial.find({ restaurante: req.params.restauranteId }); res.json(items); } catch (e) { res.status(500).json({ message: e.message }); } 
+app.get('/api/especiales/restaurante/:restauranteId', async (req, res) => {
+    try { const items = await Especial.find({ restaurante: req.params.restauranteId }); res.json(items); } catch (e) { res.status(500).json({ message: e.message }); }
 });
-app.get('/api/especiales/:id', async (req, res) => { 
-    try { const item = await Especial.findById(req.params.id); if (!item) return res.status(404).json({ message: 'Especial no encontrado.' }); res.json(item); } catch (e) { res.status(500).json({ message: e.message }); } 
+app.get('/api/especiales/:id', async (req, res) => {
+    try { const item = await Especial.findById(req.params.id); if (!item) return res.status(404).json({ message: 'Especial no encontrado.' }); res.json(item); } catch (e) { res.status(500).json({ message: e.message }); }
 });
-app.put('/api/especiales/:id', async (req, res) => { 
-    try { const item = await Especial.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }); if (!item) return res.status(404).json({ message: 'Especial no encontrado para actualizar.' }); res.json(item); } catch (e) { res.status(400).json({ message: e.message }); } 
+app.put('/api/especiales/:id', async (req, res) => {
+    try { const item = await Especial.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }); if (!item) return res.status(404).json({ message: 'Especial no encontrado para actualizar.' }); res.json(item); } catch (e) { res.status(400).json({ message: e.message }); }
 });
-app.delete('/api/especiales/:id', async (req, res) => { 
-    try { const item = await Especial.findByIdAndDelete(req.params.id); if (!item) return res.status(404).json({ message: 'Especial no encontrado para eliminar.' }); res.status(204).send(); } catch (e) { res.status(500).json({ message: e.message }); } 
+app.delete('/api/especiales/:id', async (req, res) => {
+    try { const item = await Especial.findByIdAndDelete(req.params.id); if (!item) return res.status(404).json({ message: 'Especial no encontrado para eliminar.' }); res.status(204).send(); } catch (e) { res.status(500).json({ message: e.message }); }
 });
 app.patch('/api/especiales/:id/toggle', async (req, res) => {
     try {
@@ -454,44 +512,44 @@ app.patch('/api/especiales/:id/toggle', async (req, res) => {
 });
 
 // RUTAS PARA CATEGORÍAS DE MENÚ
-app.post('/api/menu-categorias', async (req, res) => { 
-    try { const item = new MenuCategoria(req.body); await item.save(); res.status(201).json(item); } catch (e) { res.status(400).json({ message: e.message }); } 
+app.post('/api/menu-categorias', async (req, res) => {
+    try { const item = new MenuCategoria(req.body); await item.save(); res.status(201).json(item); } catch (e) { res.status(400).json({ message: e.message }); }
 });
-app.get('/api/menu-categorias/restaurante/:restauranteId', async (req, res) => { 
-    try { const items = await MenuCategoria.find({ restaurante: req.params.restauranteId }); res.json(items); } catch (e) { res.status(500).json({ message: e.message }); } 
+app.get('/api/menu-categorias/restaurante/:restauranteId', async (req, res) => {
+    try { const items = await MenuCategoria.find({ restaurante: req.params.restauranteId }); res.json(items); } catch (e) { res.status(500).json({ message: e.message }); }
 });
-app.get('/api/menu-categorias/:id', async (req, res) => { 
-    try { const item = await MenuCategoria.findById(req.params.id); if (!item) return res.status(404).json({ message: 'Categoría de menú no encontrada.' }); res.json(item); } catch (e) { res.status(500).json({ message: e.message }); } 
+app.get('/api/menu-categorias/:id', async (req, res) => {
+    try { const item = await MenuCategoria.findById(req.params.id); if (!item) return res.status(404).json({ message: 'Categoría de menú no encontrada.' }); res.json(item); } catch (e) { res.status(500).json({ message: e.message }); }
 });
-app.put('/api/menu-categorias/:id', async (req, res) => { 
-    try { const item = await MenuCategoria.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }); if (!item) return res.status(404).json({ message: 'Categoría de menú no encontrada para actualizar.' }); res.json(item); } catch (e) { res.status(400).json({ message: e.message }); } 
+app.put('/api/menu-categorias/:id', async (req, res) => {
+    try { const item = await MenuCategoria.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }); if (!item) return res.status(404).json({ message: 'Categoría de menú no encontrada para actualizar.' }); res.json(item); } catch (e) { res.status(400).json({ message: e.message }); }
 });
-app.delete('/api/menu-categorias/:id', async (req, res) => { 
-    try { const item = await MenuCategoria.findByIdAndDelete(req.params.id); if (!item) return res.status(404).json({ message: 'Categoría de menú no encontrada para eliminar.' }); res.status(204).send(); } catch (e) { res.status(500).json({ message: e.message }); } 
+app.delete('/api/menu-categorias/:id', async (req, res) => {
+    try { const item = await MenuCategoria.findByIdAndDelete(req.params.id); if (!item) return res.status(404).json({ message: 'Categoría de menú no encontrada para eliminar.' }); res.status(204).send(); } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
 // RUTAS PARA MENÚS DEL DÍA
-app.post('/api/menus-dia', async (req, res) => { 
-    try { const item = new MenuDia(req.body); await item.save(); res.status(201).json(item); } catch (e) { res.status(400).json({ message: e.message }); } 
+app.post('/api/menus-dia', async (req, res) => {
+    try { const item = new MenuDia(req.body); await item.save(); res.status(201).json(item); } catch (e) { res.status(400).json({ message: e.message }); }
 });
-app.get('/api/menus-dia/restaurante/:restauranteId', async (req, res) => { 
-    try { const items = await MenuDia.find({ restaurante: req.params.restauranteId }); res.json(items); } catch (e) { res.status(500).json({ message: e.message }); } 
+app.get('/api/menus-dia/restaurante/:restauranteId', async (req, res) => {
+    try { const items = await MenuDia.find({ restaurante: req.params.restauranteId }); res.json(items); } catch (e) { res.status(500).json({ message: e.message }); }
 });
-app.get('/api/menus-dia/:id', async (req, res) => { 
-    try { const item = await MenuDia.findById(req.params.id); if (!item) return res.status(404).json({ message: 'Menú del día no encontrado.' }); res.json(item); } catch (e) { res.status(500).json({ message: e.message }); } 
+app.get('/api/menus-dia/:id', async (req, res) => {
+    try { const item = await MenuDia.findById(req.params.id); if (!item) return res.status(404).json({ message: 'Menú del día no encontrado.' }); res.json(item); } catch (e) { res.status(500).json({ message: e.message }); }
 });
-app.put('/api/menus-dia/:id', async (req, res) => { 
-    try { const item = await MenuDia.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }); if (!item) return res.status(404).json({ message: 'Menú del día no encontrado para actualizar.' }); res.json(item); } catch (e) { res.status(400).json({ message: e.message }); } 
+app.put('/api/menus-dia/:id', async (req, res) => {
+    try { const item = await MenuDia.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }); if (!item) return res.status(404).json({ message: 'Menú del día no encontrado para actualizar.' }); res.json(item); } catch (e) { res.status(400).json({ message: e.message }); }
 });
-app.delete('/api/menus-dia/:id', async (req, res) => { 
-    try { const item = await MenuDia.findByIdAndDelete(req.params.id); if (!item) return res.status(404).json({ message: 'Menú del día no encontrado para eliminar.' }); res.status(204).send(); } catch (e) { res.status(500).json({ message: e.message }); } 
+app.delete('/api/menus-dia/:id', async (req, res) => {
+    try { const item = await MenuDia.findByIdAndDelete(req.params.id); if (!item) return res.status(404).json({ message: 'Menú del día no encontrado para eliminar.' }); res.status(204).send(); } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
 // RUTA PARA DESCARGAR REPORTE DE PEDIDOS EN EXCEL
 app.get('/api/pedidos/descargar/:restauranteId', async (req, res) => {
     try {
         const { restauranteId } = req.params;
-        
+
         const restaurante = await Restaurante.findById(restauranteId);
         if (!restaurante) {
             return res.status(404).send('Restaurante no encontrado');
@@ -514,7 +572,7 @@ app.get('/api/pedidos/descargar/:restauranteId', async (req, res) => {
         ];
 
         pedidos.forEach(pedido => {
-            const itemsStr = pedido.items.map(item => 
+            const itemsStr = pedido.items.map(item =>
                 `${item.cantidad}x ${item.nombre ? item.nombre : 'Nombre no encontrado'}`
             ).join(', ');
 
@@ -532,7 +590,7 @@ app.get('/api/pedidos/descargar/:restauranteId', async (req, res) => {
         const slugAmigable = restaurante.slug || 'restaurante';
         const fechaHoy = new Date().toISOString().slice(0, 10);
         const nombreArchivo = `reporte-pedidos-${slugAmigable}-${fechaHoy}.xlsx`;
-        
+
         res.setHeader(
             'Content-Type',
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -541,7 +599,7 @@ app.get('/api/pedidos/descargar/:restauranteId', async (req, res) => {
             'Content-Disposition',
             `attachment; filename="${nombreArchivo}"`
         );
-        
+
         console.log(`✅ Reporte Excel generado para ${restaurante.nombre}.`);
 
         await workbook.xlsx.write(res);
@@ -578,8 +636,9 @@ app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public', 'log
 app.get('/super_admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'super_admin.html')));
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
 app.get('/r/:slug', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
-app.get('/forgot-password', (req, res) => res.sendFile(path.join(__dirname, 'public', 'forgot-password.html'))); 
-app.get('/reset-password', (req, res) => res.sendFile(path.join(__dirname, 'public', 'reset-password.html'))); 
+app.get('/forgot-password', (req, res) => res.sendFile(path.join(__dirname, 'public', 'forgot-password.html')));
+app.get('/reset-password', (req, res) => res.sendFile(path.join(__dirname, 'public', 'reset-password.html')));
+
 
 // --- Iniciar Servidor ---
 app.listen(port, () => { console.log(`🚀 Servidor funcionando en http://localhost:${port}`); });

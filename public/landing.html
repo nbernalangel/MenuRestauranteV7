@@ -20,6 +20,13 @@
         }
     </script>
     <style>
+        /* --- NUEVO ESTILO PARA EL MAPA --- */
+        #map {
+            height: 500px;
+            width: 100%;
+            border-radius: 0.5rem; /* 8px */
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
         body {
             font-family: 'Poppins', sans-serif;
         }
@@ -39,9 +46,7 @@
         }
     </style>
 </head>
-<body class="bg-gray-50">
-
-    <!-- Navegación -->
+<body>
     <nav class="bg-white shadow-md sticky top-0 z-50">
         <div class="container mx-auto px-6 py-4 flex justify-between items-center">
             <a href="/" class="flex items-center">
@@ -67,7 +72,6 @@
         </div>
     </nav>
 
-    <!-- Sección Héroe -->
     <header class="hero-bg text-white">
         <div class="container mx-auto px-6 py-24 text-center">
             <h1 class="text-4xl md:text-4xl font-semibold leading-tight mb-4 scroll-animate">Tu Menú Digital para Domicilios. <br> <span class="text-ting-green">Gratis. Para Siempre.</span></h1>
@@ -77,8 +81,14 @@
             </div>
         </div>
     </header>
+    <section id="map-section" class="py-20">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-3xl font-bold text-ting-blue mb-4 scroll-animate">Encuentra tu Próximo Corrientazo</h2>
+            <p class="text-gray-600 mb-12 scroll-animate">Explora nuestros restaurantes aliados cerca de ti.</p>
+            <div id="map" class="scroll-animate"></div>
+        </div>
+    </section>
 
-    <!-- Sección de Características -->
     <section id="features" class="py-20">
         <div class="container mx-auto px-6 text-center">
             <h2 class="text-3xl font-bold text-ting-blue mb-2 scroll-animate">Menos tiempo al teléfono, más tiempo en la cocina.</h2>
@@ -102,8 +112,7 @@
             </div>
         </div>
     </section>
-    
-    <!-- Sección de Precios -->
+
     <section id="pricing" class="bg-white py-20">
         <div class="container mx-auto px-6 text-center">
             <h2 class="text-3xl font-bold text-ting-blue mb-4 scroll-animate">Un precio tan simple como nuestra plataforma.</h2>
@@ -125,7 +134,6 @@
         </div>
     </section>
 
-    <!-- Sección "Cómo Funciona" -->
     <section class="py-20">
         <div class="container mx-auto px-6">
             <h2 class="text-3xl font-bold text-ting-blue text-center mb-12 scroll-animate">Tu operación de domicilios, simplificada.</h2>
@@ -149,7 +157,6 @@
         </div>
     </section>
 
-    <!-- Sección de Contacto -->
     <section id="contact" class="bg-white py-20">
         <div class="container mx-auto px-6">
             <div class="text-center mb-12 scroll-animate">
@@ -187,7 +194,6 @@
         </div>
     </section>
 
-    <!-- Footer -->
     <footer class="bg-ting-blue text-white py-8">
         <div class="container mx-auto px-6 text-center text-gray-300">
             <div class="mb-4">
@@ -202,7 +208,6 @@
         </div>
     </footer>
 
-    <!-- Script para menú móvil, animaciones y formulario de contacto -->
     <script>
         // Menú móvil
         const menuButton = document.getElementById('menu-button');
@@ -230,7 +235,7 @@
             e.preventDefault();
             const formData = new FormData(contactForm);
             const data = Object.fromEntries(formData.entries());
-            
+
             formStatus.textContent = 'Enviando...';
             formStatus.className = 'text-gray-600';
 
@@ -241,7 +246,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data),
                 });
-                
+
                 const result = await response.json();
 
                 if (response.ok) {
@@ -257,6 +262,6 @@
             }
         });
     </script>
-
-</body>
-</html>
+    <script src="js/landing.js"></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDBtiYoGbxfJPBWMxfRRqBQBLhLjjH8X6Y&callback=initMap&libraries=geometry"></script>
+</body> </html>
