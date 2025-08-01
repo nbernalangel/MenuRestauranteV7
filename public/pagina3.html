@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo Ting - Página 3: Guía de Inicio</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        'ting-green': '#94C120',
+                        'ting-blue': '#00183A',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #e2e8f0; }
+        .letter-page {
+            width: 8.5in;
+            min-height: 11in; /* Usamos min-height para asegurar que todo quepa */
+            margin: 1cm auto;
+            background-color: #f8fafc;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            padding: 0.75in;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+        .color-blob {
+            position: absolute;
+            border-radius: 9999px;
+            filter: blur(120px);
+            z-index: 0;
+        }
+        .content-wrapper {
+            position: relative;
+            z-index: 1;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .step-card {
+            background-color: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 1rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1rem; /* Margen inferior entre pasos */
+        }
+        .step-number {
+            width: 2.5rem;
+            height: 2.5rem;
+            background-color: #00183A;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-right: 1rem;
+            flex-shrink: 0;
+            border: 3px solid white;
+        }
+        @media print {
+            body { background-color: white; }
+            .letter-page { margin: 0; box-shadow: none; border: none; }
+            .color-blob { display: none; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="letter-page">
+
+        <div class="color-blob w-96 h-96 bg-ting-green/20 top-0 right-0"></div>
+        <div class="color-blob w-96 h-96 bg-ting-blue/20 bottom-0 left-0"></div>
+
+        <div class="content-wrapper">
+            <header class="text-center pb-4">
+                <h1 class="text-4xl font-black text-ting-blue">Tu Lanzamiento en 5 Pasos Sencillos</h1>
+                <p class="text-lg text-slate-600 mt-1">En menos de 15 minutos, estarás listo para recibir pedidos.</p>
+            </header>
+
+            <main class="flex-grow pt-4">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <div>
+                        <h3 class="font-bold text-lg text-ting-blue">Regístrate y Verifica tu Cuenta</h3>
+                        <p class="text-sm text-slate-700 mt-1 leading-snug">Completa el formulario inicial. Recibirás un código en tu correo para activar tu cuenta y obtener acceso al panel.</p>
+                    </div>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <div>
+                        <h3 class="font-bold text-lg text-ting-blue">Ingresa los Datos de tu Negocio</h3>
+                        <p class="text-sm text-slate-700 mt-1 leading-snug">Añade la dirección de tu local para el mapa, tu teléfono y un mensaje de bienvenida para tus clientes.</p>
+                    </div>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <div>
+                        <h3 class="font-bold text-lg text-ting-blue">Añade tus Platos y Menús</h3>
+                        <p class="text-sm text-slate-700 mt-1 leading-snug">Sube tus platos, gestiona menús diarios, añade imágenes y organiza todo por categorías de forma intuitiva.</p>
+                    </div>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">4</div>
+                    <div>
+                        <h3 class="font-bold text-lg text-ting-blue">Controla el Inventario</h3>
+                        <p class="text-sm text-slate-700 mt-1 leading-snug">Con un solo clic, marca un plato como "agotado" para ocultarlo al instante de tu menú y evitar malos ratos.</p>
+                    </div>
+                </div>
+                <div class="step-card">
+                     <div class="step-number">5</div>
+                    <div>
+                        <h3 class="font-bold text-lg text-ting-blue">Comparte y Recibe Pedidos</h3>
+                        <p class="text-sm text-slate-700 mt-1 leading-snug">Recibirás un enlace único y un código QR. ¡Compártelos y los pedidos comenzarán a llegar a tu WhatsApp!</p>
+                    </div>
+                </div>
+            </main>
+            
+            <footer class="mt-auto text-center pt-6 space-y-4">
+                <div class="bg-white/70 backdrop-blur-md p-4 rounded-2xl border border-white/30 shadow-lg">
+                     <p class="text-lg font-semibold text-slate-700">Como ves, empezar a recibir pedidos con Ting es increíblemente fácil.</p>
+                     <p class="text-lg font-bold text-ting-blue mt-1">Ahora, descubre lo sencillo que es para tus clientes.</p>
+                </div>
+                <img src="https://app.ting-col.com/img/logo.png" alt="Ting Logo" class="h-10 mx-auto">
+                <p class="text-sm text-slate-400">Página 3 de 4</p>
+            </footer>
+        </div>
+    </div>
+</body>
+</html>

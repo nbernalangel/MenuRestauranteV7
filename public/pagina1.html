@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo Ting - Página 1: Portada</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        'ting-green': '#94C120',
+                        'ting-blue': '#00183A',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #e2e8f0; }
+        .letter-page {
+            width: 8.5in;
+            height: 11in; /* Altura fija */
+            margin: 1cm auto;
+            background-color: #f8fafc;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            padding: 1in;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+        .color-blob {
+            position: absolute;
+            border-radius: 9999px;
+            filter: blur(120px);
+            z-index: 0;
+        }
+        .content-wrapper {
+            position: relative;
+            z-index: 1;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        @media print {
+            body { background-color: white; }
+            .letter-page { margin: 0; box-shadow: none; border: none; }
+            .color-blob { display: none; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="letter-page">
+        
+        <div class="color-blob w-96 h-96 bg-ting-green/20 -top-24 -left-24"></div>
+        <div class="color-blob w-96 h-96 bg-ting-blue/20 -bottom-24 -right-24"></div>
+
+        <div class="content-wrapper">
+            
+            <header class="text-center">
+                <img src="https://app.ting-col.com/img/logo.png" alt="Ting Logo" class="h-24 mx-auto">
+            </header>
+
+            <main class="flex-grow flex flex-col items-center justify-center text-center">
+                <div class="bg-white/70 backdrop-blur-md p-12 rounded-3xl border border-white/30 shadow-xl">
+                    <h1 class="text-6xl font-black text-ting-blue leading-tight">
+                        La Revolución para<br>tu Restaurante.
+                    </h1>
+                    <p class="text-xl text-slate-600 mt-4 max-w-2xl mx-auto">
+                        Automatiza tus pedidos, elimina errores y recupera el control de tu negocio con la herramienta definitiva para WhatsApp.
+                    </p>
+                    <div class="mt-8 mx-auto w-48 h-80 bg-slate-200 rounded-3xl p-3 border-4 border-slate-300">
+                        <div class="bg-white w-full h-full rounded-2xl flex flex-col items-center p-4">
+                            <div class="w-10 h-2 bg-slate-300 rounded-full"></div>
+                            <div class="w-full mt-4 space-y-2">
+                                <div class="h-8 bg-ting-green/30 rounded"></div>
+                                <div class="h-4 bg-slate-200 rounded"></div>
+                                <div class="h-4 bg-slate-200 rounded w-3/4"></div>
+                                <div class="h-8 bg-ting-green/30 rounded mt-4"></div>
+                                <div class="h-4 bg-slate-200 rounded"></div>
+                                <div class="h-4 bg-slate-200 rounded w-3/4"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <footer class="text-center pt-6">
+                <p class="text-sm text-slate-400">Página 1 de 4</p>
+            </footer>
+        </div>
+    </div>
+</body>
+</html>
