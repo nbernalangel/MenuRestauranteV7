@@ -611,6 +611,152 @@ app.get('/api/pedidos/descargar/:restauranteId', async (req, res) => {
     }
 });
 
+// app.js (Fragmento de código para la nueva ruta de reportes)
+// ========================================================
+// === NUEVA RUTA PARA DESCARGAR REPORTE CON FILTROS EN EXCEL ===
+// ========================================================
+app.get('/api/reportes/descargar', async (req, res) => {
+    try {
+        const { restauranteId, fechaInicio, fechaFin, ciudad, estado } = req.query;
+
+        // Construir el objeto de consulta de MongoDB
+        let query = {};
+        if (restauranteId) {
+            query.restaurante = restauranteId;
+        }
+        if (fechaInicio) {
+            query.createdAt = {
+                ...query.createdAt, // Mantiene otras condiciones de fecha si existen
+                $gte: new Date(fechaInicio)
+            };
+        }
+        if (fechaFin) {
+            const fechaFinObj = new Date(fechaFin);
+            fechaFinObj.setDate(fechaFinObj.getDate() + 1); // Incluye todo el día seleccionado
+            query.createdAt = {
+                ...query.createdAt,
+                $lt: fechaFinObj
+            };
+        }
+        if (ciudad) {
+            // Asume que la ciudad se puede filtrar a través del restaurante
+            // Se necesita la ciudad en el modelo 'Restaurante'
+            // Podríamos hacer una búsqueda anidada o usar un 'populate'
+            // Simplificaremos asumiendo un solo filtro por ahora
+            // (La lógica real necesitaría un paso extra para buscar por ciudad en el modelo Restaurante)
+        }
+        if (estado) {
+            query.estado = estado;
+        }
+
+        // Obtener los pedidos filtrados y popular el restaurante para obtener su nombre
+        const pedidos = await Pedido.find(query)
+                                    .populate('restaurante', 'nombre')
+                                    .sort({ createdAt: -1 });
+
+        // Generar el archivo Excel
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet(`Reporte de Pedidos`);
+
+        worksheet.columns = [
+            { header: 'Fecha', key: 'fecha', width: 20 },
+            { header: 'Número Pedido', key: 'numeroPedido', width: 15 },
+            { header: 'Restaurante', key: 'restaurante', width: 30 },
+            { header: 'Cliente', key: 'cliente', width: 30 },
+            { header: 'Teléfono', key: 'telefono', width: 15 },
+            { header: 'Total', key: 'total', width: 15, style: { numFmt: '"$"#,##0.00' } },
+            { header: 'Estado', key: 'estado', width: 15 }
+        ];
+
+        pedidos.forEach(pedido => {
+            worksheet.addRow({
+                fecha: pedido.createdAt,
+                numeroPedido: pedido.numeroPedido,
+                restaurante: pedido.restaurante ? pedido.restaurante.nombre : 'N/A',
+                cliente: pedido.cliente.nombre,
+                telefono: pedido.cliente.telefono,
+                total: pedido.total,
+                estado: pedido.estado
+            });
+        });
+
+        const fechaHoy = new Date().toISOString().slice(0, 10);
+        const nombreArchivo = `reporte-general-${fechaHoy}.xlsx`;
+        
+        res.setHeader(
+            'Content-Type',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        );
+        res.setHeader(
+            'Content-Disposition',
+            `attachment; filename="${nombreArchivo}"`
+        );
+        
+        console.log(`✅ Reporte Excel generado con filtros para ${pedidos.length} pedidos.`);
+
+        await workbook.xlsx.write(res);
+        res.end();
+
+    } catch (error) {
+        console.error("❌ Error al generar el reporte de Excel filtrado:", error.message || error);
+        res.status(500).send('Error interno del servidor al generar el reporte.');
+    }
+});
+
+// app.js (Fragmento de código final de la ruta de reportes de restaurantes)
+app.get('/api/reportes/restaurantes/descargar', async (req, res) => {
+    try {
+        console.log("Iniciando reporte de restaurantes...");
+        
+        // Obtener todos los restaurantes
+        const restaurantes = await Restaurante.find({}).sort({ nombre: 1 });
+        
+        console.log("Número de restaurantes encontrados:", restaurantes.length);
+
+        // Generar el archivo Excel
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet(`Reporte de Restaurantes`);
+
+        worksheet.columns = [
+            { header: 'Nombre', key: 'nombre', width: 30 },
+            { header: 'Slug', key: 'slug', width: 20 },
+            { header: 'Teléfono', key: 'telefono', width: 20 },
+            { header: 'Dirección', key: 'direccion', width: 50 },
+            { header: 'Fecha de Registro', key: 'fechaRegistro', width: 20 }
+        ];
+
+        restaurantes.forEach(restaurante => {
+            worksheet.addRow({
+                nombre: restaurante.nombre,
+                slug: restaurante.slug,
+                telefono: restaurante.telefono,
+                direccion: restaurante.direccion,
+                fechaRegistro: restaurante.createdAt
+            });
+        });
+
+        const fechaHoy = new Date().toISOString().slice(0, 10);
+        const nombreArchivo = `reporte-restaurantes-${fechaHoy}.xlsx`;
+        
+        res.setHeader(
+            'Content-Type',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        );
+        res.setHeader(
+            'Content-Disposition',
+            `attachment; filename="${nombreArchivo}"`
+        );
+        
+        console.log(`✅ Reporte Excel de restaurantes generado para ${restaurantes.length} restaurantes.`);
+
+        await workbook.xlsx.write(res);
+        res.end();
+
+    } catch (error) {
+        console.error("❌ Error al generar el reporte de Excel de restaurantes:", error.message || error);
+        res.status(500).send('Error interno del servidor al generar el reporte.');
+    }
+});
 
 // RUTAS PÚBLICAS Y PARA SERVIR ARCHIVOS HTML
 app.get('/api/public/menu/:slug', async (req, res) => {

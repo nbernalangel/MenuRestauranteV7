@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ting - Panel de Reportes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'ting-green': '#94C120',
+                        'ting-blue': '#00183A',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 900px;
+            margin: 2rem auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+        }
+        .filter-section {
+            display: grid;
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        @media (min-width: 768px) {
+            .filter-section {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        .form-field {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-field label {
+            font-weight: 600;
+            color: #00183A;
+            margin-bottom: 0.5rem;
+        }
+        .form-field input, .form-field select {
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid #d1d5db;
+            transition: border-color 0.2s ease-in-out;
+            color: #4a5568;
+        }
+        .form-field input:focus, .form-field select:focus {
+            outline: none;
+            border-color: #94C120;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="container">
+        <header class="text-center pb-8 border-b border-gray-200">
+            <h1 class="text-4xl font-bold text-ting-blue mb-2">Panel de Reportes</h1>
+            <p class="text-gray-600 text-lg">Selecciona un tipo de reporte y aplica los filtros que desees.</p>
+        </header>
+
+        <main class="py-8">
+            <form id="report-filters-form">
+                <div class="form-field mb-6">
+                    <label for="reportType">Tipo de Reporte</label>
+                    <select id="reportType" name="reportType" class="form-select">
+                        <option value="pedidos">Reporte de Pedidos</option>
+                        <option value="restaurantes">Reporte de Restaurantes</option>
+                    </select>
+                </div>
+
+                <div id="pedidos-filters" class="filter-section">
+                    <div class="form-field">
+                        <label for="restauranteId">Restaurante</label>
+                        <select id="restauranteId" name="restauranteId" class="form-select">
+                            </select>
+                    </div>
+                    <div class="form-field">
+                        <label for="fechaInicio">Fecha de Inicio</label>
+                        <input type="date" id="fechaInicio" name="fechaInicio" class="form-input">
+                    </div>
+                    <div class="form-field">
+                        <label for="fechaFin">Fecha de Fin</label>
+                        <input type="date" id="fechaFin" name="fechaFin" class="form-input">
+                    </div>
+                    <div class="form-field">
+                        <label for="estado">Estado del Pedido</label>
+                        <select id="estado" name="estado" class="form-select">
+                            <option value="">Todos</option>
+                            <option value="pendiente">Pendiente</option>
+                            <option value="en_proceso">En Proceso</option>
+                            <option value="enviado">Enviado</option>
+                            <option value="entregado">Entregado</option>
+                            <option value="cancelado">Cancelado</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="restaurantes-filters" class="filter-section hidden">
+                    <div class="form-field">
+                        <label for="restauranteNombre">Nombre del Restaurante</label>
+                        <input type="text" id="restauranteNombre" name="restauranteNombre" class="form-input" placeholder="Ej: 'Mi Restaurante'">
+                    </div>
+                    <div class="form-field">
+                        <label for="restauranteUbicacion">Filtro por Ubicación</label>
+                        <input type="text" id="restauranteUbicacion" name="restauranteUbicacion" class="form-input" placeholder="Ej: 'Bogotá, Centro'">
+                    </div>
+                </div>
+
+                <div class="text-center mt-6">
+                    <button type="submit" class="bg-ting-blue text-white font-bold py-3 px-8 rounded-lg text-lg hover:bg-opacity-90 transition duration-300">
+                        Descargar Reporte
+                    </button>
+                </div>
+            </form>
+            <div id="status-message" class="text-center mt-6 text-gray-600"></div>
+        </main>
+    </div>
+    
+    <script src="js/reportes.js"></script>
+</body>
+</html>
