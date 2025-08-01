@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ting - Ficha Rápida</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        'ting-green': '#94C120',
+                        'ting-blue': '#00183A',
+                        'ting-red': '#E53E3E',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-slate-800 flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-sm aspect-[9/16] bg-gradient-to-br from-ting-blue to-blue-900 rounded-3xl shadow-2xl overflow-hidden flex flex-col text-white p-6">
+        
+        <header class="flex items-center justify-between flex-shrink-0">
+            <img src="https://app.ting-col.com/img/logo.png" alt="Ting Logo" class="h-10">
+            <div class="text-right">
+                <h1 class="font-extrabold text-xl leading-tight">Deja de perder</h1>
+                <p class="text-ting-green font-semibold text-lg leading-tight" style="text-shadow: 0 0 10px rgba(148, 193, 32, 0.5);">pedidos</p>
+            </div>
+        </header>
+
+        <main class="flex-grow flex flex-col justify-center space-y-5 mt-2">
+            
+            <section>
+                <div class="flex justify-around items-center text-center">
+                    <div class="flex flex-col items-center">
+                        <div class="bg-ting-green w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold border-2 border-white/50">1</div>
+                        <p class="text-xs mt-1">Crea Menú</p>
+                    </div>
+                     <div class="text-slate-400 font-light text-xl">- - -</div>
+                    <div class="flex flex-col items-center">
+                        <div class="bg-ting-green w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold border-2 border-white/50">2</div>
+                        <p class="text-xs mt-1">Comparte</p>
+                    </div>
+                    <div class="text-slate-400 font-light text-xl">- - -</div>
+                    <div class="flex flex-col items-center">
+                        <div class="bg-ting-green w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold border-2 border-white/50">3</div>
+                        <p class="text-xs mt-1">Recibe</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-black/20 p-4 rounded-xl">
+                <h2 class="text-center font-bold text-lg mb-3">Todo lo que necesitas</h2>
+                <div class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+                    <div class="flex items-center"><i class="fas fa-check-circle text-ting-green w-5 mr-2"></i><span>Cero Errores</span></div>
+                    <div class="flex items-center"><i class="fas fa-clock text-ting-green w-5 mr-2"></i><span>Ahorra Tiempo</span></div>
+                    <div class="flex items-center"><i class="fab fa-whatsapp text-ting-green w-5 mr-2"></i><span>Directo a WhatsApp</span></div>
+                    <div class="flex items-center"><i class="fas fa-qrcode text-ting-green w-5 mr-2"></i><span>Menú con QR</span></div>
+                    <div class="flex items-center"><i class="fas fa-map-marker-alt text-ting-green w-5 mr-2"></i><span>Visibilidad en Mapas</span></div>
+                    <div class="flex items-center"><i class="fas fa-toggle-on text-ting-green w-5 mr-2"></i><span>Control de Agotados</span></div>
+                </div>
+            </section>
+            
+            <section class="text-center bg-ting-green p-3 rounded-lg">
+                <p class="font-bold text-2xl text-ting-blue drop-shadow-sm">100% GRATIS</p>
+                <p class="font-semibold text-sm text-white">Sin Comisiones Ocultas</p>
+            </section>
+        </main>
+
+        <footer class="text-center mt-4 flex-shrink-0">
+             <a href="https://app.ting-col.com" target="_blank" 
+               class="w-full block bg-white text-ting-blue font-bold text-lg px-6 py-3 rounded-lg shadow-lg
+                      transform hover:scale-105 transition-transform duration-300">
+                ¡Automatiza Ya!
+            </a>
+            <p class="text-xs text-slate-400 mt-2">Visita ting-col.com</p>
+        </footer>
+    </div>
+</body>
+</html>

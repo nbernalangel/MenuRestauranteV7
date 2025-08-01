@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ting - Guía para Pedir (Tamaño Carta)</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        'ting-green': '#94C120',
+                        'ting-blue': '#00183A',
+                        'ting-teal': '#2dd4bf',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #e2e8f0;
+        }
+        /* MEJORA CLAVE: Dimensiones ajustadas a Papel Carta (Letter) */
+        .letter-page {
+            width: 8.5in;
+            min-height: 11in;
+            padding: 0.75in; /* Márgenes de 0.75 pulgadas */
+            margin: 1cm auto;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        @media print {
+            body { background-color: white; }
+            .letter-page { margin: 0; box-shadow: none; border: none; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="letter-page">
+        
+        <header class="text-center p-6 rounded-lg bg-gradient-to-br from-ting-green to-ting-teal">
+            <img src="https://app.ting-col.com/img/logo.png" alt="Ting Logo" class="h-16 mx-auto mb-3 drop-shadow-lg">
+            <h1 class="text-3xl font-extrabold text-white">¡Pedir tu Domicilio es Así de Fácil!</h1>
+        </header>
+
+        <main class="py-5 flex-grow flex flex-col justify-center">
+            
+            <div class="space-y-5">
+                <div class="flex items-center bg-slate-50 p-4 rounded-xl shadow-md">
+                    <div class="pr-5">
+                        <div class="flex items-center mb-2">
+                            <div class="bg-ting-blue text-white w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold mr-3 flex-shrink-0">1</div>
+                            <h3 class="font-bold text-ting-blue text-xl">Elige tus Platos</h3>
+                        </div>
+                        <p class="text-sm text-slate-700 leading-relaxed ml-12">
+                            Navega por el menú digital, mira los platos y sus precios. Si eliges un menú del día, podrás seleccionar una opción por categoría. Finalmente, agrega los productos a tu carrito.
+                        </p>
+                    </div>
+                     <img src="https://placehold.co/300x300/94C120/FFFFFF?text=Paso+1" alt="Ilustración de menú digital" class="w-36 h-36 object-cover rounded-lg flex-shrink-0">
+                </div>
+
+                <div class="flex items-center bg-slate-50 p-4 rounded-xl shadow-md">
+                    <div class="pr-5">
+                        <div class="flex items-center mb-2">
+                            <div class="bg-ting-blue text-white w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold mr-3 flex-shrink-0">2</div>
+                            <h3 class="font-bold text-ting-blue text-xl">Confirma tu Pedido</h3>
+                        </div>
+                        <p class="text-sm text-slate-700 leading-relaxed ml-12">
+                            Revisa que todos los productos en tu carrito sean correctos. Ingresa tus datos de contacto y la dirección de entrega para que el restaurante sepa dónde enviarlo.
+                        </p>
+                    </div>
+                    <img src="https://placehold.co/300x300/00183A/FFFFFF?text=Paso+2" alt="Ilustración de confirmar datos" class="w-36 h-36 object-cover rounded-lg flex-shrink-0">
+                </div>
+
+                <div class="flex items-center bg-slate-50 p-4 rounded-xl shadow-md">
+                    <div class="pr-5">
+                        <div class="flex items-center mb-2">
+                            <div class="bg-ting-blue text-white w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold mr-3 flex-shrink-0">3</div>
+                            <h3 class="font-bold text-ting-blue text-xl">Envía por WhatsApp</h3>
+                        </div>
+                        <p class="text-sm text-slate-700 leading-relaxed ml-12">
+                            Haz clic en el botón "Enviar pedido". Tu orden se enviará directamente al WhatsApp del restaurante, ¡clara y sin errores!
+                        </p>
+                    </div>
+                    <img src="https://placehold.co/300x300/2dd4bf/FFFFFF?text=Paso+3" alt="Ilustración de enviar por WhatsApp" class="w-36 h-36 object-cover rounded-lg flex-shrink-0">
+                </div>
+            </div>
+
+        </main>
+        
+        <footer class="mt-auto bg-ting-blue text-white p-5 rounded-lg">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h3 class="text-xl font-extrabold">¡Pide Fácil, Come Feliz!</h3>
+                    <p class="text-base text-ting-green font-semibold">Encuentra tu restaurante favorito en:</p>
+                    <p class="font-semibold text-lg tracking-wider mt-1">www.ting-col.com</p>
+                </div>
+                <div class="text-center">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://app.ting-col.com" alt="QR Code para Ting" class="bg-white p-1 rounded-md">
+                    <p class="text-xs mt-1 font-semibold">¡Escanéame!</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ting - Guía de Inicio A4</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        'ting-green': '#94C120',
+                        'ting-blue': '#00183A',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #e2e8f0; /* Color de fondo gris para ver la hoja blanca */
+        }
+        .a4-page {
+            width: 21cm;
+            min-height: 29.7cm; /* Usamos min-height para flexibilidad */
+            padding: 1.5cm;
+            margin: 1cm auto;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        /* Media query para impresión: elimina sombra y fondo del body */
+        @media print {
+            body {
+                background-color: white;
+            }
+            .a4-page {
+                margin: 0;
+                box-shadow: none;
+                border: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="a4-page">
+        
+        <header class="text-center border-b-4 border-ting-green pb-6">
+            <img src="https://app.ting-col.com/img/logo.png" alt="Ting Logo" class="h-24 mx-auto mb-6">
+            <h1 class="text-4xl font-extrabold text-ting-blue">Guía de Inicio Rápido</h1>
+            <p class="text-xl text-slate-600 mt-2">Crea tu menú digital y empieza a recibir pedidos por WhatsApp hoy mismo.</p>
+        </header>
+
+        <main class="py-10 flex-grow">
+             <div class="relative border-l-4 border-slate-200 ml-8 space-y-10">
+                
+                <div class="relative flex items-start">
+                    <div class="absolute -left-[2.2rem] top-0 bg-ting-blue text-white w-16 h-16 rounded-full flex items-center justify-center text-3xl font-bold border-8 border-white">1</div>
+                    <div class="pl-12">
+                        <h3 class="font-bold text-ting-blue text-2xl">Regístrate y Verifica</h3>
+                        <p class="text-base text-slate-700 mt-2">
+                            Completa el formulario de registro con los datos de tu restaurante. Recibirás un código de verificación en tu correo para activar tu cuenta y obtener acceso al panel.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="relative flex items-start">
+                    <div class="absolute -left-[2.2rem] top-0 bg-ting-blue text-white w-16 h-16 rounded-full flex items-center justify-center text-3xl font-bold border-8 border-white">2</div>
+                     <div class="pl-12">
+                        <h3 class="font-bold text-ting-blue text-2xl">Completa la Información</h3>
+                        <p class="text-base text-slate-700 mt-2">
+                            Dentro de tu panel de administración, ingresa la dirección exacta para que tus clientes te ubiquen en el mapa. Añade también tu teléfono y un mensaje de bienvenida.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="relative flex items-start">
+                    <div class="absolute -left-[2.2rem] top-0 bg-ting-blue text-white w-16 h-16 rounded-full flex items-center justify-center text-3xl font-bold border-8 border-white">3</div>
+                     <div class="pl-12">
+                        <h3 class="font-bold text-ting-blue text-2xl">Construye tu Menú</h3>
+                        <p class="text-base text-slate-700 mt-2">
+                           Sube todos tus platos a la carta, gestiona los menús del día, añade imágenes atractivas y organiza tus productos en categorías de forma fácil e intuitiva.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="relative flex items-start">
+                     <div class="absolute -left-[2.2rem] top-0 bg-ting-blue text-white w-16 h-16 rounded-full flex items-center justify-center text-3xl font-bold border-8 border-white">4</div>
+                     <div class="pl-12">
+                        <h3 class="font-bold text-ting-blue text-2xl">Controla tu Inventario</h3>
+                        <p class="text-base text-slate-700 mt-2">
+                           Con un solo clic, puedes marcar cualquier plato como "agotado". Este se ocultará automáticamente de tu menú digital para evitar recibir pedidos de productos no disponibles.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="relative flex items-start">
+                     <div class="absolute -left-[2.2rem] top-0 bg-ting-blue text-white w-16 h-16 rounded-full flex items-center justify-center text-3xl font-bold border-8 border-white">5</div>
+                     <div class="pl-12">
+                        <h3 class="font-bold text-ting-blue text-2xl">Comparte y Recibe Pedidos</h3>
+                        <p class="text-base text-slate-700 mt-2">
+                           Tu menú tendrá un enlace único y un código QR. Compártelos en tus redes sociales, stickers o en tu local. ¡Los pedidos llegarán directamente a tu WhatsApp!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <footer class="mt-auto bg-ting-blue text-white p-8 rounded-lg">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h3 class="text-3xl font-extrabold">¡Empieza Hoy!</h3>
+                    <p class="text-xl text-ting-green font-semibold">Es 100% GRATIS y sin comisiones.</p>
+                    <p class="mt-4 text-lg">Visita nuestro sitio web para registrarte:</p>
+                    <p class="font-semibold text-xl tracking-wider">www.ting-col.com</p>
+                </div>
+                <div class="text-center">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://app.ting-col.com" alt="QR Code para registrarse en Ting" class="bg-white p-1 rounded-md">
+                    <p class="text-sm mt-2">Escanéame</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

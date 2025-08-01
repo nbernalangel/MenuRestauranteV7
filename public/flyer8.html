@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ting - Tu Futuro Digital (Carta)</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        'ting-green': '#94C120',
+                        'ting-blue': '#00183A',
+                        'ting-teal': '#2dd4bf',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #f0f2f5; }
+        .letter-page {
+            width: 8.5in;
+            min-height: 11in;
+            padding: 0.75in;
+            margin: 1cm auto;
+            background-color: #f8fafc; /* Un fondo muy claro para la base */
+            box-shadow: 0 0 20px rgba(0,0,0,0.15);
+            position: relative; /* Necesario para posicionar los blobs de color */
+            overflow: hidden; /* Oculta las partes de los blobs que se salen */
+            display: flex;
+            flex-direction: column;
+        }
+        /* Los "blobs" de color que crean el efecto aurora */
+        .color-blob {
+            position: absolute;
+            border-radius: 9999px; /* Círculo perfecto */
+            filter: blur(100px); /* El desenfoque clave */
+            z-index: 1; /* Detrás del contenido */
+        }
+        @media print {
+            body { background-color: white; }
+            .letter-page { margin: 0; box-shadow: none; border: none; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="letter-page">
+        <div class="absolute inset-0">
+            <div class="color-blob w-96 h-96 bg-ting-green/30 -top-20 -left-20"></div>
+            <div class="color-blob w-96 h-96 bg-ting-teal/30 -bottom-20 -right-20"></div>
+            <div class="color-blob w-80 h-80 bg-ting-blue/20 top-1/3 left-1/3"></div>
+        </div>
+
+        <div class="relative z-10 flex flex-col h-full">
+            <header class="text-center py-6">
+                <img src="https://app.ting-col.com/img/logo.png" alt="Ting Logo" class="h-20 mx-auto mb-4">
+                <h1 class="text-4xl font-extrabold text-ting-blue">Crea tu Menú Digital en Minutos</h1>
+                <p class="text-lg text-slate-600 mt-2">Sigue estos simples pasos y empieza a recibir pedidos por WhatsApp.</p>
+            </header>
+
+            <main class="flex-grow py-6 space-y-5">
+                <div class="bg-white/50 backdrop-blur-lg p-5 rounded-2xl border border-white/20 shadow-lg">
+                    <h3 class="font-bold text-ting-blue text-xl mb-2 flex items-center">
+                        <span class="bg-ting-blue text-white w-8 h-8 rounded-full flex items-center justify-center mr-3 text-base">1</span>
+                        Regístrate y Verifica tu Cuenta
+                    </h3>
+                    <p class="text-sm text-slate-800 leading-relaxed pl-11">
+                        Completa el formulario de registro con el nombre de tu restaurante, correo y contraseña para acceder. Una vez que te registres, recibirás un código de verificación en tu correo para activar tu cuenta.
+                    </p>
+                </div>
+
+                <div class="bg-white/50 backdrop-blur-lg p-5 rounded-2xl border border-white/20 shadow-lg">
+                    <h3 class="font-bold text-ting-blue text-xl mb-2 flex items-center">
+                         <span class="bg-ting-blue text-white w-8 h-8 rounded-full flex items-center justify-center mr-3 text-base">2</span>
+                        Ingresa a tu Panel y Añade tus Datos
+                    </h3>
+                    <p class="text-sm text-slate-800 leading-relaxed pl-11">
+                        Accede a tu panel de administración. Allí podrás ingresar la <strong>dirección exacta</strong> de tu restaurante para que tus clientes te encuentren fácilmente en el mapa, además de otras informaciones como tu teléfono y mensaje de bienvenida.
+                    </p>
+                </div>
+                
+                <div class="bg-white/50 backdrop-blur-lg p-5 rounded-2xl border border-white/20 shadow-lg">
+                    <h3 class="font-bold text-ting-blue text-xl mb-2 flex items-center">
+                         <span class="bg-ting-blue text-white w-8 h-8 rounded-full flex items-center justify-center mr-3 text-base">3</span>
+                        Añade tus Platos y Menús
+                    </h3>
+                    <p class="text-sm text-slate-800 leading-relaxed pl-11">
+                        En el panel, podrás añadir todos tus platos a la carta, gestionar los menús diarios, subir imágenes y organizar tus productos en categorías de forma intuitiva.
+                    </p>
+                </div>
+
+                 <div class="bg-white/50 backdrop-blur-lg p-5 rounded-2xl border border-white/20 shadow-lg">
+                    <h3 class="font-bold text-ting-blue text-xl mb-2 flex items-center">
+                         <span class="bg-ting-blue text-white w-8 h-8 rounded-full flex items-center justify-center mr-3 text-base">4</span>
+                        Controla el Inventario y Disponibilidad
+                    </h3>
+                    <p class="text-sm text-slate-800 leading-relaxed pl-11">
+                        Con un solo clic, puedes marcar un plato como "agotado". Esto lo oculta automáticamente de tu menú digital, evitando pedidos de productos que ya no tienes disponibles.
+                    </p>
+                </div>
+
+                 <div class="bg-white/50 backdrop-blur-lg p-5 rounded-2xl border border-white/20 shadow-lg">
+                    <h3 class="font-bold text-ting-blue text-xl mb-2 flex items-center">
+                         <span class="bg-ting-blue text-white w-8 h-8 rounded-full flex items-center justify-center mr-3 text-base">5</span>
+                        Comparte y Recibe Pedidos
+                    </h3>
+                    <p class="text-sm text-slate-800 leading-relaxed pl-11">
+                        Una vez que tu menú esté listo, recibirás un enlace único y un código QR. Compártelo en tus redes sociales y con tus clientes. ¡Los pedidos llegarán directamente a tu WhatsApp, claros y sin errores!
+                    </p>
+                </div>
+            </main>
+            
+            <footer class="mt-auto bg-ting-green/80 backdrop-blur-lg text-ting-blue p-5 rounded-2xl border border-white/20 shadow-lg flex justify-between items-center">
+                <div class="">
+                    <h3 class="text-2xl font-extrabold">Es 100% GRATIS.</h3>
+                    <p class="text-base font-semibold">Visítanos en www.ting-col.com</p>
+                </div>
+                <div class="text-center bg-white p-1 rounded-lg">
+                     <img src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=https://app.ting-col.com" alt="QR Code para Ting">
+                </div>
+            </footer>
+        </div>
+    </div>
+</body>
+</html>
