@@ -26,7 +26,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Referencias para el logo
     const logoPreview = document.getElementById('logo-preview');
     const logoUploadInput = document.getElementById('logo-upload-input');
-
+    
+    // === REFERENCIA AL NUEVO BOTÓN ===
+    const downloadReportBtn = document.getElementById('download-report-btn');
+    // ===================================
+    
     const restauranteQrBtn = document.getElementById('restaurante-qr-btn');
     const qrcodeContainer = document.getElementById('qrcode-container');
     const qrcodeDiv = document.getElementById('qrcode');
@@ -88,6 +92,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         localStorage.removeItem('userData');
         window.location.href = '/login.html';
     });
+    
+    // === LÓGICA DEL NUEVO BOTÓN DE DESCARGA ===
+    if (downloadReportBtn && RESTAURANTE_ID) {
+        downloadReportBtn.addEventListener('click', () => {
+            const downloadUrl = `/api/pedidos/descargar/${RESTAURANTE_ID}`;
+            
+            // Inicia la descarga del archivo Excel
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            
+            alert('El reporte se está descargando. Por favor, revisa tus descargas.');
+        });
+    }
+    // =========================================
 
     // --- GESTIÓN DE DATOS DEL RESTAURANTE ---
     let currentRestauranteSlug = null;
