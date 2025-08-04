@@ -2,133 +2,68 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale-1.0">
-    <title>Catálogo Ting - Página 2: Características</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo Ting - Página 2: Soluciones y Características</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700;900&display=swap" rel="stylesheet">
-    
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['Poppins', 'sans-serif'],
-                    },
-                    colors: {
-                        'ting-green': '#94C120',
-                        'ting-blue': '#00183A',
-                    }
+                    fontFamily: { sans: ['Poppins', 'sans-serif'], },
+                    colors: { 'ting-green': '#94C120', 'ting-blue': '#00183A', }
                 }
             }
         }
     </script>
-
     <style>
         body { font-family: 'Poppins', sans-serif; background-color: #e2e8f0; }
-        .letter-page {
-            width: 8.5in;
-            height: 11in; /* Altura fija */
-            margin: 1cm auto;
-            background-color: #f8fafc;
-            box-shadow: 0 0 20px rgba(0,0,0,0.2);
-            padding: 1in;
-            display: flex;
-            flex-direction: column;
-            position: relative; /* Necesario para posicionar los elementos de fondo */
-            overflow: hidden; /* Oculta las partes de los círculos que se salen */
-        }
-        .color-blob {
-            position: absolute;
-            border-radius: 9999px; /* Círculo perfecto */
-            filter: blur(120px); /* El desenfoque clave */
-            z-index: 0; /* Detrás de todo */
-        }
-        .content-wrapper {
-            position: relative;
-            z-index: 1;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-        @media print {
-            body { background-color: white; }
-            .letter-page { margin: 0; box-shadow: none; border: none; }
-            .color-blob { display: none; } /* Ocultar blobs en impresión simple, se verán si se imprime con gráficos de fondo */
-        }
+        .letter-page { width: 8.5in; min-height: 11in; margin: 1cm auto; background-color: #f8fafc; box-shadow: 0 0 20px rgba(0,0,0,0.2); padding: 0.75in; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+        .color-blob { position: absolute; border-radius: 9999px; filter: blur(120px); z-index: 0; }
+        .content-wrapper { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; }
+        @media print { body { background-color: white; } .letter-page { margin: 0; box-shadow: none; border: none; } .color-blob { display: none; } }
     </style>
 </head>
-
 <body>
     <div class="letter-page">
-        
         <div class="color-blob w-96 h-96 bg-ting-green/20 -top-24 -left-24"></div>
         <div class="color-blob w-96 h-96 bg-ting-blue/20 -bottom-24 -right-24"></div>
-
         <div class="content-wrapper">
-            <header class="text-center pb-6 border-b-2 border-ting-blue/20">
-                <h1 class="text-4xl font-black text-ting-blue">Una Herramienta Diseñada para tu Éxito.</h1>
-                <p class="text-xl text-slate-600 mt-2">Descubre todo lo que Ting puede hacer por tu negocio.</p>
+            <header class="text-center pb-4 border-b-2 border-ting-blue/20">
+                <h1 class="text-4xl font-black text-ting-blue">Dos Soluciones, Cero Complicaciones</h1>
+                <p class="text-xl text-slate-600 mt-2">Gestiona todo tu flujo de pedidos desde una sola plataforma.</p>
             </header>
-
-            <main class="flex-grow pt-8 grid grid-cols-2 gap-8">
-                
-                <div class="bg-white/70 backdrop-blur-md p-6 rounded-2xl border border-white/30 shadow-lg">
-                    <h2 class="text-2xl font-bold text-ting-blue mb-6">Tus Beneficios Clave</h2>
-                    <div class="space-y-6">
-                        <div class="flex items-start">
-                            <div class="flex-shrink-0 mr-4 w-12 h-12 flex items-center justify-center rounded-xl bg-ting-green/20 text-ting-blue text-2xl"><i class="fas fa-clock"></i></div>
-                            <div>
-                                <h3 class="font-bold text-lg text-slate-800">Ahorra Tiempo Valioso</h3>
-                                <p class="text-sm text-slate-600 mt-1">Tu personal se enfoca en cocinar, no en el teléfono. Ting automatiza el proceso para máxima eficiencia.</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start">
-                            <div class="flex-shrink-0 mr-4 w-12 h-12 flex items-center justify-center rounded-xl bg-ting-green/20 text-ting-blue text-2xl"><i class="fas fa-check-double"></i></div>
-                            <div>
-                                <h3 class="font-bold text-lg text-slate-800">Cero Errores en Pedidos</h3>
-                                <p class="text-sm text-slate-600 mt-1">Cada pedido llega a tu WhatsApp de forma escrita, clara y detallada, como el cliente lo solicitó.</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start">
-                            <div class="flex-shrink-0 mr-4 w-12 h-12 flex items-center justify-center rounded-xl bg-ting-green/20 text-ting-blue text-2xl"><i class="fas fa-dollar-sign"></i></div>
-                            <div>
-                                <h3 class="font-bold text-lg text-slate-800">Sin Comisiones Ocultas</h3>
-                                <p class="text-sm text-slate-600 mt-1">Es <strong>100% GRATIS</strong>. Lo que vendes a través de tu menú digital es 100% para ti.</p>
-                            </div>
-                        </div>
+            <<main class="flex-grow pt-8 flex flex-col gap-10 justify-around">">
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="bg-ting-blue/5 p-6 rounded-2xl border shadow-lg flex flex-col">
+                        <div class="text-center mb-4"><div class="w-16 h-16 mx-auto flex items-center justify-center rounded-2xl bg-ting-blue text-white text-3xl mb-3"><i class="fas fa-utensils"></i></div><h2 class="text-2xl font-bold text-ting-blue">Servicio en Mesa</h2></div>
+                        <p class="text-sm text-slate-700 text-center">Agiliza el servicio en tu local. Tus clientes escanean un QR, ordenan y el pedido llega directo a tu WhatsApp.</p>
+                    </div>
+                    <div class="bg-ting-green/5 p-6 rounded-2xl border shadow-lg flex flex-col">
+                        <div class="text-center mb-4"><div class="w-16 h-16 mx-auto flex items-center justify-center rounded-2xl bg-ting-green text-white text-3xl mb-3"><i class="fas fa-motorcycle"></i></div><h2 class="text-2xl font-bold text-ting-blue">Pedidos a Domicilio</h2></div>
+                        <p class="text-sm text-slate-700 text-center">Comparte tu link en redes. Recibe pedidos organizados con nombre, teléfono y dirección, listos para despachar.</p>
                     </div>
                 </div>
-
-                <div class="bg-white/70 backdrop-blur-md p-6 rounded-2xl border border-white/30 shadow-lg">
-                    <h2 class="text-2xl font-bold text-ting-blue mb-6">Características Principales</h2>
-                    <div class="space-y-6">
-                        <div class="flex items-start">
-                            <div class="flex-shrink-0 mr-4 w-12 h-12 flex items-center justify-center rounded-xl bg-ting-green/20 text-ting-blue text-2xl"><i class="fas fa-mobile-alt"></i></div>
-                            <div>
-                                <h3 class="font-bold text-lg text-slate-800">Menú Digital con QR</h3>
-                                <p class="text-sm text-slate-600 mt-1">Recibe un link y QR únicos para tu negocio. Compártelo en redes o en tu local para un acceso instantáneo.</p>
-                            </div>
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <h2 class="text-xl font-bold text-ting-blue mb-4">Tus Beneficios Clave</h2>
+                        <div class="space-y-5">
+                            <div class="flex items-start"><div class="flex-shrink-0 mr-3 w-10 h-10 flex items-center justify-center rounded-xl bg-ting-green/20 text-ting-blue text-xl"><i class="fas fa-clock"></i></div><div><h3 class="font-bold text-md text-slate-800">Ahorra Tiempo Valioso</h3><p class="text-xs text-slate-600">Tu personal se enfoca en cocinar, no en el teléfono.</p></div></div>
+                            <div class="flex items-start"><div class="flex-shrink-0 mr-3 w-10 h-10 flex items-center justify-center rounded-xl bg-ting-green/20 text-ting-blue text-xl"><i class="fas fa-check-double"></i></div><div><h3 class="font-bold text-md text-slate-800">Cero Errores en Pedidos</h3><p class="text-xs text-slate-600">Cada pedido llega de forma escrita, clara y detallada.</p></div></div>
+                            <div class="flex items-start"><div class="flex-shrink-0 mr-3 w-10 h-10 flex items-center justify-center rounded-xl bg-ting-green/20 text-ting-blue text-xl"><i class="fas fa-dollar-sign"></i></div><div><h3 class="font-bold text-md text-slate-800">Sin Comisiones Ocultas</h3><p class="text-xs text-slate-600">Es <strong>100% GRATIS</strong>. Lo que vendes es 100% para ti.</p></div></div>
                         </div>
-                        <div class="flex items-start">
-                            <div class="flex-shrink-0 mr-4 w-12 h-12 flex items-center justify-center rounded-xl bg-ting-green/20 text-ting-blue text-2xl"><i class="fab fa-whatsapp"></i></div>
-                            <div>
-                                <h3 class="font-bold text-lg text-slate-800">Integración con WhatsApp</h3>
-                                <p class="text-sm text-slate-600 mt-1">Los pedidos llegan directamente al WhatsApp que ya usas, de forma organizada y sin instalar nada nuevo.</p>
-                            </div>
-                        </div>
-                        <div class="flex items-start">
-                            <div class="flex-shrink-0 mr-4 w-12 h-12 flex items-center justify-center rounded-xl bg-ting-green/20 text-ting-blue text-2xl"><i class="fas fa-toggle-on"></i></div>
-                            <div>
-                                <h3 class="font-bold text-lg text-slate-800">Control de Inventario</h3>
-                                <p class="text-sm text-slate-600 mt-1">¿Se acabó un plato? Márcalo como "agotado" con un clic y se ocultará automáticamente de tu menú.</p>
-                            </div>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-ting-blue mb-4">Características Principales</h2>
+                        <div class="space-y-5">
+                            <div class="flex items-start"><div class="flex-shrink-0 mr-3 w-10 h-10 flex items-center justify-center rounded-xl bg-ting-green/20 text-ting-blue text-xl"><i class="fas fa-mobile-alt"></i></div><div><h3 class="font-bold text-md text-slate-800">Menú Digital con QR y Link</h3><p class="text-xs text-slate-600">Un QR para tus mesas y un link para tus redes sociales.</p></div></div>
+                            <div class="flex items-start"><div class="flex-shrink-0 mr-3 w-10 h-10 flex items-center justify-center rounded-xl bg-ting-green/20 text-ting-blue text-xl"><i class="fab fa-whatsapp"></i></div><div><h3 class="font-bold text-md text-slate-800">Integración con WhatsApp</h3><p class="text-xs text-slate-600">Los pedidos llegan directamente al WhatsApp que ya usas.</p></div></div>
+                            <div class="flex items-start"><div class="flex-shrink-0 mr-3 w-10 h-10 flex items-center justify-center rounded-xl bg-ting-green/20 text-ting-blue text-xl"><i class="fas fa-toggle-on"></i></div><div><h3 class="font-bold text-md text-slate-800">Control de Inventario</h3><p class="text-xs text-slate-600">Marca platos como "agotados" con un solo clic.</p></div></div>
                         </div>
                     </div>
                 </div>
             </main>
-
             <footer class="text-center pt-6 mt-auto">
                 <p class="text-sm text-slate-400">Página 2 de 4</p>
             </footer>

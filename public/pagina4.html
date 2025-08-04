@@ -4,114 +4,70 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Catálogo Ting - Página 4: Cierre y Contacto</title>
-
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700;900&display=swap" rel="stylesheet">
-    
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['Poppins', 'sans-serif'],
-                    },
-                    colors: {
-                        'ting-green': '#94C120',
-                        'ting-blue': '#00183A',
-                    }
+                    fontFamily: { sans: ['Poppins', 'sans-serif'], },
+                    colors: { 'ting-green': '#94C120', 'ting-blue': '#00183A', }
                 }
             }
         }
     </script>
-
     <style>
         body { font-family: 'Poppins', sans-serif; background-color: #e2e8f0; }
-        .letter-page {
-            width: 8.5in;
-            height: 11in; /* Altura fija */
-            margin: 1cm auto;
-            background-color: #f8fafc;
-            box-shadow: 0 0 20px rgba(0,0,0,0.2);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            overflow: hidden;
-        }
-        .color-blob {
-            position: absolute;
-            border-radius: 9999px;
-            filter: blur(120px);
-            z-index: 0;
-        }
-        .content-wrapper {
-            position: relative;
-            z-index: 1;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            padding: 1in;
-        }
-        @media print {
-            body { background-color: white; }
-            .letter-page { margin: 0; box-shadow: none; border: none; }
-            .color-blob { display: none; }
-        }
+        .letter-page { width: 8.5in; height: 11in; margin: 1cm auto; background-color: #f8fafc; box-shadow: 0 0 20px rgba(0,0,0,0.2); display: flex; flex-direction: column; position: relative; overflow: hidden; }
+        .color-blob { position: absolute; border-radius: 9999px; filter: blur(120px); z-index: 0; }
+        .content-wrapper { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; padding: 1in; }
+        @media print { body { background-color: white; } .letter-page { margin: 0; box-shadow: none; border: none; } .color-blob { display: none; } }
     </style>
 </head>
-
 <body>
     <div class="letter-page">
-
         <div class="color-blob w-96 h-96 bg-ting-green/20 -top-24 -right-24"></div>
         <div class="color-blob w-96 h-96 bg-ting-blue/20 -bottom-24 -left-24"></div>
-
         <div class="content-wrapper">
             <main class="flex-grow flex flex-col">
                 <div class="bg-white/70 backdrop-blur-md p-6 rounded-2xl border border-white/30 shadow-lg">
                     <h1 class="text-3xl font-black text-ting-blue text-center">Y para tus Clientes, es Aún Más Fácil</h1>
-                    <p class="text-center text-slate-600 mt-1">Una experiencia de pedido fluida en 3 simples pasos.</p>
-                    
+                    <p class="text-center text-slate-600 mt-1">Una experiencia de pedido fluida y sin complicaciones.</p>
                     <div class="mt-6 grid grid-cols-3 gap-6 text-center">
-                        <div>
-                            <div class="bg-slate-200 w-full h-64 mx-auto rounded-2xl p-2 border-2 border-slate-300 flex items-center">
-                                <div class="bg-white w-full h-full rounded-lg p-3 text-left">
-                                    <i class="fas fa-utensils text-ting-green text-2xl"></i>
-                                    <p class="text-sm font-bold mt-2 text-ting-blue">Menú del Día</p>
-                                    <div class="w-full h-2 bg-slate-200 rounded-full mt-1"></div>
-                                    <div class="w-3/4 h-2 bg-slate-200 rounded-full mt-1"></div>
+                        <div class="bg-ting-blue/5 p-4 rounded-xl">
+                            <div class="bg-slate-200 w-full h-48 mx-auto rounded-2xl p-2 border-2 border-slate-300 flex items-center">
+                                <div class="bg-white w-full h-full rounded-lg p-3 text-left space-y-2">
+                                    <i class="fas fa-concierge-bell text-ting-blue text-2xl"></i><p class="text-sm font-bold text-ting-blue">¿Cómo quieres tu pedido?</p>
+                                    <div class="w-full h-6 bg-ting-green/50 rounded-md flex items-center justify-center text-xs font-semibold text-ting-blue">A Domicilio</div>
+                                    <div class="w-full h-6 bg-ting-green/50 rounded-md flex items-center justify-center text-xs font-semibold text-ting-blue">En la Mesa</div>
                                 </div>
                             </div>
-                            <h3 class="font-bold text-lg text-ting-blue mt-3">1. Eligen sus Platos</h3>
-                            <p class="text-sm text-slate-600">Navegan tu menú digital desde su celular.</p>
+                            <h3 class="font-bold text-lg text-ting-blue mt-3">1. Eligen el Servicio</h3>
+                            <p class="text-sm text-slate-600">Al entrar al link, escogen si es para llevar o para la mesa.</p>
                         </div>
-                        <div>
-                            <div class="bg-slate-200 w-full h-64 mx-auto rounded-2xl p-2 border-2 border-slate-300 flex items-center">
+                        <div class="bg-ting-green/5 p-4 rounded-xl">
+                            <div class="bg-slate-200 w-full h-48 mx-auto rounded-2xl p-2 border-2 border-slate-300 flex items-center">
                                 <div class="bg-white w-full h-full rounded-lg p-3 text-left">
-                                     <i class="fas fa-user-check text-ting-blue text-2xl"></i>
-                                     <p class="text-sm font-bold mt-2 text-ting-blue">Tus Datos</p>
-                                     <div class="w-full h-2 bg-slate-200 rounded-full mt-1"></div>
-                                     <div class="w-3/4 h-2 bg-slate-200 rounded-full mt-1"></div>
+                                     <i class="fas fa-utensils text-ting-green text-2xl"></i><p class="text-sm font-bold mt-2 text-ting-blue">Menú del Día</p><div class="w-full h-2 bg-slate-200 rounded-full mt-1"></div>
+                                     <p class="text-sm font-bold mt-4 text-ting-blue">Bandeja Paisa</p><div class="w-full h-2 bg-slate-200 rounded-full mt-1"></div>
                                 </div>
                             </div>
-                            <h3 class="font-bold text-lg text-ting-blue mt-3">2. Confirman Datos</h3>
-                            <p class="text-sm text-slate-600">Revisan su carrito e ingresan su dirección.</p>
+                            <h3 class="font-bold text-lg text-ting-blue mt-3">2. Arman su Pedido</h3>
+                            <p class="text-sm text-slate-600">Navegan el menú, personalizan sus platos y añaden todo al carrito.</p>
                         </div>
-                        <div>
-                            <div class="bg-slate-200 w-full h-64 mx-auto rounded-2xl p-2 border-2 border-slate-300 flex items-center">
+                        <div class="bg-ting-blue/5 p-4 rounded-xl">
+                            <div class="bg-slate-200 w-full h-48 mx-auto rounded-2xl p-2 border-2 border-slate-300 flex items-center">
                                 <div class="bg-white w-full h-full rounded-lg p-3 text-left">
-                                     <i class="fab fa-whatsapp text-green-500 text-2xl"></i>
-                                     <p class="text-sm font-bold mt-2 text-ting-blue">Enviar Pedido</p>
-                                     <div class="w-full h-6 bg-green-500 rounded-md mt-1"></div>
+                                     <i class="fab fa-whatsapp text-green-500 text-2xl"></i><p class="text-sm font-bold mt-2 text-ting-blue">Enviar Pedido</p><p class="text-xs mt-1 text-slate-500">Mesa: 14</p><div class="w-full h-6 bg-green-500 rounded-md mt-1"></div>
                                 </div>
                             </div>
-                            <h3 class="font-bold text-lg text-ting-blue mt-3">3. Envían el Pedido</h3>
-                            <p class="text-sm text-slate-600">Con un clic, la orden te llega a WhatsApp.</p>
+                            <h3 class="font-bold text-lg text-ting-blue mt-3">3. Envían a WhatsApp</h3>
+                            <p class="text-sm text-slate-600">Confirman sus datos y la orden te llega con todo lo que necesitas.</p>
                         </div>
                     </div>
                 </div>
             </main>
-
             <footer class="mt-auto pt-6">
                  <div class="bg-ting-green text-center p-6 rounded-2xl shadow-xl flex flex-col items-center justify-center">
                     <h2 class="text-3xl font-black text-white">¡Empieza a Recibir Pedidos Hoy Mismo!</h2>
