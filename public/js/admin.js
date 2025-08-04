@@ -1,4 +1,4 @@
-// admin.js
+// admin.js (CÓDIGO COMPLETO Y ACTUALIZADO)
 document.addEventListener('DOMContentLoaded', async () => {
     // 1. AUTENTICACIÓN Y CONFIGURACIÓN
     const userData = JSON.parse(localStorage.getItem('userData'));
@@ -9,8 +9,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     const RESTAURANTE_ID = userData.restauranteId;
     let allMenuCategories = [];
-    let config = {}; // Para guardar la config de Cloudinary
-    let fileToUpload = null; // Para guardar el archivo de logo seleccionado
+    let config = {};
+    let fileToUpload = null;
 
     // 2. REFERENCIAS AL DOM
     const adminRestauranteNombre = document.getElementById('admin-restaurante-nombre');
@@ -41,7 +41,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const platoNombreInput = document.getElementById('plato-nombre');
     const platoDescripcionInput = document.getElementById('plato-descripcion');
     const platoPrecioInput = document.getElementById('plato-precio');
-    const platoCategoriaInput = document.getElementById('plato-categoria');
     const platosTableBody = document.querySelector('#platos-table tbody');
     const platoSubmitBtn = document.getElementById('plato-submit-btn');
     const especialForm = document.getElementById('especial-form');
@@ -51,6 +50,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     const especialPrecioInput = document.getElementById('especial-precio');
     const especialesTableBody = document.querySelector('#especiales-table tbody');
     const especialSubmitBtn = document.getElementById('especial-submit-btn');
+    
+    // === ¡NUEVAS REFERENCIAS AL DOM PARA BEBIDAS! ===
+    const bebidaForm = document.getElementById('bebida-form');
+    const bebidaIdInput = document.getElementById('bebida-id');
+    const bebidaNombreInput = document.getElementById('bebida-nombre');
+    const bebidaDescripcionInput = document.getElementById('bebida-descripcion');
+    const bebidaPrecioInput = document.getElementById('bebida-precio');
+    const bebidasTableBody = document.querySelector('#bebidas-table tbody');
+    const bebidaSubmitBtn = document.getElementById('bebida-submit-btn');
+    const platoCategoriaInput = document.getElementById('plato-categoria');
+    const bebidaCategoriaInput = document.getElementById('bebida-categoria');
+    // ===================================
+
     const categoriaForm = document.getElementById('categoria-form');
     const categoriaIdInput = document.getElementById('categoria-id');
     const categoriaNombreInput = document.getElementById('categoria-nombre');
@@ -93,23 +105,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.location.href = '/login.html';
     });
     
-    // === LÓGICA DEL NUEVO BOTÓN DE DESCARGA ===
+    // LÓGICA DEL BOTÓN DE DESCARGA
     if (downloadReportBtn && RESTAURANTE_ID) {
         downloadReportBtn.addEventListener('click', () => {
             const downloadUrl = `/api/pedidos/descargar/${RESTAURANTE_ID}`;
-            
-            // Inicia la descarga del archivo Excel
             const link = document.createElement('a');
             link.href = downloadUrl;
             document.body.appendChild(link);
             link.click();
             link.remove();
-            
             alert('El reporte se está descargando. Por favor, revisa tus descargas.');
         });
     }
-    // =========================================
-
+    
     // --- GESTIÓN DE DATOS DEL RESTAURANTE ---
     let currentRestauranteSlug = null;
 
@@ -143,7 +151,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     editRestauranteForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
         let currentData = await fetchData(`/api/restaurantes/${RESTAURANTE_ID}`);
         let logoUrl = currentData.logoUrl || '';
 
@@ -229,7 +236,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 row.innerHTML = `
                     <td>${p.nombre}</td>
                     <td>$${p.precio ? p.precio.toFixed(2) : '0.00'}</td>
-                    <td>${p.categoria || 'Sin categoría'}</td>
+                    <td>${p.descripcion || ''}</td>
                     <td>
                         <label class="switch">
                             <input type="checkbox" class="toggle-disponibilidad" data-id="${p._id}" data-tipo="platos" ${p.disponible ? 'checked' : ''}>
@@ -251,7 +258,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             nombre: platoNombreInput.value, 
             descripcion: platoDescripcionInput.value, 
             precio: parseFloat(platoPrecioInput.value), 
-            categoria: platoCategoriaInput.value, 
+            categoria: platoCategoriaInput.value, // <-- LÍNEA AÑADIDA
             restaurante: RESTAURANTE_ID 
         };
         const id = platoIdInput.value;
@@ -285,7 +292,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 platoNombreInput.value = p.nombre; 
                 platoDescripcionInput.value = p.descripcion || ''; 
                 platoPrecioInput.value = p.precio; 
-                platoCategoriaInput.value = p.categoria || '';
+                platoCategoriaInput.value = p.categoria || ''; // <-- LÍNEA AÑADIDA
                 platoSubmitBtn.textContent = 'Actualizar Plato';
                 window.scrollTo({ top: platoForm.offsetTop, behavior: 'smooth' });
             }
@@ -380,7 +387,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
     });
-
+    
     // --- GESTIÓN DE CATEGORÍAS DE MENÚ ---
     function createOpcionInput(opcion = {}) {
         const div = document.createElement('div'); div.classList.add('opcion-item'); div.style.display = 'flex'; div.style.alignItems = 'center'; div.style.marginBottom = '5px';
@@ -435,6 +442,90 @@ document.addEventListener('DOMContentLoaded', async () => {
             createOpcionInput();
             categoriaSubmitBtn.textContent = 'Guardar Categoría';
             loadCategorias();
+        }
+    });
+
+    // --- GESTIÓN DE BEBIDAS ---
+    async function loadBebidas() {
+        const bebidas = await fetchData(`/api/bebidas/restaurante/${RESTAURANTE_ID}`);
+        bebidasTableBody.innerHTML = '';
+        if(bebidas && Array.isArray(bebidas)) {
+            bebidas.forEach(b => {
+                const row = bebidasTableBody.insertRow();
+                row.innerHTML = `
+                    <td>${b.nombre}</td>
+                    <td>$${b.precio ? b.precio.toFixed(2) : '0.00'}</td>
+                    <td>${b.categoria || ''}</td>
+                    <td>
+                        <label class="switch">
+                            <input type="checkbox" class="toggle-disponibilidad" data-id="${b._id}" data-tipo="bebidas" ${b.disponible ? 'checked' : ''}>
+                            <span class="slider"></span>
+                        </label>
+                    </td>
+                    <td>
+                        <button class="edit-bebida btn" data-id='${b._id}'>E</button>
+                        <button class="delete-bebida btn btn-danger" data-id='${b._id}'>X</button>
+                    </td>
+                `;
+            });
+        }
+    }
+
+    bebidaForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = { 
+            nombre: bebidaNombreInput.value, 
+            descripcion: bebidaDescripcionInput.value, 
+            precio: parseFloat(bebidaPrecioInput.value), 
+            categoria: bebidaCategoriaInput.value,
+            restaurante: RESTAURANTE_ID 
+        };
+        const id = bebidaIdInput.value;
+        const url = id ? `/api/bebidas/${id}` : '/api/bebidas';
+        const method = id ? 'PUT' : 'POST';
+
+        const result = await fetchData(url, { 
+            method: method, 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify(data) 
+        });
+
+        if (result) {
+            alert(id ? 'Bebida actualizada con éxito.' : 'Bebida creada con éxito.');
+            bebidaForm.reset(); 
+            bebidaIdInput.value = '';
+            // Si tienes un botón específico, si no, puedes quitar esta línea:
+            // bebidaSubmitBtn.textContent = 'Guardar Bebida';
+            loadBebidas();
+        }
+    });
+
+    bebidasTableBody.addEventListener('click', async (e) => {
+        const id = e.target.dataset.id;
+        if (e.target.classList.contains('toggle-disponibilidad')) { 
+            await fetchData(`/api/bebidas/${id}/toggle`, { method: 'PATCH' });
+        }
+        else if (e.target.classList.contains('edit-bebida')) {
+            const b = await fetchData(`/api/bebidas/${id}`);
+            if (b) {
+                bebidaIdInput.value = b._id; 
+                bebidaNombreInput.value = b.nombre; 
+                bebidaDescripcionInput.value = b.descripcion || ''; 
+                bebidaPrecioInput.value = b.precio;
+                bebidaCategoriaInput.value = b.categoria || '';
+                // Si tienes un botón específico, si no, puedes quitar esta línea:
+                // bebidaSubmitBtn.textContent = 'Actualizar Bebida';
+                window.scrollTo({ top: bebidaForm.offsetTop, behavior: 'smooth' });
+            }
+        } 
+        else if (e.target.classList.contains('delete-bebida')) {
+            if (confirm('¿Estás seguro de que quieres eliminar esta bebida?')) { 
+                const result = await fetchData(`/api/bebidas/${id}`, { method: 'DELETE' }); 
+                if (result === null) {
+                    alert('Bebida eliminada con éxito.');
+                    loadBebidas();
+                }
+            }
         }
     });
 
@@ -576,6 +667,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadRestauranteData();
     loadPlatos();
     loadEspeciales();
+    loadBebidas(); // <-- AÑADIR ESTA LÍNEA
     loadCategorias();
     loadMenusDia();
     createOpcionInput();

@@ -532,3 +532,30 @@ input:checked + .slider:before { transform: translateX(20px); }
     height: 20px; /* Un tamaño pequeño y discreto para el logo */
     width: auto;
 }
+
+/* --- ESTILOS PARA LOS NUEVOS MÓDULOS DEL ADMIN --- */
+
+/* El contenedor principal para cada módulo */
+.admin-module {
+    background-color: #ffffff; /* Fondo blanco para resaltar */
+    border: 1px solid #e9ecef; /* Un borde sutil */
+    border-radius: 8px;        /* Esquinas redondeadas */
+    padding: 1.5rem;           /* Espacio interno */
+    margin-bottom: 2rem;       /* Espacio entre módulos */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); /* Sombra suave para dar profundidad */
+    transition: box-shadow 0.3s ease-in-out;
+}
+
+.admin-module:hover {
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08); /* Sombra más pronunciada al pasar el mouse */
+}
+
+/* El título de cada módulo */
+.admin-module h2 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f1f3f5;
+    color: #00183A; /* Usando el color azul de tu marca */
+    font-size: 1.5rem; /* Un tamaño de fuente más grande y legible */
+}

@@ -35,8 +35,18 @@ const pedidoSchema = new mongoose.Schema({
     cliente: {
         nombre: { type: String, required: true },
         telefono: { type: String },
-        direccion: { type: String }
+        direccion: { type: String },
+        numeroMesa: { type: String }
     },
+    // --- CAMPO CLAVE AÑADIDO ---
+    // Este campo es el que faltaba. Ahora la base de datos
+    // guardará si el pedido es 'Domicilio' o 'Mesa'.
+    tipo: {
+        type: String,
+        enum: ['Domicilio', 'Mesa'],
+        required: [true, 'El tipo de pedido es obligatorio.']
+    },
+    // --------------------------
     estado: {
         type: String,
         enum: ['pendiente', 'en preparación', 'listo', 'entregado', 'cancelado'],
@@ -47,24 +57,16 @@ const pedidoSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-// FIX: Middleware mejorado para generar un número de pedido único por restaurante
+// Tu excelente middleware para generar el número de pedido se mantiene intacto.
 pedidoSchema.pre('save', async function(next) {
     if (this.isNew && !this.numeroPedido) {
         try {
-            // 1. Contar cuántos pedidos ya tiene este restaurante
             const count = await mongoose.model('Pedido').countDocuments({ restaurante: this.restaurante });
-            
-            // 2. Obtener el restaurante para usar su nombre como prefijo
             const restaurante = await mongoose.model('Restaurante').findById(this.restaurante);
-            
-            // 3. Crear un prefijo de 4 letras (o 'PED' si no se encuentra el restaurante)
             const prefix = restaurante ? restaurante.nombre.substring(0, 4).toUpperCase().replace(/\s+/g, '') : 'PED';
-
-            // 4. Combinar el prefijo y el contador para un ID único (ej: ORIO-00001)
             this.numeroPedido = `${prefix}-${(count + 1).toString().padStart(5, '0')}`;
         } catch (error) {
             console.error("Error generando número de pedido:", error);
-            // Si hay un error, pasarlo para que no se guarde un pedido corrupto
             return next(error);
         }
     }

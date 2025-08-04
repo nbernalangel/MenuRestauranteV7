@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ting - Tipo de Pedido</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'ting-green': '#94C120',
+                        'ting-blue': '#00183A',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+        }
+        .header {
+            margin-bottom: 2rem;
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #00183A;
+            margin-bottom: 0.5rem;
+        }
+        .header p {
+            font-size: 1.1rem;
+            color: #4a5568;
+        }
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .option-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f0f2f5;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #00183A;
+            font-size: 1.25rem;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .option-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        .option-button i {
+            margin-right: 1rem;
+            color: #94C120;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div id="welcome-logo" class="mb-4"></div>
+
+            <h1 id="welcome-title" class="text-ting-blue">¡Hola! ¿Cómo quieres hacer tu pedido?</h1>
+
+            <p>Selecciona una opción para continuar.</p>
+        </header>
+
+        <main class="options-container">
+            <a id="domicilio-btn" href="#" class="option-button">
+                <i class="fas fa-motorcycle"></i>
+                <span>A Domicilio</span>
+            </a>
+
+            <a id="mesa-btn" href="#" class="option-button">
+                <i class="fas fa-utensils"></i>
+                <span>En la Mesa</span>
+            </a>
+        </main>
+    </div>
+    <script src="/js/seleccionar-pedido.js"></script>
+</body>
+</html>

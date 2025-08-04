@@ -16,6 +16,8 @@ const port = process.env.PORT || 3000;
 // --- Middlewares ---
 app.use(cors());
 app.use(express.json());
+
+// === SERVIR ARCHIVOS ESTÁTICOS ===
 app.use(express.static('public'));
 
 const mapsClient = new Client({});
@@ -45,6 +47,7 @@ const MenuDia = require('./models/MenuDia');
 const Restaurante = require('./models/Restaurante');
 const Usuario = require('./models/Usuario');
 const Pedido = require('./models/Pedido');
+const Bebida = require('./models/Bebida'); // <-- ¡LÍNEA AÑADIDA!
 
 // ========================================================
 // === RUTAS PARA LA SUBIDA DE LOGOS ======================
@@ -205,7 +208,6 @@ app.post('/api/forgot-password', async (req, res) => {
         await usuario.save();
 
         const appBaseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-        const resetUrl = `${appBaseUrl}/reset-password.html?token=${resetToken}`;
 
         await resend.emails.send({
             from: `Tu Menú Digital <noreply@ting-col.com>`,
@@ -253,29 +255,51 @@ app.post('/api/reset-password/:token', async (req, res) => {
     }
 });
 
-// RUTAS DEL SUPER-ADMIN - GESTIÓN DE RESTAURANTES
-// Importante: Las rutas más específicas deben ir ANTES de las rutas más generales
-// como las que tienen parámetros (:id).
+// ELIMINAR UNA BEBIDA POR ID
+app.delete('/api/bebidas/:id', async (req, res) => {
+    try {
+        const item = await Bebida.findByIdAndDelete(req.params.id);
+        if (!item) return res.status(404).json({ message: 'Bebida no encontrada para eliminar.' });
+        res.status(204).send();
+    } catch (e) {
+        res.status(500).json({ message: e.message });
+    }
+});
 
+// ACTIVAR/DESACTIVAR DISPONIBILIDAD DE UNA BEBIDA
+app.patch('/api/bebidas/:id/toggle', async (req, res) => {
+    try {
+        const item = await Bebida.findById(req.params.id);
+        if (!item) return res.status(404).json({ message: 'Bebida no encontrada.' });
+        item.disponible = !item.disponible;
+        await item.save();
+        res.json(item);
+    } catch (e) {
+        res.status(500).json({ message: 'Error interno del servidor.' });
+    }
+});
+
+// --- RUTA FALTANTE PARA OBTENER TODOS LOS RESTAURANTES ---
 app.post('/api/restaurantes', async (req, res) => {
     try {
-        const item = new Restaurante(req.body);
-        await item.save();
-        res.status(201).json(item);
-    } catch (e) {
-        if (e.name === 'ValidationError') {
-            return res.status(400).json({ message: e.message });
-        }
-        res.status(500).json({ message: 'Error interno del servidor al crear restaurante.' });
+        // Lógica para crear un nuevo restaurante
+        const { nombre, slug, telefono } = req.body;
+        const nuevoRestaurante = new Restaurante({ nombre, slug, telefono });
+        await nuevoRestaurante.save();
+        res.status(201).json(nuevoRestaurante);
+    } catch (error) {
+        console.error("❌ Error al crear un nuevo restaurante:", error.message);
+        res.status(500).json({ message: 'Error interno del servidor al crear el restaurante.' });
     }
 });
 
 app.get('/api/restaurantes', async (req, res) => {
     try {
-        const items = await Restaurante.find();
-        res.json(items);
+        const restaurantes = await Restaurante.find({}).sort({ nombre: 1 });
+        res.json(restaurantes);
     } catch (e) {
-        res.status(500).json({ message: 'Error interno del servidor al obtener restaurantes.' });
+        console.error("❌ Error al obtener la lista de restaurantes:", e.message);
+        res.status(500).json({ message: 'Error interno del servidor al obtener los restaurantes.' });
     }
 });
 
@@ -367,18 +391,39 @@ app.delete('/api/restaurantes/:id', async (req, res) => {
     }
 });
 
-// RUTAS DEL SUPER-ADMIN - GESTIÓN DE USUARIOS
+// RUTA DEL SUPER-ADMIN PARA CREAR USUARIOS (VERSIÓN CORREGIDA FINAL)
 app.post('/api/usuarios', async (req, res) => {
     try {
         const { email, password, rol, restaurante } = req.body;
-        const item = new Usuario({ email, password, rol, restaurante, isVerified: true });
-        await item.save();
-        res.status(201).json(item);
+
+        const usuarioExistente = await Usuario.findOne({ email });
+        if (usuarioExistente) {
+            return res.status(409).json({ message: 'Ya existe un usuario con este correo electrónico.' });
+        }
+
+        // --- CORRECCIÓN: Se elimina el cifrado manual ---
+        // El modelo Usuario.js se encargará de esto automáticamente al hacer .save()
+        const nuevoUsuario = new Usuario({
+            email,
+            password, // Pasamos la contraseña en texto plano para que el modelo la cifre una sola vez
+            rol,
+            restaurante,
+            isVerified: true
+        });
+
+        await nuevoUsuario.save();
+        
+        const usuarioCreado = nuevoUsuario.toObject();
+        delete usuarioCreado.password;
+
+        res.status(201).json(usuarioCreado);
+
     } catch (e) {
+        console.error("❌ Error al crear usuario desde super_admin:", e);
         if (e.name === 'ValidationError') {
             return res.status(400).json({ message: e.message });
         }
-        res.status(500).json({ message: 'Error interno del servidor al crear usuario.' });
+        res.status(500).json({ message: 'Error interno del servidor al crear el usuario.' });
     }
 });
 app.get('/api/usuarios', async (req, res) => {
@@ -511,6 +556,70 @@ app.patch('/api/especiales/:id/toggle', async (req, res) => {
     }
 });
 
+// ==============================================
+// === NUEVAS RUTAS DEL ADMIN DE RESTAURANTE - GESTIÓN DE BEBIDAS ===
+// ==============================================
+app.post('/api/bebidas', async (req, res) => {
+    try {
+        const item = new Bebida(req.body);
+        await item.save();
+        res.status(201).json(item);
+    } catch (e) {
+        res.status(400).json({ message: e.message });
+    }
+});
+
+app.get('/api/bebidas/restaurante/:restauranteId', async (req, res) => {
+    try {
+        const items = await Bebida.find({ restaurante: req.params.restauranteId });
+        res.json(items);
+    } catch (e) {
+        res.status(500).json({ message: e.message });
+    }
+});
+
+app.get('/api/bebidas/:id', async (req, res) => {
+    try {
+        const item = await Bebida.findById(req.params.id);
+        if (!item) return res.status(404).json({ message: 'Bebida no encontrada.' });
+        res.json(item);
+    } catch (e) {
+        res.status(500).json({ message: e.message });
+    }
+});
+
+app.put('/api/bebidas/:id', async (req, res) => {
+    try {
+        const item = await Bebida.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+        if (!item) return res.status(404).json({ message: 'Bebida no encontrada para actualizar.' });
+        res.json(item);
+    } catch (e) {
+        res.status(400).json({ message: e.message });
+    }
+});
+
+app.delete('/api/bebidas/:id', async (req, res) => {
+    try {
+        const item = await Bebida.findByIdAndDelete(req.params.id);
+        if (!item) return res.status(404).json({ message: 'Bebida no encontrada para eliminar.' });
+        res.status(204).send();
+    } catch (e) {
+        res.status(500).json({ message: e.message });
+    }
+});
+
+app.patch('/api/bebidas/:id/toggle', async (req, res) => {
+    try {
+        const bebida = await Bebida.findById(req.params.id);
+        if (!bebida) return res.status(404).json({ message: 'Bebida no encontrada.' });
+        bebida.disponible = !bebida.disponible;
+        await bebida.save();
+        res.json(bebida);
+    } catch (e) {
+        res.status(500).json({ message: 'Error interno del servidor.' });
+    }
+});
+
 // RUTAS PARA CATEGORÍAS DE MENÚ
 app.post('/api/menu-categorias', async (req, res) => {
     try { const item = new MenuCategoria(req.body); await item.save(); res.status(201).json(item); } catch (e) { res.status(400).json({ message: e.message }); }
@@ -545,7 +654,7 @@ app.delete('/api/menus-dia/:id', async (req, res) => {
     try { const item = await MenuDia.findByIdAndDelete(req.params.id); if (!item) return res.status(404).json({ message: 'Menú del día no encontrado para eliminar.' }); res.status(204).send(); } catch (e) { res.status(500).json({ message: e.message }); }
 });
 
-// RUTA PARA DESCARGAR REPORTE DE PEDIDOS EN EXCEL
+// RUTA PARA DESCARGAR REPORTE DE PEDIDOS EN EXCEL (VERSIÓN MEJORADA)
 app.get('/api/pedidos/descargar/:restauranteId', async (req, res) => {
     try {
         const { restauranteId } = req.params;
@@ -561,10 +670,13 @@ app.get('/api/pedidos/descargar/:restauranteId', async (req, res) => {
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet(`Pedidos ${restaurante.nombre}`);
 
+        // --- CAMBIO 1: AÑADIMOS LAS NUEVAS COLUMNAS ---
         worksheet.columns = [
             { header: 'Fecha', key: 'fecha', width: 20 },
             { header: 'Número Pedido', key: 'numeroPedido', width: 20 },
+            { header: 'Tipo de Pedido', key: 'tipo', width: 20 }, // <-- NUEVA COLUMNA
             { header: 'Cliente', key: 'cliente', width: 30 },
+            { header: 'Detalle (Dirección/Mesa)', key: 'detalle', width: 40 }, // <-- NUEVA COLUMNA
             { header: 'Teléfono', key: 'telefono', width: 15 },
             { header: 'Ítems', key: 'items', width: 50 },
             { header: 'Total', key: 'total', width: 15, style: { numFmt: '"$"#,##0.00' } },
@@ -573,14 +685,27 @@ app.get('/api/pedidos/descargar/:restauranteId', async (req, res) => {
 
         pedidos.forEach(pedido => {
             const itemsStr = pedido.items.map(item =>
-                `${item.cantidad}x ${item.nombre ? item.nombre : 'Nombre no encontrado'}`
+                `${item.cantidad}x ${item.nombre || 'N/A'}`
             ).join(', ');
+            
+            // --- CAMBIO 2: LÓGICA PARA OBTENER LOS DATOS CORRECTOS ---
+            let tipoPedido = pedido.tipo || 'No especificado';
+            let detallePedido = '';
+            
+            // Verificamos el tipo de pedido y extraemos el dato correspondiente
+            if (pedido.tipo === 'Mesa' && pedido.cliente) {
+                detallePedido = `Mesa #${pedido.cliente.numeroMesa || 'N/A'}`;
+            } else if (pedido.tipo === 'Domicilio' && pedido.cliente) {
+                detallePedido = pedido.cliente.direccion || 'No especificada';
+            }
 
             worksheet.addRow({
                 fecha: pedido.createdAt,
                 numeroPedido: pedido.numeroPedido,
-                cliente: pedido.cliente.nombre,
-                telefono: pedido.cliente.telefono,
+                tipo: tipoPedido, // <-- DATO NUEVO
+                cliente: pedido.cliente ? pedido.cliente.nombre : 'N/A',
+                detalle: detallePedido, // <-- DATO NUEVO
+                telefono: pedido.cliente ? pedido.cliente.telefono || 'N/A' : 'N/A',
                 items: itemsStr,
                 total: pedido.total,
                 estado: pedido.estado
@@ -600,7 +725,7 @@ app.get('/api/pedidos/descargar/:restauranteId', async (req, res) => {
             `attachment; filename="${nombreArchivo}"`
         );
 
-        console.log(`✅ Reporte Excel generado para ${restaurante.nombre}.`);
+        console.log(`✅ Reporte Excel mejorado generado para ${restaurante.nombre}.`);
 
         await workbook.xlsx.write(res);
         res.end();
@@ -703,15 +828,26 @@ app.get('/api/reportes/descargar', async (req, res) => {
     }
 });
 
-// app.js (Fragmento de código final de la ruta de reportes de restaurantes)
+// app.js (Fragmento de código para la nueva ruta de reportes de restaurantes)
+// ========================================================
+// === NUEVA RUTA PARA DESCARGAR REPORTE DE RESTAURANTES CON FILTROS ===
+// ========================================================
 app.get('/api/reportes/restaurantes/descargar', async (req, res) => {
     try {
-        console.log("Iniciando reporte de restaurantes...");
-        
-        // Obtener todos los restaurantes
-        const restaurantes = await Restaurante.find({}).sort({ nombre: 1 });
-        
-        console.log("Número de restaurantes encontrados:", restaurantes.length);
+        const { nombre, ubicacion } = req.query;
+
+        // Construir el objeto de consulta de MongoDB
+        let query = {};
+        if (nombre) {
+            query.nombre = { $regex: nombre, $options: 'i' }; // Búsqueda insensible a mayúsculas/minúsculas
+        }
+        if (ubicacion) {
+            // Se puede buscar la ubicación en el campo de dirección
+            query.direccion = { $regex: ubicacion, $options: 'i' };
+        }
+
+        // Obtener los restaurantes filtrados
+        const restaurantes = await Restaurante.find(query).sort({ nombre: 1 });
 
         // Generar el archivo Excel
         const workbook = new ExcelJS.Workbook();
@@ -722,6 +858,8 @@ app.get('/api/reportes/restaurantes/descargar', async (req, res) => {
             { header: 'Slug', key: 'slug', width: 20 },
             { header: 'Teléfono', key: 'telefono', width: 20 },
             { header: 'Dirección', key: 'direccion', width: 50 },
+            { header: 'Ciudad', key: 'ciudad', width: 20 }, // El modelo no tiene este campo, pero lo dejamos por si lo añades
+            { header: 'País', key: 'pais', width: 20 }, // El modelo no tiene este campo, pero lo dejamos por si lo añades
             { header: 'Fecha de Registro', key: 'fechaRegistro', width: 20 }
         ];
 
@@ -731,6 +869,8 @@ app.get('/api/reportes/restaurantes/descargar', async (req, res) => {
                 slug: restaurante.slug,
                 telefono: restaurante.telefono,
                 direccion: restaurante.direccion,
+                ciudad: restaurante.ciudad || 'N/A',
+                pais: restaurante.pais || 'N/A',
                 fechaRegistro: restaurante.createdAt
             });
         });
@@ -758,6 +898,7 @@ app.get('/api/reportes/restaurantes/descargar', async (req, res) => {
     }
 });
 
+
 // RUTAS PÚBLICAS Y PARA SERVIR ARCHIVOS HTML
 app.get('/api/public/menu/:slug', async (req, res) => {
     try {
@@ -769,7 +910,10 @@ app.get('/api/public/menu/:slug', async (req, res) => {
         const menuDelDia = await MenuDia.findOne({ restaurante: restaurante._id, fecha: { $gte: inicioDelDia, $lte: finDelDia }, activo: true });
         const platosALaCarta = await Plato.find({ restaurante: restaurante._id, disponible: true });
         const platosEspeciales = await Especial.find({ restaurante: restaurante._id, disponible: true });
-        res.json({ restaurante, menuDelDia, platosALaCarta, platosEspeciales });
+        const bebidas = await Bebida.find({ restaurante: restaurante._id, disponible: true }); // <-- LÍNEA NUEVA
+
+        // Se añade "bebidas" a la respuesta
+        res.json({ restaurante, menuDelDia, platosALaCarta, platosEspeciales, bebidas });
     } catch (e) {
         res.status(500).json({ message: 'Error interno del servidor.' });
     }
@@ -781,7 +925,8 @@ app.get('/verify', (req, res) => res.sendFile(path.join(__dirname, 'public', 've
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
 app.get('/super_admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'super_admin.html')));
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
-app.get('/r/:slug', (req, res) => res.sendFile(path.join(__dirname, 'public', 'menu_template.html')));
+app.get('/r/:slug', (req, res) => res.sendFile(path.join(__dirname, 'public', 'seleccionar-pedido.html')));
+app.get('/r/:slug/menu', (req, res) => res.sendFile(path.join(__dirname, 'public', 'menu_template.html')));
 app.get('/forgot-password', (req, res) => res.sendFile(path.join(__dirname, 'public', 'forgot-password.html')));
 app.get('/reset-password', (req, res) => res.sendFile(path.join(__dirname, 'public', 'reset-password.html')));
 
