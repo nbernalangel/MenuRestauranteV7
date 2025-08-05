@@ -145,27 +145,31 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderPizzas(pizzas, container, section) {
-        if (!container || !section) return;
-        if (!pizzas || pizzas.length === 0) {
-            section.style.display = 'none';
-            return;
-        }
-        section.style.display = 'block';
-        container.innerHTML = '';
-        pizzas.forEach(pizza => {
-            const minPrice = pizza.variantes.length > 0 ? Math.min(...pizza.variantes.map(v => v.precio)) : 0;
-            const pizzaDiv = document.createElement('div');
-            pizzaDiv.className = 'menu-card';
-            pizzaDiv.innerHTML = `
-                <div class="content-wrapper">
-                    <h3>${pizza.nombre}</h3>
-                    <p class="description">${pizza.descripcion || ''}</p>
-                </div>
-                <div class="card-footer">
-                    <span class="price">Desde ${formatCurrency(minPrice)}</span>
-                    <button class="add-btn open-pizza-modal-btn" data-pizza-id="${pizza._id}">Elegir</button>
-                </div>`;
-            container.appendChild(pizzaDiv);
+    if (!container || !section) return;
+
+    if (!pizzas || pizzas.length === 0) {
+        section.style.display = 'none';
+        return;
+    }
+    section.style.display = 'block';
+    container.innerHTML = '';
+
+    pizzas.forEach(pizza => {
+        const minPrice = pizza.variantes.length > 0 ? Math.min(...pizza.variantes.map(v => v.precio)) : 0;
+
+        const pizzaDiv = document.createElement('div');
+        pizzaDiv.className = 'menu-card';
+        // Esta es la versión limpia que solo usa la descripción
+        pizzaDiv.innerHTML = `
+            <div class="content-wrapper">
+                <h3>${pizza.nombre}</h3>
+                <p class="description">${pizza.descripcion || ''}</p>
+            </div>
+            <div class="card-footer">
+                <span class="price">Desde ${formatCurrency(minPrice)}</span>
+                <button class="add-btn open-pizza-modal-btn" data-pizza-id="${pizza._id}">Elegir</button>
+            </div>`;
+             container.appendChild(pizzaDiv);
         });
     }
 

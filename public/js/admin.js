@@ -561,7 +561,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             const pizzaData = {
                 nombre: pizzaNombreInput.value,
                 descripcion: pizzaDescripcionInput.value,
-                ingredientes: pizzaIngredientesInput.value.split(',').map(i => i.trim()).filter(i => i),
                 variantes: variantes,
                 permiteMitades: permiteMitadesCheckbox.checked,
                 restaurante: RESTAURANTE_ID
@@ -598,7 +597,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     pizzaIdInput.value = pizza._id;
                     pizzaNombreInput.value = pizza.nombre;
                     pizzaDescripcionInput.value = pizza.descripcion || '';
-                    pizzaIngredientesInput.value = (pizza.ingredientes || []).join(', ');
                     permiteMitadesCheckbox.checked = pizza.permiteMitades;
                     
                     variantesContainer.innerHTML = '';
