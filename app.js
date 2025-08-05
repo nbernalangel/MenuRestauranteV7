@@ -48,6 +48,7 @@ const Restaurante = require('./models/Restaurante');
 const Usuario = require('./models/Usuario');
 const Pedido = require('./models/Pedido');
 const Bebida = require('./models/Bebida'); // <-- ¡LÍNEA AÑADIDA!
+const Pizza = require('./models/Pizza');
 
 // ========================================================
 // === RUTAS PARA LA SUBIDA DE LOGOS ======================
@@ -620,6 +621,77 @@ app.patch('/api/bebidas/:id/toggle', async (req, res) => {
     }
 });
 
+// ==============================================
+// === RUTAS PARA LA GESTIÓN DE PIZZAS ===
+// ==============================================
+
+// CREAR UNA NUEVA PIZZA
+app.post('/api/pizzas', async (req, res) => {
+    try {
+        const item = new Pizza(req.body);
+        await item.save();
+        res.status(201).json(item);
+    } catch (e) {
+        res.status(400).json({ message: e.message });
+    }
+});
+
+// OBTENER TODAS LAS PIZZAS DE UN RESTAURANTE
+app.get('/api/pizzas/restaurante/:restauranteId', async (req, res) => {
+    try {
+        const items = await Pizza.find({ restaurante: req.params.restauranteId });
+        res.json(items);
+    } catch (e) {
+        res.status(500).json({ message: e.message });
+    }
+});
+
+// OBTENER UNA PIZZA POR SU ID
+app.get('/api/pizzas/:id', async (req, res) => {
+    try {
+        const item = await Pizza.findById(req.params.id);
+        if (!item) return res.status(404).json({ message: 'Pizza no encontrada.' });
+        res.json(item);
+    } catch (e) {
+        res.status(500).json({ message: e.message });
+    }
+});
+
+// ACTUALIZAR UNA PIZZA POR SU ID
+app.put('/api/pizzas/:id', async (req, res) => {
+    try {
+        const item = await Pizza.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+        if (!item) return res.status(404).json({ message: 'Pizza no encontrada para actualizar.' });
+        res.json(item);
+    } catch (e) {
+        res.status(400).json({ message: e.message });
+    }
+});
+
+// ELIMINAR UNA PIZZA POR SU ID
+app.delete('/api/pizzas/:id', async (req, res) => {
+    try {
+        const item = await Pizza.findByIdAndDelete(req.params.id);
+        if (!item) return res.status(404).json({ message: 'Pizza no encontrada para eliminar.' });
+        res.status(204).send();
+    } catch (e) {
+        res.status(500).json({ message: e.message });
+    }
+});
+
+// ACTIVAR/DESACTIVAR DISPONIBILIDAD DE UNA PIZZA
+app.patch('/api/pizzas/:id/toggle', async (req, res) => {
+    try {
+        const item = await Pizza.findById(req.params.id);
+        if (!item) return res.status(404).json({ message: 'Pizza no encontrada.' });
+        item.disponible = !item.disponible;
+        await item.save();
+        res.json(item);
+    } catch (e) {
+        res.status(500).json({ message: 'Error interno del servidor.' });
+    }
+});
+
 // RUTAS PARA CATEGORÍAS DE MENÚ
 app.post('/api/menu-categorias', async (req, res) => {
     try { const item = new MenuCategoria(req.body); await item.save(); res.status(201).json(item); } catch (e) { res.status(400).json({ message: e.message }); }
@@ -911,9 +983,10 @@ app.get('/api/public/menu/:slug', async (req, res) => {
         const platosALaCarta = await Plato.find({ restaurante: restaurante._id, disponible: true });
         const platosEspeciales = await Especial.find({ restaurante: restaurante._id, disponible: true });
         const bebidas = await Bebida.find({ restaurante: restaurante._id, disponible: true }); // <-- LÍNEA NUEVA
+        const pizzas = await Pizza.find({ restaurante: restaurante._id, disponible: true });
 
         // Se añade "bebidas" a la respuesta
-        res.json({ restaurante, menuDelDia, platosALaCarta, platosEspeciales, bebidas });
+        res.json({ restaurante, menuDelDia, platosALaCarta, platosEspeciales, bebidas, pizzas });
     } catch (e) {
         res.status(500).json({ message: 'Error interno del servidor.' });
     }
@@ -925,10 +998,46 @@ app.get('/verify', (req, res) => res.sendFile(path.join(__dirname, 'public', 've
 app.get('/login', (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
 app.get('/super_admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'super_admin.html')));
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'admin.html')));
-app.get('/r/:slug', (req, res) => res.sendFile(path.join(__dirname, 'public', 'seleccionar-pedido.html')));
+//app.get('/r/:slug', (req, res) => res.sendFile(path.join(__dirname, 'public', 'seleccionar-pedido.html')));
 app.get('/r/:slug/menu', (req, res) => res.sendFile(path.join(__dirname, 'public', 'menu_template.html')));
 app.get('/forgot-password', (req, res) => res.sendFile(path.join(__dirname, 'public', 'forgot-password.html')));
 app.get('/reset-password', (req, res) => res.sendFile(path.join(__dirname, 'public', 'reset-password.html')));
+
+// --- CAMBIO FINAL: RUTA PÚBLICA PRINCIPAL INTELIGENTE ---
+app.get('/r/:slug', async (req, res) => {
+    try {
+        const { slug } = req.params;
+        const restaurante = await Restaurante.findOne({ slug });
+
+        if (!restaurante) {
+            return res.status(404).send('Restaurante no encontrado');
+        }
+
+        const domicilioActivo = restaurante.aceptaDomicilios;
+        const mesaActiva = restaurante.aceptaServicioEnMesa;
+
+        if (domicilioActivo && mesaActiva) {
+            // CASO 1: AMBOS activos -> Muestra la página de selección.
+            res.sendFile(path.join(__dirname, 'public', 'seleccionar-pedido.html'));
+        } else if (domicilioActivo) {
+            // CASO 2: SÓLO domicilios -> Redirige al menú de domicilio.
+            res.redirect(`/r/${slug}/menu?tipo=domicilio`);
+        } else if (mesaActiva) {
+            // CASO 3: SÓLO en mesa -> Redirige al menú de mesa.
+            res.redirect(`/r/${slug}/menu?tipo=mesa`);
+        } else {
+            // CASO 4: NINGUNO activo -> Muestra la página de selección (puedes adaptarla para mostrar un mensaje de "cerrado").
+            res.sendFile(path.join(__dirname, 'public', 'seleccionar-pedido.html'));
+        }
+    } catch (error) {
+        console.error("Error en la ruta /r/:slug :", error);
+        res.status(500).send("Error interno del servidor.");
+    }
+});
+// ----------------------------------------------------
+
+app.get('/r/:slug/menu', (req, res) => res.sendFile(path.join(__dirname, 'public', 'menu_template.html')));
+
 
 
 // --- Iniciar Servidor ---

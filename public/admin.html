@@ -39,7 +39,17 @@
                     <img id="logo-preview" src="https://placehold.co/150x80/e9ecef/6c757d?text=Sin+Logo" alt="Vista previa del logo">
                     <input type="file" id="logo-upload-input" accept="image/*">
                 </div>
-                <button type="submit" class="btn btn-primary">Actualizar Datos</button>
+
+                <label class="form-label" style="margin-top: 1rem; display: block; font-weight: bold;">Servicios Activos:</label>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="aceptaDomicilios" name="servicios">
+                    <label for="aceptaDomicilios">Acepta Pedidos a Domicilio</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="aceptaServicioEnMesa" name="servicios">
+                    <label for="aceptaServicioEnMesa">Acepta Servicio en la Mesa</label>
+                </div>
+                <button type="submit" class="btn btn-primary" style="margin-top: 1.5rem;">Actualizar Datos</button>
             </form>
             
             <div class="restaurante-actions">
@@ -95,6 +105,54 @@
             <div class="table-responsive">
                 <table id="bebidas-table">
                     <thead><tr><th>Nombre</th><th>Precio</th><th>Categoría</th><th>Disponible</th><th>Acciones</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="admin-module">
+            <h2>Gestionar Pizzas</h2>
+            <form id="pizza-form">
+                <input type="hidden" id="pizza-id">
+                
+                <label for="pizza-nombre">Nombre de la Pizza (Ej: Hawaiana)</label>
+                <input type="text" id="pizza-nombre" required>
+                
+                <label for="pizza-descripcion">Descripción</label>
+                <textarea id="pizza-descripcion" rows="2"></textarea>
+
+                <label for="pizza-ingredientes">Ingredientes (separados por comas)</label>
+                <input type="text" id="pizza-ingredientes" placeholder="Ej: Jamón, Piña, Queso Mozzarella">
+
+                <hr style="margin: 1.5rem 0;">
+
+                <label class="form-label" style="font-weight: bold;">Tamaños y Precios:</label>
+                <div id="variantes-container">
+                    </div>
+                <button type="button" id="add-variante-btn" class="btn" style="background-color: #5a6268; margin-top:1em; margin-bottom:1em;">+ Añadir Tamaño</button>
+
+                <hr style="margin: 1.5rem 0;">
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="permiteMitades">
+                    <label for="permiteMitades">Permitir combinar por mitades (mitad y mitad)</label>
+                </div>
+
+                <button type="submit" id="pizza-submit-btn" class="btn btn-primary" style="margin-top: 1.5rem;">Guardar Pizza</button>
+            </form>
+            
+            <h3>Pizzas Existentes</h3>
+            <div class="table-responsive">
+                <table id="pizzas-table">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Tamaños y Precios</th>
+                            <th>Permite Mitades</th>
+                            <th>Disponible</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
                     <tbody></tbody>
                 </table>
             </div>

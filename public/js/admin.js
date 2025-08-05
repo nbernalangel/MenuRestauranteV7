@@ -22,15 +22,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const restauranteDireccionInput = document.getElementById('restaurante-direccion');
     const restauranteDescripcionInput = document.getElementById('restaurante-descripcion');
 
-    
-    // Referencias para el logo
     const logoPreview = document.getElementById('logo-preview');
     const logoUploadInput = document.getElementById('logo-upload-input');
     
-    // === REFERENCIA AL NUEVO BOTÓN ===
+    const aceptaDomiciliosCheckbox = document.getElementById('aceptaDomicilios');
+    const aceptaServicioEnMesaCheckbox = document.getElementById('aceptaServicioEnMesa');
+
     const downloadReportBtn = document.getElementById('download-report-btn');
-    // ===================================
-    
     const restauranteQrBtn = document.getElementById('restaurante-qr-btn');
     const qrcodeContainer = document.getElementById('qrcode-container');
     const qrcodeDiv = document.getElementById('qrcode');
@@ -50,8 +48,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const especialPrecioInput = document.getElementById('especial-precio');
     const especialesTableBody = document.querySelector('#especiales-table tbody');
     const especialSubmitBtn = document.getElementById('especial-submit-btn');
-    
-    // === ¡NUEVAS REFERENCIAS AL DOM PARA BEBIDAS! ===
     const bebidaForm = document.getElementById('bebida-form');
     const bebidaIdInput = document.getElementById('bebida-id');
     const bebidaNombreInput = document.getElementById('bebida-nombre');
@@ -61,8 +57,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const bebidaSubmitBtn = document.getElementById('bebida-submit-btn');
     const platoCategoriaInput = document.getElementById('plato-categoria');
     const bebidaCategoriaInput = document.getElementById('bebida-categoria');
-    // ===================================
-
     const categoriaForm = document.getElementById('categoria-form');
     const categoriaIdInput = document.getElementById('categoria-id');
     const categoriaNombreInput = document.getElementById('categoria-nombre');
@@ -78,6 +72,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     const menuItemsSelectionContainer = document.getElementById('menu-items-selection-container');
     const menusDiaTableBody = document.querySelector('#menus-dia-table tbody');
     const menuDiaSubmitBtn = document.getElementById('menu-dia-submit-btn');
+
+    // --- NUEVAS REFERENCIAS PARA EL MÓDULO DE PIZZAS ---
+    const pizzaForm = document.getElementById('pizza-form');
+    const pizzaIdInput = document.getElementById('pizza-id');
+    const pizzaNombreInput = document.getElementById('pizza-nombre');
+    const pizzaDescripcionInput = document.getElementById('pizza-descripcion');
+    const pizzaIngredientesInput = document.getElementById('pizza-ingredientes');
+    const variantesContainer = document.getElementById('variantes-container');
+    const addVarianteBtn = document.getElementById('add-variante-btn');
+    const permiteMitadesCheckbox = document.getElementById('permiteMitades');
+    const pizzasTableBody = document.querySelector('#pizzas-table tbody');
+    const pizzaSubmitBtn = document.getElementById('pizza-submit-btn');
+    // --------------------------------------------------
     
     // 3. LÓGICA PRINCIPAL
     async function fetchData(url, options = {}) {
@@ -105,7 +112,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.location.href = '/login.html';
     });
     
-    // LÓGICA DEL BOTÓN DE DESCARGA
     if (downloadReportBtn && RESTAURANTE_ID) {
         downloadReportBtn.addEventListener('click', () => {
             const downloadUrl = `/api/pedidos/descargar/${RESTAURANTE_ID}`;
@@ -132,6 +138,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 restauranteDescripcionInput.value = restaurante.descripcion || '';  
                 logoPreview.src = restaurante.logoUrl || 'https://placehold.co/150x80/e9ecef/6c757d?text=Sin+Logo';
                 adminRestauranteNombre.textContent = `Gestionando: ${restaurante.nombre}`;
+                aceptaDomiciliosCheckbox.checked = restaurante.aceptaDomicilios;
+                aceptaServicioEnMesaCheckbox.checked = restaurante.aceptaServicioEnMesa;
                 currentRestauranteSlug = restaurante.slug;
             }
         } catch (error) {
@@ -185,7 +193,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             direccion: restauranteDireccionInput.value,
             descripcion: restauranteDescripcionInput.value,
             mensajeBienvenida: restauranteMensajeTextarea.value,
-            logoUrl: logoUrl
+            logoUrl: logoUrl,
+            aceptaDomicilios: aceptaDomiciliosCheckbox.checked,
+            aceptaServicioEnMesa: aceptaServicioEnMesaCheckbox.checked
         };
         
         const updated = await fetchData(`/api/restaurantes/${RESTAURANTE_ID}`, {
@@ -200,7 +210,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // --- LÓGICA PARA GENERAR QR DEL RESTAURANTE ---
     restauranteQrBtn.addEventListener('click', () => {
         if (!currentRestauranteSlug) {
             alert('No se pudo generar el QR. Asegúrate de que el restaurante tiene un slug.');
@@ -228,6 +237,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- GESTIÓN DE PLATOS ---
     async function loadPlatos() {
+        if (!platosTableBody) return;
         const platos = await fetchData(`/api/platos/restaurante/${RESTAURANTE_ID}`);
         platosTableBody.innerHTML = '';
         if(platos && Array.isArray(platos)) {
@@ -236,7 +246,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 row.innerHTML = `
                     <td>${p.nombre}</td>
                     <td>$${p.precio ? p.precio.toFixed(2) : '0.00'}</td>
-                    <td>${p.descripcion || ''}</td>
+                    <td>${p.categoria || ''}</td>
                     <td>
                         <label class="switch">
                             <input type="checkbox" class="toggle-disponibilidad" data-id="${p._id}" data-tipo="platos" ${p.disponible ? 'checked' : ''}>
@@ -252,64 +262,66 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    platoForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const data = { 
-            nombre: platoNombreInput.value, 
-            descripcion: platoDescripcionInput.value, 
-            precio: parseFloat(platoPrecioInput.value), 
-            categoria: platoCategoriaInput.value, // <-- LÍNEA AÑADIDA
-            restaurante: RESTAURANTE_ID 
-        };
-        const id = platoIdInput.value;
-        const url = id ? `/api/platos/${id}` : '/api/platos';
-        const method = id ? 'PUT' : 'POST';
+    if(platoForm) {
+        platoForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = { 
+                nombre: platoNombreInput.value, 
+                descripcion: platoDescripcionInput.value, 
+                precio: parseFloat(platoPrecioInput.value), 
+                categoria: platoCategoriaInput.value,
+                restaurante: RESTAURANTE_ID 
+            };
+            const id = platoIdInput.value;
+            const url = id ? `/api/platos/${id}` : '/api/platos';
+            const method = id ? 'PUT' : 'POST';
 
-        const result = await fetchData(url, { 
-            method: method, 
-            headers: { 'Content-Type': 'application/json' }, 
-            body: JSON.stringify(data) 
-        });
+            const result = await fetchData(url, { 
+                method: method, 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify(data) 
+            });
 
-        if (result) {
-            alert(id ? 'Plato actualizado con éxito.' : 'Plato creado con éxito.');
-            platoForm.reset(); 
-            platoIdInput.value = '';
-            platoSubmitBtn.textContent = 'Guardar Plato';
-            loadPlatos();
-        }
-    });
-
-    platosTableBody.addEventListener('click', async (e) => {
-        const id = e.target.dataset.id;
-        if (e.target.classList.contains('toggle-disponibilidad')) { 
-            await fetchData(`/api/platos/${id}/toggle`, { method: 'PATCH' });
-        }
-        else if (e.target.classList.contains('edit-plato')) {
-            const p = await fetchData(`/api/platos/${id}`);
-            if (p) {
-                platoIdInput.value = p._id; 
-                platoNombreInput.value = p.nombre; 
-                platoDescripcionInput.value = p.descripcion || ''; 
-                platoPrecioInput.value = p.precio; 
-                platoCategoriaInput.value = p.categoria || ''; // <-- LÍNEA AÑADIDA
-                platoSubmitBtn.textContent = 'Actualizar Plato';
-                window.scrollTo({ top: platoForm.offsetTop, behavior: 'smooth' });
+            if (result) {
+                alert(id ? 'Plato actualizado con éxito.' : 'Plato creado con éxito.');
+                platoForm.reset(); 
+                platoIdInput.value = '';
+                platoSubmitBtn.textContent = 'Guardar Plato';
+                loadPlatos();
             }
-        } 
-        else if (e.target.classList.contains('delete-plato')) {
-            if (confirm('¿Estás seguro de que quieres eliminar este plato?')) { 
-                const result = await fetchData(`/api/platos/${id}`, { method: 'DELETE' }); 
-                if (result === null) {
-                    alert('Plato eliminado con éxito.');
-                    loadPlatos();
+        });
+    }
+
+    if(platosTableBody) {
+        platosTableBody.addEventListener('click', async (e) => {
+            const id = e.target.dataset.id;
+            if (e.target.classList.contains('edit-plato')) {
+                const p = await fetchData(`/api/platos/${id}`);
+                if (p) {
+                    platoIdInput.value = p._id; 
+                    platoNombreInput.value = p.nombre; 
+                    platoDescripcionInput.value = p.descripcion || ''; 
+                    platoPrecioInput.value = p.precio; 
+                    platoCategoriaInput.value = p.categoria || '';
+                    platoSubmitBtn.textContent = 'Actualizar Plato';
+                    window.scrollTo({ top: platoForm.offsetTop, behavior: 'smooth' });
+                }
+            } 
+            else if (e.target.classList.contains('delete-plato')) {
+                if (confirm('¿Estás seguro de que quieres eliminar este plato?')) { 
+                    const result = await fetchData(`/api/platos/${id}`, { method: 'DELETE' }); 
+                    if (result === null) {
+                        alert('Plato eliminado con éxito.');
+                        loadPlatos();
+                    }
                 }
             }
-        }
-    });
+        });
+    }
     
     // --- GESTIÓN DE ESPECIALES ---
     async function loadEspeciales() {
+        if (!especialesTableBody) return;
         const especiales = await fetchData(`/api/especiales/restaurante/${RESTAURANTE_ID}`);
         especialesTableBody.innerHTML = '';
         if(especiales && Array.isArray(especiales)) {
@@ -318,7 +330,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 row.innerHTML = `
                     <td>${e.nombre}</td>
                     <td>$${e.precio ? e.precio.toFixed(2) : '0.00'}</td>
-                    <td>${e.descripcion || ''}</td>
                     <td>
                         <label class="switch">
                             <input type="checkbox" class="toggle-disponibilidad" data-id="${e._id}" data-tipo="especiales" ${e.disponible ? 'checked' : ''}>
@@ -334,119 +345,64 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    especialForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const data = { 
-            nombre: especialNombreInput.value, 
-            descripcion: especialDescripcionInput.value, 
-            precio: parseFloat(especialPrecioInput.value), 
-            restaurante: RESTAURANTE_ID 
-        };
-        const id = especialIdInput.value;
-        const url = id ? `/api/especiales/${id}` : '/api/especiales';
-        const method = id ? 'PUT' : 'POST';
+    if(especialForm) {
+        especialForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = { 
+                nombre: especialNombreInput.value, 
+                descripcion: especialDescripcionInput.value, 
+                precio: parseFloat(especialPrecioInput.value), 
+                restaurante: RESTAURANTE_ID 
+            };
+            const id = especialIdInput.value;
+            const url = id ? `/api/especiales/${id}` : '/api/especiales';
+            const method = id ? 'PUT' : 'POST';
 
-        const result = await fetchData(url, { 
-            method: method, 
-            headers: { 'Content-Type': 'application/json' }, 
-            body: JSON.stringify(data) 
-        });
+            const result = await fetchData(url, { 
+                method: method, 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify(data) 
+            });
 
-        if (result) {
-            alert(id ? 'Especial actualizado con éxito.' : 'Especial creado con éxito.');
-            especialForm.reset(); 
-            especialIdInput.value = '';
-            especialSubmitBtn.textContent = 'Guardar Especial';
-            loadEspeciales();
-        }
-    });
-
-    especialesTableBody.addEventListener('click', async (e) => {
-        const id = e.target.dataset.id;
-        if (e.target.classList.contains('toggle-disponibilidad')) { 
-            await fetchData(`/api/especiales/${id}/toggle`, { method: 'PATCH' });
-        }
-        else if (e.target.classList.contains('edit-especial')) {
-            const esp = await fetchData(`/api/especiales/${id}`);
-            if (esp) {
-                especialIdInput.value = esp._id; 
-                especialNombreInput.value = esp.nombre; 
-                especialDescripcionInput.value = esp.descripcion || ''; 
-                especialPrecioInput.value = esp.precio;
-                especialSubmitBtn.textContent = 'Actualizar Especial';
-                window.scrollTo({ top: especialForm.offsetTop, behavior: 'smooth' });
+            if (result) {
+                alert(id ? 'Especial actualizado con éxito.' : 'Especial creado con éxito.');
+                especialForm.reset(); 
+                especialIdInput.value = '';
+                especialSubmitBtn.textContent = 'Guardar Especial';
+                loadEspeciales();
             }
-        } 
-        else if (e.target.classList.contains('delete-especial')) {
-            if (confirm('¿Estás seguro de que quieres eliminar este especial?')) { 
-                const result = await fetchData(`/api/especiales/${id}`, { method: 'DELETE' }); 
-                if (result === null) {
-                    alert('Especial eliminado con éxito.');
-                    loadEspeciales();
+        });
+    }
+
+    if(especialesTableBody) {
+        especialesTableBody.addEventListener('click', async (e) => {
+            const id = e.target.dataset.id;
+            if (e.target.classList.contains('edit-especial')) {
+                const esp = await fetchData(`/api/especiales/${id}`);
+                if (esp) {
+                    especialIdInput.value = esp._id; 
+                    especialNombreInput.value = esp.nombre; 
+                    especialDescripcionInput.value = esp.descripcion || ''; 
+                    especialPrecioInput.value = esp.precio;
+                    especialSubmitBtn.textContent = 'Actualizar Especial';
+                    window.scrollTo({ top: especialForm.offsetTop, behavior: 'smooth' });
+                }
+            } 
+            else if (e.target.classList.contains('delete-especial')) {
+                if (confirm('¿Estás seguro de que quieres eliminar este especial?')) { 
+                    const result = await fetchData(`/api/especiales/${id}`, { method: 'DELETE' }); 
+                    if (result === null) {
+                        alert('Especial eliminado con éxito.');
+                        loadEspeciales();
+                    }
                 }
             }
-        }
-    });
-    
-    // --- GESTIÓN DE CATEGORÍAS DE MENÚ ---
-    function createOpcionInput(opcion = {}) {
-        const div = document.createElement('div'); div.classList.add('opcion-item'); div.style.display = 'flex'; div.style.alignItems = 'center'; div.style.marginBottom = '5px';
-        const input = document.createElement('input'); input.type = 'text'; input.className = 'opcion-nombre'; input.value = opcion.nombre || ''; input.placeholder = 'Nombre de la opción'; input.required = true; input.style.flexGrow = '1';
-        const button = document.createElement('button'); button.type = 'button'; button.className = 'remove-opcion-btn btn'; button.textContent = 'Quitar'; button.style.marginLeft = '10px';
-        div.appendChild(input); div.appendChild(button);
-        opcionesContainer.appendChild(div);
-        button.addEventListener('click', () => { div.remove(); });
-    }
-    addOpcionBtn.addEventListener('click', () => createOpcionInput());
-
-    async function loadCategorias() {
-        const categorias = await fetchData(`/api/menu-categorias/restaurante/${RESTAURANTE_ID}`);
-        allMenuCategories = categorias || [];
-        categoriasTableBody.innerHTML = '';
-        if (allMenuCategories.length > 0) {
-            allMenuCategories.forEach(cat => {
-                const row = categoriasTableBody.insertRow();
-                row.innerHTML = `
-                    <td>${cat.nombre}</td>
-                    <td>${cat.opciones.map(o => o.nombre).join(', ')}</td>
-                    <td>
-                        <button class="edit-categoria btn" data-id='${cat._id}'>E</button>
-                        <button class="delete-categoria btn btn-danger" data-id='${cat._id}'>X</button>
-                    </td>
-                `;
-            });
-        }
-        updateMenuDiaForm();
-    }
-
-    categoriaForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const opciones = Array.from(opcionesContainer.querySelectorAll('.opcion-nombre')).map(input => ({ nombre: input.value })).filter(opcion => opcion.nombre);
-        if (opciones.length === 0) return alert('Añade al menos una opción para la categoría.');
-        const categoriaData = { nombre: categoriaNombreInput.value, opciones, restaurante: RESTAURANTE_ID };
-        const id = categoriaIdInput.value;
-        const method = id ? 'PUT' : 'POST';
-        const url = id ? `/api/menu-categorias/${id}` : '/api/menu-categorias';
-        
-        const result = await fetchData(url, { 
-            method, 
-            headers: { 'Content-Type': 'application/json' }, 
-            body: JSON.stringify(categoriaData) 
         });
-
-        if (result) {
-            alert(id ? 'Categoría actualizada con éxito.' : 'Categoría creada con éxito.');
-            categoriaForm.reset(); 
-            categoriaIdInput.value = ''; 
-            opcionesContainer.innerHTML = ''; 
-            createOpcionInput();
-            categoriaSubmitBtn.textContent = 'Guardar Categoría';
-            loadCategorias();
-        }
-    });
-
+    }
+    
     // --- GESTIÓN DE BEBIDAS ---
     async function loadBebidas() {
+        if (!bebidasTableBody) return;
         const bebidas = await fetchData(`/api/bebidas/restaurante/${RESTAURANTE_ID}`);
         bebidasTableBody.innerHTML = '';
         if(bebidas && Array.isArray(bebidas)) {
@@ -471,94 +427,302 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    bebidaForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const data = { 
-            nombre: bebidaNombreInput.value, 
-            descripcion: bebidaDescripcionInput.value, 
-            precio: parseFloat(bebidaPrecioInput.value), 
-            categoria: bebidaCategoriaInput.value,
-            restaurante: RESTAURANTE_ID 
-        };
-        const id = bebidaIdInput.value;
-        const url = id ? `/api/bebidas/${id}` : '/api/bebidas';
-        const method = id ? 'PUT' : 'POST';
+    if(bebidaForm) {
+        bebidaForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = { 
+                nombre: bebidaNombreInput.value, 
+                descripcion: bebidaDescripcionInput.value, 
+                precio: parseFloat(bebidaPrecioInput.value), 
+                categoria: bebidaCategoriaInput.value,
+                restaurante: RESTAURANTE_ID 
+            };
+            const id = bebidaIdInput.value;
+            const url = id ? `/api/bebidas/${id}` : '/api/bebidas';
+            const method = id ? 'PUT' : 'POST';
 
-        const result = await fetchData(url, { 
-            method: method, 
-            headers: { 'Content-Type': 'application/json' }, 
-            body: JSON.stringify(data) 
+            const result = await fetchData(url, { 
+                method: method, 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify(data) 
+            });
+
+            if (result) {
+                alert(id ? 'Bebida actualizada con éxito.' : 'Bebida creada con éxito.');
+                bebidaForm.reset(); 
+                bebidaIdInput.value = '';
+                loadBebidas();
+            }
         });
+    }
 
-        if (result) {
-            alert(id ? 'Bebida actualizada con éxito.' : 'Bebida creada con éxito.');
-            bebidaForm.reset(); 
-            bebidaIdInput.value = '';
-            // Si tienes un botón específico, si no, puedes quitar esta línea:
-            // bebidaSubmitBtn.textContent = 'Guardar Bebida';
-            loadBebidas();
+    if(bebidasTableBody) {
+        bebidasTableBody.addEventListener('click', async (e) => {
+            const id = e.target.dataset.id;
+            if (e.target.classList.contains('edit-bebida')) {
+                const b = await fetchData(`/api/bebidas/${id}`);
+                if (b) {
+                    bebidaIdInput.value = b._id; 
+                    bebidaNombreInput.value = b.nombre; 
+                    bebidaDescripcionInput.value = b.descripcion || ''; 
+                    bebidaPrecioInput.value = b.precio;
+                    bebidaCategoriaInput.value = b.categoria || '';
+                    window.scrollTo({ top: bebidaForm.offsetTop, behavior: 'smooth' });
+                }
+            } 
+            else if (e.target.classList.contains('delete-bebida')) {
+                if (confirm('¿Estás seguro de que quieres eliminar esta bebida?')) { 
+                    const result = await fetchData(`/api/bebidas/${id}`, { method: 'DELETE' }); 
+                    if (result === null) {
+                        alert('Bebida eliminada con éxito.');
+                        loadBebidas();
+                    }
+                }
+            }
+        });
+    }
+
+    // --- GESTIÓN DE PIZZAS (NUEVO BLOQUE DE CÓDIGO) ---
+    function createVarianteInput(variante = {}) {
+        if (!variantesContainer) return;
+        const div = document.createElement('div');
+        div.className = 'variante-item';
+        const tamañoInput = document.createElement('input');
+        tamañoInput.type = 'text';
+        tamañoInput.className = 'variante-tamaño';
+        tamañoInput.value = variante.tamaño || '';
+        tamañoInput.placeholder = 'Nombre del tamaño (Ej: Mediana)';
+        tamañoInput.required = true;
+        const precioInput = document.createElement('input');
+        precioInput.type = 'number';
+        precioInput.className = 'variante-precio';
+        precioInput.value = variante.precio || '';
+        precioInput.placeholder = 'Precio';
+        precioInput.step = '0.01';
+        precioInput.required = true;
+        const removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.className = 'remove-variante-btn';
+        removeButton.textContent = 'X';
+        removeButton.onclick = () => div.remove();
+        div.appendChild(tamañoInput);
+        div.appendChild(precioInput);
+        div.appendChild(removeButton);
+        variantesContainer.appendChild(div);
+    }
+
+    if(addVarianteBtn) {
+        addVarianteBtn.addEventListener('click', () => createVarianteInput());
+    }
+
+    async function loadPizzas() {
+        if (!pizzasTableBody) return;
+        const pizzas = await fetchData(`/api/pizzas/restaurante/${RESTAURANTE_ID}`);
+        pizzasTableBody.innerHTML = '';
+        if (pizzas && Array.isArray(pizzas)) {
+            pizzas.forEach(p => {
+                const row = pizzasTableBody.insertRow();
+                const variantesStr = p.variantes.map(v => `${v.tamaño}: $${v.precio}`).join('<br>');
+                row.innerHTML = `
+                    <td>${p.nombre}</td>
+                    <td>${variantesStr}</td>
+                    <td>${p.permiteMitades ? 'Sí' : 'No'}</td>
+                    <td>
+                        <label class="switch">
+                            <input type="checkbox" class="toggle-disponibilidad" data-id="${p._id}" data-tipo="pizzas" ${p.disponible ? 'checked' : ''}>
+                            <span class="slider"></span>
+                        </label>
+                    </td>
+                    <td>
+                        <button class="edit-pizza btn" data-id='${p._id}'>E</button>
+                        <button class="delete-pizza btn btn-danger" data-id='${p._id}'>X</button>
+                    </td>
+                `;
+            });
+        }
+    }
+
+    if(pizzaForm) {
+        pizzaForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const variantes = [];
+            variantesContainer.querySelectorAll('.variante-item').forEach(item => {
+                const tamaño = item.querySelector('.variante-tamaño').value.trim();
+                const precio = parseFloat(item.querySelector('.variante-precio').value);
+                if (tamaño && !isNaN(precio)) {
+                    variantes.push({ tamaño, precio });
+                }
+            });
+
+            if (variantes.length === 0) {
+                return alert('Debes añadir al menos un tamaño y precio para la pizza.');
+            }
+
+            const pizzaData = {
+                nombre: pizzaNombreInput.value,
+                descripcion: pizzaDescripcionInput.value,
+                ingredientes: pizzaIngredientesInput.value.split(',').map(i => i.trim()).filter(i => i),
+                variantes: variantes,
+                permiteMitades: permiteMitadesCheckbox.checked,
+                restaurante: RESTAURANTE_ID
+            };
+
+            const id = pizzaIdInput.value;
+            const url = id ? `/api/pizzas/${id}` : '/api/pizzas';
+            const method = id ? 'PUT' : 'POST';
+
+            const result = await fetchData(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(pizzaData)
+            });
+
+            if (result) {
+                alert(id ? 'Pizza actualizada con éxito.' : 'Pizza creada con éxito.');
+                pizzaForm.reset();
+                pizzaIdInput.value = '';
+                variantesContainer.innerHTML = '';
+                createVarianteInput();
+                pizzaSubmitBtn.textContent = 'Guardar Pizza';
+                loadPizzas();
+            }
+        });
+    }
+
+    if(pizzasTableBody) {
+        pizzasTableBody.addEventListener('click', async (e) => {
+            const id = e.target.dataset.id;
+            if (e.target.classList.contains('edit-pizza')) {
+                const pizza = await fetchData(`/api/pizzas/${id}`);
+                if (pizza) {
+                    pizzaIdInput.value = pizza._id;
+                    pizzaNombreInput.value = pizza.nombre;
+                    pizzaDescripcionInput.value = pizza.descripcion || '';
+                    pizzaIngredientesInput.value = (pizza.ingredientes || []).join(', ');
+                    permiteMitadesCheckbox.checked = pizza.permiteMitades;
+                    
+                    variantesContainer.innerHTML = '';
+                    pizza.variantes.forEach(v => createVarianteInput(v));
+
+                    pizzaSubmitBtn.textContent = 'Actualizar Pizza';
+                    window.scrollTo({ top: pizzaForm.offsetTop, behavior: 'smooth' });
+                }
+            } else if (e.target.classList.contains('delete-pizza')) {
+                if (confirm('¿Estás seguro de que quieres eliminar esta pizza y todas sus variantes?')) {
+                    const result = await fetchData(`/api/pizzas/${id}`, { method: 'DELETE' });
+                    if (result === null) {
+                        alert('Pizza eliminada con éxito.');
+                        loadPizzas();
+                    }
+                }
+            }
+        });
+    }
+    // --- FIN DEL NUEVO BLOQUE DE CÓDIGO PARA PIZZAS ---
+
+    // --- LISTENER GLOBAL PARA TOGGLE DE DISPONIBILIDAD ---
+    document.addEventListener('change', async (e) => {
+        if (e.target.classList.contains('toggle-disponibilidad')) {
+            const { id, tipo } = e.target.dataset;
+            if (!id || !tipo) return;
+            await fetchData(`/api/${tipo}/${id}/toggle`, { method: 'PATCH' });
         }
     });
 
-    bebidasTableBody.addEventListener('click', async (e) => {
-        const id = e.target.dataset.id;
-        if (e.target.classList.contains('toggle-disponibilidad')) { 
-            await fetchData(`/api/bebidas/${id}/toggle`, { method: 'PATCH' });
-        }
-        else if (e.target.classList.contains('edit-bebida')) {
-            const b = await fetchData(`/api/bebidas/${id}`);
-            if (b) {
-                bebidaIdInput.value = b._id; 
-                bebidaNombreInput.value = b.nombre; 
-                bebidaDescripcionInput.value = b.descripcion || ''; 
-                bebidaPrecioInput.value = b.precio;
-                bebidaCategoriaInput.value = b.categoria || '';
-                // Si tienes un botón específico, si no, puedes quitar esta línea:
-                // bebidaSubmitBtn.textContent = 'Actualizar Bebida';
-                window.scrollTo({ top: bebidaForm.offsetTop, behavior: 'smooth' });
-            }
-        } 
-        else if (e.target.classList.contains('delete-bebida')) {
-            if (confirm('¿Estás seguro de que quieres eliminar esta bebida?')) { 
-                const result = await fetchData(`/api/bebidas/${id}`, { method: 'DELETE' }); 
-                if (result === null) {
-                    alert('Bebida eliminada con éxito.');
-                    loadBebidas();
-                }
-            }
-        }
-    });
+    // --- GESTIÓN DE CATEGORÍAS DE MENÚ ---
+    function createOpcionInput(opcion = {}) {
+        if (!opcionesContainer) return;
+        const div = document.createElement('div'); div.classList.add('opcion-item'); div.style.display = 'flex'; div.style.alignItems = 'center'; div.style.marginBottom = '5px';
+        const input = document.createElement('input'); input.type = 'text'; input.className = 'opcion-nombre'; input.value = opcion.nombre || ''; input.placeholder = 'Nombre de la opción'; input.required = true; input.style.flexGrow = '1';
+        const button = document.createElement('button'); button.type = 'button'; button.className = 'remove-opcion-btn btn'; button.textContent = 'Quitar'; button.style.marginLeft = '10px';
+        div.appendChild(input); div.appendChild(button);
+        opcionesContainer.appendChild(div);
+        button.addEventListener('click', () => { div.remove(); });
+    }
+    if(addOpcionBtn) addOpcionBtn.addEventListener('click', () => createOpcionInput());
 
-    categoriasTableBody.addEventListener('click', async (e) => {
-        const id = e.target.dataset.id;
-        if (e.target.classList.contains('edit-categoria')) {
-            const categoria = await fetchData(`/api/menu-categorias/${id}`);
-            if (categoria) {
-                categoriaIdInput.value = categoria._id; 
-                categoriaNombreInput.value = categoria.nombre;
-                opcionesContainer.innerHTML = '';
-                if (categoria.opciones.length > 0) {
-                    categoria.opciones.forEach(opcion => createOpcionInput(opcion));
-                } else { 
-                    createOpcionInput();
-                }
-                categoriaSubmitBtn.textContent = 'Actualizar Categoría';
-                window.scrollTo({ top: categoriaForm.offsetTop, behavior: 'smooth' });
-            }
-        } 
-        else if (e.target.classList.contains('delete-categoria')) {
-            if (confirm('¿Estás seguro de que quieres eliminar esta categoría?')) { 
-                const result = await fetchData(`/api/menu-categorias/${id}`, { method: 'DELETE' }); 
-                if (result === null) {
-                    alert('Categoría eliminada con éxito.');
-                    loadCategorias();
-                }
-            }
+    async function loadCategorias() {
+        if (!categoriasTableBody) return;
+        const categorias = await fetchData(`/api/menu-categorias/restaurante/${RESTAURANTE_ID}`);
+        allMenuCategories = categorias || [];
+        categoriasTableBody.innerHTML = '';
+        if (allMenuCategories.length > 0) {
+            allMenuCategories.forEach(cat => {
+                const row = categoriasTableBody.insertRow();
+                row.innerHTML = `
+                    <td>${cat.nombre}</td>
+                    <td>${cat.opciones.map(o => o.nombre).join(', ')}</td>
+                    <td>
+                        <button class="edit-categoria btn" data-id='${cat._id}'>E</button>
+                        <button class="delete-categoria btn btn-danger" data-id='${cat._id}'>X</button>
+                    </td>
+                `;
+            });
         }
-    });
+        updateMenuDiaForm();
+    }
+
+    if(categoriaForm) {
+        categoriaForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const opciones = Array.from(opcionesContainer.querySelectorAll('.opcion-nombre')).map(input => ({ nombre: input.value })).filter(opcion => opcion.nombre);
+            if (opciones.length === 0) return alert('Añade al menos una opción para la categoría.');
+            const categoriaData = { nombre: categoriaNombreInput.value, opciones, restaurante: RESTAURANTE_ID };
+            const id = categoriaIdInput.value;
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/menu-categorias/${id}` : '/api/menu-categorias';
+            
+            const result = await fetchData(url, { 
+                method, 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify(categoriaData) 
+            });
+
+            if (result) {
+                alert(id ? 'Categoría actualizada con éxito.' : 'Categoría creada con éxito.');
+                categoriaForm.reset(); 
+                categoriaIdInput.value = ''; 
+                opcionesContainer.innerHTML = ''; 
+                createOpcionInput();
+                categoriaSubmitBtn.textContent = 'Guardar Categoría';
+                loadCategorias();
+            }
+        });
+    }
+
+    if(categoriasTableBody) {
+        categoriasTableBody.addEventListener('click', async (e) => {
+            const id = e.target.dataset.id;
+            if (e.target.classList.contains('edit-categoria')) {
+                const categoria = await fetchData(`/api/menu-categorias/${id}`);
+                if (categoria) {
+                    categoriaIdInput.value = categoria._id; 
+                    categoriaNombreInput.value = categoria.nombre;
+                    opcionesContainer.innerHTML = '';
+                    if (categoria.opciones.length > 0) {
+                        categoria.opciones.forEach(opcion => createOpcionInput(opcion));
+                    } else { 
+                        createOpcionInput();
+                    }
+                    categoriaSubmitBtn.textContent = 'Actualizar Categoría';
+                    window.scrollTo({ top: categoriaForm.offsetTop, behavior: 'smooth' });
+                }
+            } 
+            else if (e.target.classList.contains('delete-categoria')) {
+                if (confirm('¿Estás seguro de que quieres eliminar esta categoría?')) { 
+                    const result = await fetchData(`/api/menu-categorias/${id}`, { method: 'DELETE' }); 
+                    if (result === null) {
+                        alert('Categoría eliminada con éxito.');
+                        loadCategorias();
+                    }
+                }
+            }
+        });
+    }
 
     // --- GESTIÓN DE MENÚS DEL DÍA ---
     function updateMenuDiaForm(menuAEditar = null) {
+        if (!menuItemsSelectionContainer) return;
         menuItemsSelectionContainer.innerHTML = '';
         if (allMenuCategories.length > 0) {
             allMenuCategories.forEach(categoria => {
@@ -579,44 +743,47 @@ document.addEventListener('DOMContentLoaded', async () => {
         } else { menuItemsSelectionContainer.innerHTML = '<p>Primero debes crear categorías para armar el menú del día.</p>'; }
     }
 
-    menuDiaForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const menuData = { 
-            fecha: menuFechaInput.value, 
-            nombreMenu: menuNombreInput.value, 
-            precioMenuGlobal: parseFloat(menuPrecioInput.value) || 0, 
-            itemsPorCategoria: [], 
-            restaurante: RESTAURANTE_ID 
-        };
-        menuItemsSelectionContainer.querySelectorAll('.checkbox-group').forEach(group => {
-            const categoriaNombre = group.dataset.categoriaNombre;
-            const platosEscogidos = [];
-            group.querySelectorAll('.menu-item-checkbox:checked').forEach(checkbox => { platosEscogidos.push(JSON.parse(checkbox.dataset.opcion)); });
-            if (platosEscogidos.length > 0) { menuData.itemsPorCategoria.push({ categoriaNombre, platosEscogidos }); }
+    if(menuDiaForm) {
+        menuDiaForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const menuData = { 
+                fecha: menuFechaInput.value, 
+                nombreMenu: menuNombreInput.value, 
+                precioMenuGlobal: parseFloat(menuPrecioInput.value) || 0, 
+                itemsPorCategoria: [], 
+                restaurante: RESTAURANTE_ID 
+            };
+            menuItemsSelectionContainer.querySelectorAll('.checkbox-group').forEach(group => {
+                const categoriaNombre = group.dataset.categoriaNombre;
+                const platosEscogidos = [];
+                group.querySelectorAll('.menu-item-checkbox:checked').forEach(checkbox => { platosEscogidos.push(JSON.parse(checkbox.dataset.opcion)); });
+                if (platosEscogidos.length > 0) { menuData.itemsPorCategoria.push({ categoriaNombre, platosEscogidos }); }
+            });
+            if (menuData.itemsPorCategoria.length === 0) { return alert('Debes seleccionar al menos un ítem para el menú del día.'); }
+
+            const id = menuDiaIdInput.value;
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/menus-dia/${id}` : '/api/menus-dia';
+
+            const result = await fetchData(url, { 
+                method, 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify(menuData) 
+            });
+
+            if (result) {
+                alert(id ? 'Menú del Día actualizado con éxito.' : 'Menú del Día creado con éxito.');
+                menuDiaForm.reset(); 
+                menuDiaIdInput.value = '';
+                menuDiaSubmitBtn.textContent = 'Guardar Menú del Día';
+                updateMenuDiaForm();
+                loadMenusDia();
+            }
         });
-        if (menuData.itemsPorCategoria.length === 0) { return alert('Debes seleccionar al menos un ítem para el menú del día.'); }
-
-        const id = menuDiaIdInput.value;
-        const method = id ? 'PUT' : 'POST';
-        const url = id ? `/api/menus-dia/${id}` : '/api/menus-dia';
-
-        const result = await fetchData(url, { 
-            method, 
-            headers: { 'Content-Type': 'application/json' }, 
-            body: JSON.stringify(menuData) 
-        });
-
-        if (result) {
-            alert(id ? 'Menú del Día actualizado con éxito.' : 'Menú del Día creado con éxito.');
-            menuDiaForm.reset(); 
-            menuDiaIdInput.value = '';
-            menuDiaSubmitBtn.textContent = 'Guardar Menú del Día';
-            updateMenuDiaForm();
-            loadMenusDia();
-        }
-    });
+    }
 
     async function loadMenusDia() {
+        if (!menusDiaTableBody) return;
         const menus = await fetchData(`/api/menus-dia/restaurante/${RESTAURANTE_ID}`);
         menusDiaTableBody.innerHTML = '';
         if (menus && Array.isArray(menus)) {
@@ -637,38 +804,47 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    menusDiaTableBody.addEventListener('click', async (e) => {
-        const id = e.target.dataset.id;
-        if (e.target.classList.contains('edit-menu')) {
-            const menu = await fetchData(`/api/menus-dia/${id}`);
-            if (menu) {
-                menuDiaIdInput.value = menu._id;
-                menuFechaInput.value = new Date(menu.fecha).toISOString().split('T')[0];
-                menuNombreInput.value = menu.nombreMenu;
-                menuPrecioInput.value = menu.precioMenuGlobal;
-                updateMenuDiaForm(menu);
-                menuDiaSubmitBtn.textContent = 'Actualizar Menú del Día';
-                window.scrollTo({ top: menuDiaForm.offsetTop, behavior: 'smooth' });
-            }
-        } 
-        else if (e.target.classList.contains('delete-menu')) {
-            if (confirm('¿Estás seguro de que quieres eliminar este menú del día?')) { 
-                const result = await fetchData(`/api/menus-dia/${id}`, { method: 'DELETE' }); 
-                if (result === null) {
-                    alert('Menú del Día eliminado con éxito.');
-                    loadMenusDia();
+    if(menusDiaTableBody) {
+        menusDiaTableBody.addEventListener('click', async (e) => {
+            const id = e.target.dataset.id;
+            if (e.target.classList.contains('edit-menu')) {
+                const menu = await fetchData(`/api/menus-dia/${id}`);
+                if (menu) {
+                    menuDiaIdInput.value = menu._id;
+                    menuFechaInput.value = new Date(menu.fecha).toISOString().split('T')[0];
+                    menuNombreInput.value = menu.nombreMenu;
+                    menuPrecioInput.value = menu.precioMenuGlobal;
+                    updateMenuDiaForm(menu);
+                    menuDiaSubmitBtn.textContent = 'Actualizar Menú del Día';
+                    window.scrollTo({ top: menuDiaForm.offsetTop, behavior: 'smooth' });
+                }
+            } 
+            else if (e.target.classList.contains('delete-menu')) {
+                if (confirm('¿Estás seguro de que quieres eliminar este menú del día?')) { 
+                    const result = await fetchData(`/api/menus-dia/${id}`, { method: 'DELETE' }); 
+                    if (result === null) {
+                        alert('Menú del Día eliminado con éxito.');
+                        loadMenusDia();
+                    }
                 }
             }
-        }
-    });
+        });
+    }
 
     // 4. CARGA INICIAL DE DATOS AL CARGAR LA PÁGINA
     config = await fetchData('/api/config');
     loadRestauranteData();
     loadPlatos();
     loadEspeciales();
-    loadBebidas(); // <-- AÑADIR ESTA LÍNEA
+    loadBebidas();
     loadCategorias();
     loadMenusDia();
-    createOpcionInput();
+    // Añadimos las nuevas llamadas
+    if (pizzaForm) {
+        loadPizzas();
+        createVarianteInput();
+    }
+    if (categoriaForm) {
+        createOpcionInput();
+    }
 });

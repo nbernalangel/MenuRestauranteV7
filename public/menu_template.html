@@ -6,166 +6,92 @@
     <title>Menú Digital</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
         body { 
             font-family: 'Poppins', sans-serif; 
-            background-color: #f8f9fa; 
+            background-color: #f8fafc; 
         }
         .restaurant-logo {
-            max-width: 150px;
-            margin: 0 auto;
+            max-width: 180px; max-height: 100px; object-fit: contain;
+            margin: 0 auto 1rem auto; padding: 0.5rem; background-color: white;
+            border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.05);
         }
-
         .menu-section-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-top: 0; /* Ajustado para el nuevo contenedor */
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 3px solid #94C120;
-            color: #00183A;
+            font-size: 1.8rem; font-weight: 700; margin-top: 2.5rem;
+            margin-bottom: 1.5rem; padding-bottom: 0.5rem;
+            border-bottom: 3px solid #94C120; color: #00183A;
         }
-
-        /* --- ESTILOS AÑADIDOS PARA FONDOS DE SECCIÓN ALTERNOS --- */
-        #daily-menu-section,
-        #especiales-section,
-        #carta-section,
-        #bebidas-section {
-            padding: 1.5rem;
-            border-radius: 12px;
-            margin-top: 2rem;
+        #especiales-content, #platos-a-la-carta-content, #bebidas-content, #pizzas-content {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;
         }
-
-        /* Color Verde Tenue para secciones impares */
-        #daily-menu-section,
-        #carta-section {
-            background-color: rgba(148, 193, 32, 0.05); /* Verde al 5% de opacidad */
-        }
-
-        /* Color Azul Tenue para secciones pares */
-        #especiales-section,
-        #bebidas-section {
-            background-color: rgba(0, 24, 58, 0.05); /* Azul al 5% de opacidad */
-        }
-        /* --- FIN DE ESTILOS DE FONDOS --- */
-
-        #especiales-content,
-        #platos-a-la-carta-content,
-        #bebidas-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 1rem;
-        }
-        
         .menu-card { 
-            background: white; 
-            border-radius: 8px; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
-            padding: 0.75rem;
+            background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+            padding: 0.75rem; display: flex; flex-direction: column;
+        }
+        .menu-card-diario { height: auto !important; }
+        .menu-card .content-wrapper { flex-grow: 1; }
+        .menu-card h3 { font-size: 0.9rem; font-weight: 600; color: #00183A; line-height: 1.3; margin: 0 0 0.25rem 0; }
+        .description { font-size: 0.75rem; color: #6c757d; line-height: 1.4; margin: 0; }
+        .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; padding-top: 0.5rem; border-top: 1px solid #f0f0f0; }
+        .price { font-weight: 700; font-size: 1rem; color: #00183A; }
+        .add-btn { background-color: #94C120; color: white; font-weight: 600; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; border: none; transition: background-color 0.2s; opacity: 1 !important; }
+        .add-btn:hover { background-color: #7c9f1a; }
+        .radio-options-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.5rem; margin-top: 0.5rem; }
+        .radio-option-label { display: flex; align-items: center; font-size: 1rem; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #eee; }
+        #customer-form-container input, #notas-cliente { width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #ccc; margin-top: 0.25rem; }
+        #customer-form-container label { font-weight: 600; display: block; margin-top: 1rem; }
+
+        /* --- ESTILOS CORREGIDOS Y MEJORADOS PARA LA SELECCIÓN DE TAMAÑO --- */
+        #pizza-modal-variantes {
             display: flex;
-            flex-direction: column;
+            flex-wrap: wrap; /* Permite que los tamaños pasen a la siguiente línea si es necesario */
+            gap: 0.75rem; /* Espacio entre los "botones" de tamaño */
+            margin-bottom: 1rem;
         }
-
-        .menu-card-diario {
-            height: auto !important;
-        }
-
-        .menu-card .content-wrapper {
-            flex-grow: 1;
-        }
-
-        .menu-card h3 {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: #00183A;
-            line-height: 1.3;
-            margin: 0 0 0.25rem 0;
-        }
-
-        .description {
-            font-size: 0.75rem;
-            color: #6c757d;
-            line-height: 1.4;
-            margin: 0;
-        }
-        
-        .card-footer { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-top: 0.75rem;
-            padding-top: 0.5rem;
-            border-top: 1px solid #f0f0f0;
-        }
-
-        .price { 
-            font-weight: 700; 
-            font-size: 1rem;
-            color: #00183A;
-        }
-
-        .add-btn { 
-            background-color: #94C120; 
-            color: white; 
-            font-weight: 600; 
-            padding: 0.4rem 0.8rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            border: none;
-            transition: background-color 0.2s;
-        }
-        
-        .add-btn:hover {
-            background-color: #7c9f1a;
-        }
-
-        .radio-options-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-        .radio-option-label {
-            display: flex;
+        #pizza-modal-variantes label {
+            display: inline-flex;
             align-items: center;
-            font-size: 1rem;
+            padding: 0.5rem 1rem; /* Más padding horizontal para que parezca un botón */
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 0;
+            font-size: 0.9rem;
         }
-        
-        .cart-item { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 0.5rem 0; 
-            border-bottom: 1px solid #eee;
+        #pizza-modal-variantes input[type="radio"] {
+            margin-right: 0.5rem; /* Espacio entre el círculo y el texto */
         }
-        .cart-item:last-child {
-            border-bottom: none;
+        #pizza-modal-variantes label:has(input:checked) {
+            border-color: #94C120; /* ting-green */
+            background-color: rgba(148, 193, 32, 0.1); /* ting-green con opacidad */
+            font-weight: bold;
+            color: #00183A;
         }
-        #customer-form-container input, #notas-cliente {
-            width: 100%;
-            padding: 0.75rem;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            margin-top: 0.25rem;
-        }
-        #customer-form-container label {
-            font-weight: 600;
-            display: block;
+        /* ----------------------------------------------------------------- */
+
+        /* --- ESTILO DEFINITIVO PARA EL BOTÓN DEL MODAL --- */
+        .modal-final-button {
+            display: block !important; visibility: visible !important; opacity: 1 !important;
+            width: 100%; background-color: #94C120; color: white;
+            font-weight: bold; padding: 0.75rem 1.5rem; border-radius: 0.5rem;
+            border: none; cursor: pointer; transition: background-color 0.2s;
             margin-top: 1rem;
+        }
+        .modal-final-button:hover {
+            background-color: #7c9f1a;
         }
     </style>
 </head>
 <body class="p-4">
-
     <div class="max-w-4xl mx-auto">
         <header class="text-center mb-8">
             <div id="restaurant-logo-container" class="mb-4"></div>
             <h1 id="nombre-restaurante" class="text-4xl font-bold text-gray-800">Cargando Menú...</h1>
             <p id="mensaje-bienvenida" class="text-gray-600 mt-2"></p>
         </header>
-
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             <main class="md:col-span-2">
                 
@@ -173,53 +99,58 @@
                     <h2 class="menu-section-title">Menú del Día</h2>
                     <div id="menu-del-dia-content"></div>
                 </section>
-
-                <section id="especiales-section">
-                    <h2 class="menu-section-title">Nuestros Especiales</h2>
-                    <div id="especiales-content"></div>
-                </section>
-
                 <section id="carta-section">
                     <h2 class="menu-section-title">A la Carta</h2>
                     <div id="platos-a-la-carta-content"></div>
                 </section>
-                
+                <section id="especiales-section">
+                    <h2 class="menu-section-title">Nuestros Especiales</h2>
+                    <div id="especiales-content"></div>
+                </section>
+                <section id="pizzas-section">
+                    <h2 class="menu-section-title">Nuestras Pizzas</h2>
+                    <div id="pizzas-content"></div>
+                </section>
                 <section id="bebidas-section">
                     <h2 class="menu-section-title">Bebidas y Otros</h2>
                     <div id="bebidas-content"></div>
                 </section>
-                </main>
 
+            </main>
             <aside class="md:col-span-1">
                 <div class="p-4 bg-white rounded-lg shadow-lg sticky top-4">
                     <h2 class="text-2xl font-bold border-b pb-2 mb-4">Tu Pedido</h2>
-                    
-                    <div id="cart-items" class="mb-4">
-                        <p>Tu carrito está vacío.</p>
-                    </div>
-                    
-                    <div class="border-t pt-2 mb-4">
-                        <p class="text-xl font-bold flex justify-between">
-                            <span>Total:</span>
-                            <span id="cart-total-price">$0</span>
-                        </p>
-                    </div>
-
+                    <div id="cart-items" class="mb-4"><p>Tu carrito está vacío.</p></div>
+                    <div class="border-t pt-2 mb-4"><p class="text-xl font-bold flex justify-between"><span>Total:</span><span id="cart-total-price">$0</span></p></div>
                     <div id="customer-form-container"></div>
-                    
-                    <div class="mt-4">
-                         <label for="notas-cliente" class="block text-sm font-semibold mb-1">Notas para tu pedido:</label>
-                         <textarea id="notas-cliente" class="w-full p-2 rounded border" rows="2"></textarea>
-                    </div>
-
-                    <button id="send-order-btn" class="w-full mt-4 bg-green-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600">
-                        Finalizar y Enviar Pedido
-                    </button>
+                    <div class="mt-4"><label for="notas-cliente" class="block text-sm font-semibold mb-1">Notas para tu pedido:</label><textarea id="notas-cliente" class="w-full p-2 rounded border" rows="2"></textarea></div>
+                    <button id="send-order-btn" class="w-full mt-4 bg-green-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600">Finalizar y Enviar Pedido</button>
                 </div>
             </aside>
         </div>
     </div>
-
     <script src="/js/script.js"></script>
+    <div id="pizza-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style="display: none; z-index: 50;">
+        <div id="pizza-modal-content" class="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] flex flex-col">
+            <div class="p-4 border-b flex justify-between items-center">
+                <h2 id="pizza-modal-title" class="text-2xl font-bold text-ting-blue">Configura tu Pizza</h2>
+                <button id="close-pizza-modal-btn" class="text-2xl text-gray-500 hover:text-gray-800">&times;</button>
+            </div>
+            <div class="p-6 overflow-y-auto">
+                <div class="mb-6"><h3 class="font-bold text-lg text-slate-800 mb-2">1. Elige un tamaño</h3><div id="pizza-modal-variantes" class="space-y-2"></div></div>
+                <div id="pizza-modal-tipo-container" class="mb-6" style="display: none;">
+                    <h3 class="font-bold text-lg text-slate-800 mb-2">2. Elige el tipo</h3>
+                    <div class="flex gap-4"><label class="flex-1"><input type="radio" name="pizza_tipo" value="completa" checked> Pizza Completa</label><label class="flex-1"><input type="radio" name="pizza_tipo" value="mitades"> Por Mitades</label></div>
+                </div>
+                <div id="pizza-modal-mitades-container" class="mb-6" style="display: none;">
+                    <h3 class="font-bold text-lg text-slate-800 mb-2">3. Elige la otra mitad</h3>
+                    <select id="pizza-modal-mitad-select" class="w-full p-2 border rounded"></select>
+                </div>
+            </div>
+            <div class="p-4 border-t mt-auto">
+                <button id="add-pizza-to-cart-btn" class="modal-final-button">Añadir al Pedido - <span id="pizza-modal-price">$0</span></button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

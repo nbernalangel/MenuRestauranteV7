@@ -28,21 +28,27 @@ const restauranteSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
-    // === ¡¡¡CAMBIO CLAVE AQUÍ: AÑADIR EL CAMPO 'location' para GeoJSON Point!!! ===
     location: {
         type: {
             type: String, // Debe ser 'Point' para un punto GeoJSON
             enum: ['Point'], // Asegura que solo se acepte el valor 'Point'
-            required: false // No es estrictamente necesario que siempre haya una ubicación
+            required: false 
         },
         coordinates: {
             type: [Number], // Array de números [longitud, latitud]
-            required: false // No es estrictamente necesario que siempre haya coordenadas
-            // Si planeas hacer búsquedas geospaciales complejas, considera añadir:
-            // index: '2dsphere'
+            required: false
         }
+    },
+    // --- BLOQUE FALTANTE AÑADIDO AQUÍ ---
+    aceptaDomicilios: {
+        type: Boolean,
+        default: true
+    },
+    aceptaServicioEnMesa: {
+        type: Boolean,
+        default: true
     }
-    // =========================================================================
+    // ------------------------------------
 }, { timestamps: true });
 
 module.exports = mongoose.model('Restaurante', restauranteSchema);

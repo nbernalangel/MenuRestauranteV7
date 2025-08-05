@@ -20,7 +20,7 @@ body {
     background-color: var(--color-fondo);
     color: var(--color-texto-principal);
     margin: 0;
-    padding: 1.5em; /* Padding general del body */
+    padding: 1em; /* Padding general del body */
     font-size: 15px;
 }
 
@@ -28,7 +28,7 @@ body {
     max-width: 850px;
     margin: auto;
     background: var(--color-superficie);
-    padding: 1.5em 2em; /* Padding del contenedor principal */
+    padding: 1.5em ; /* Padding del contenedor principal */
     border-radius: var(--radio-borde);
     box-shadow: var(--sombra-suave);
 }
@@ -39,8 +39,8 @@ h1, h2, h3 {
     color: var(--color-azul-oscuro);
 }
 h1 { font-size: 1.4em; margin: 0; }
-h2 { font-size: 1.2em; border-bottom: 2px solid var(--color-verde-lima); padding-bottom: 8px; margin-top: 25px; margin-bottom: 20px; }
-h3 { font-size: 1em; margin-top: 25px; color: var(--color-texto-principal); }
+h2 { font-size: 1.2em; border-bottom: 2px solid var(--color-verde-lima); padding-bottom: 8px; margin-top: 20px; margin-bottom: 15px; }
+h3 { font-size: 1em; margin-top: 20px; color: var(--color-texto-principal); }
 hr { border: none; border-top: 1px solid var(--color-borde); margin: 30px 0; }
 .admin-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; margin-bottom: 15px; }
 
@@ -48,7 +48,7 @@ hr { border: none; border-top: 1px solid var(--color-borde); margin: 30px 0; }
 form {
     display: flex;
     flex-direction: column;
-    gap: 1em;
+    gap: 0.75em;
 }
 label {
     font-weight: 600;
@@ -546,8 +546,8 @@ input:checked + .slider:before { transform: translateX(20px); }
     transition: box-shadow 0.3s ease-in-out;
 }
 
-.admin-module:hover {
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08); /* Sombra más pronunciada al pasar el mouse */
+.admin-module {
+    margin-bottom: 1.5rem;
 }
 
 /* El título de cada módulo */
@@ -558,4 +558,34 @@ input:checked + .slider:before { transform: translateX(20px); }
     border-bottom: 2px solid #f1f3f5;
     color: #00183A; /* Usando el color azul de tu marca */
     font-size: 1.5rem; /* Un tamaño de fuente más grande y legible */
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.checkbox-group input[type="checkbox"] {
+    margin-right: 0.5rem;
+}
+
+.variante-item {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.variante-item input {
+    flex-grow: 1;
+}
+
+.variante-item .remove-variante-btn {
+    background-color: #dc3545; /* Color rojo */
+    color: white;
+    border: none;
+    padding: 0.5rem 0.75rem;
+    border-radius: 5px;
+    cursor: pointer;
 }
