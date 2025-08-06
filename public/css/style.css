@@ -537,13 +537,11 @@ input:checked + .slider:before { transform: translateX(20px); }
 
 /* El contenedor principal para cada módulo */
 .admin-module {
-    background-color: #ffffff; /* Fondo blanco para resaltar */
-    border: 1px solid #e9ecef; /* Un borde sutil */
-    border-radius: 8px;        /* Esquinas redondeadas */
-    padding: 1.5rem;           /* Espacio interno */
-    margin-bottom: 2rem;       /* Espacio entre módulos */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); /* Sombra suave para dar profundidad */
-    transition: box-shadow 0.3s ease-in-out;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
 }
 
 .admin-module {
@@ -588,4 +586,16 @@ input:checked + .slider:before { transform: translateX(20px); }
     padding: 0.5rem 0.75rem;
     border-radius: 5px;
     cursor: pointer;
+}
+
+/* --- ESTILOS PARA FONDOS DE MÓDULOS ALTERNOS --- */
+
+/* Módulos impares (1, 3, 5...) tendrán un fondo verde tenue */
+.admin-module:nth-child(odd) {
+    background-color: rgba(148, 193, 32, 0.05); /* Verde Ting al 5% de opacidad */
+}
+
+/* Módulos pares (2, 4, 6...) tendrán un fondo azul tenue */
+.admin-module:nth-child(even) {
+    background-color: rgba(0, 24, 58, 0.04); /* Azul Ting al 4% de opacidad */
 }
