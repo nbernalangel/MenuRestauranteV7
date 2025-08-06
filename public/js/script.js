@@ -193,41 +193,68 @@ document.addEventListener('DOMContentLoaded', () => {
         customerFormContainer.innerHTML = formHtml;
     }
     
-    if (checkoutBtn) {
-        checkoutBtn.addEventListener('click', async () => {
-            if (cart.length === 0) return alert('Tu carrito está vacío.');
-            const tipoPedido = urlParams.get('tipo');
-            const nombreCliente = document.getElementById('nombre-cliente')?.value.trim();
-            if (!nombreCliente) return alert('Por favor, ingresa tu nombre.');
-            const notas = notasClienteTextarea.value.trim() || '';
-            const totalPedido = cart.reduce((sum, item) => sum + (item.precio * item.quantity), 0);
-            let pedidoParaGuardar = { restaurante: restauranteInfo._id, items: cart.map(item => ({ nombre: item.nombre, cantidad: item.quantity, precio: item.precio })), total: totalPedido, cliente: { nombre: nombreCliente }, notas };
-            let message = `*¡Nuevo Pedido para ${restauranteInfo.nombre}!* \n\n`;
-            if (tipoPedido === 'mesa') {
-                const numeroMesa = document.getElementById('numero-mesa')?.value.trim();
-                if (!numeroMesa) return alert('Por favor, ingresa tu número de mesa.');
-                pedidoParaGuardar.tipo = 'Mesa';
-                pedidoParaGuardar.cliente.numeroMesa = numeroMesa;
-                message += `*Pedido para la MESA #${numeroMesa}*\n*Cliente:* ${nombreCliente}\n`;
-            } else {
-                const telefono = document.getElementById('telefono-cliente')?.value.trim();
-                const direccion = document.getElementById('direccion-cliente')?.value.trim();
-                if (!telefono || !direccion) return alert('Los campos "Teléfono" y "Dirección" son obligatorios.');
-                pedidoParaGuardar.tipo = 'Domicilio';
-                pedidoParaGuardar.cliente.telefono = telefono;
-                pedidoParaGuardar.cliente.direccion = direccion;
-                message += `*Pedido a DOMICILIO*\n*Cliente:* ${nombreCliente}\n*Teléfono:* ${telefono}\n*Dirección:* ${direccion}\n`;
-            }
-            message += `\n*--- Detalle del Pedido ---*\n`;
-            cart.forEach(item => { message += `${item.quantity}x ${item.nombre} - ${formatCurrency(item.precio * item.quantity)}\n`; });
-            message += `\n*Total: ${formatCurrency(totalPedido)}*`;
-            if (notas) message += `\n\n*Notas:* ${notas}`;
-            try { await fetch('/api/pedidos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(pedidoParaGuardar) }); } 
-            catch (error) { console.error('Error de red al registrar el pedido:', error); }
-            const whatsappUrl = `https://api.whatsapp.com/send?phone=${restauranteInfo.telefono.replace(/[\s\-()]/g, '')}&text=${encodeURIComponent(message)}`;
-            window.open(whatsappUrl, '_blank');
-        });
-    }
+    // REEMPLAZA CON ESTE BLOQUE CORREGIDO
+if (checkoutBtn) {
+    checkoutBtn.addEventListener('click', async () => {
+        if (cart.length === 0) { return alert('Tu carrito está vacío.'); }
+
+        const tipoPedido = urlParams.get('tipo');
+        const nombreCliente = document.getElementById('nombre-cliente')?.value.trim();
+        if (!nombreCliente) { return alert('Por favor, ingresa tu nombre.'); }
+        
+        const notas = notasClienteTextarea.value.trim() || '';
+        const totalPedido = cart.reduce((sum, item) => sum + (item.precio * item.quantity), 0);
+        
+        let pedidoParaGuardar = { 
+            restaurante: restauranteInfo._id, 
+            items: cart.map(item => ({ nombre: item.nombre, cantidad: item.quantity, precio: item.precio })), 
+            total: totalPedido, 
+            cliente: { nombre: nombreCliente }, 
+            notas 
+        };
+        
+        let message = `*¡Nuevo Pedido para ${restauranteInfo.nombre}!* \n\n`;
+
+        if (tipoPedido === 'mesa') {
+            const numeroMesa = document.getElementById('numero-mesa')?.value.trim();
+            if (!numeroMesa) { return alert('Por favor, ingresa tu número de mesa.'); }
+            pedidoParaGuardar.tipo = 'Mesa';
+            pedidoParaGuardar.cliente.numeroMesa = numeroMesa;
+            message += `*Pedido para la MESA #${numeroMesa}*\n*Cliente:* ${nombreCliente}\n`;
+        } else {
+            const telefono = document.getElementById('telefono-cliente')?.value.trim();
+            const direccion = document.getElementById('direccion-cliente')?.value.trim();
+            if (!telefono || !direccion) { return alert('Los campos "Teléfono" y "Dirección" son obligatorios.'); }
+            pedidoParaGuardar.tipo = 'Domicilio';
+            pedidoParaGuardar.cliente.telefono = telefono;
+            pedidoParaGuardar.cliente.direccion = direccion;
+            message += `*Pedido a DOMICILIO*\n*Cliente:* ${nombreCliente}\n*Teléfono:* ${telefono}\n*Dirección:* ${direccion}\n`;
+        }
+        
+        message += `\n*--- Detalle del Pedido ---*\n`;
+        cart.forEach(item => { message += `${item.quantity}x ${item.nombre} - ${formatCurrency(item.precio * item.quantity)}\n`; });
+        message += `\n*Total: ${formatCurrency(totalPedido)}*`;
+        if (notas) message += `\n\n*Notas:* ${notas}`;
+        
+        const whatsappUrl = `https://api.whatsapp.com/send?phone=${restauranteInfo.telefono.replace(/[\s\-()]/g, '')}&text=${encodeURIComponent(message)}`;
+
+        // --- ORDEN CORREGIDO ---
+        // 1. Abrimos WhatsApp INMEDIATAMENTE.
+        window.open(whatsappUrl, '_blank');
+        
+        // 2. Guardamos el pedido en la base de datos en segundo plano.
+        try { 
+            await fetch('/api/pedidos', { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify(pedidoParaGuardar) 
+            }); 
+        } catch (error) { 
+            console.error('Error de red al registrar el pedido (el cliente ya fue redirigido a WhatsApp):', error); 
+        }
+        // -----------------------
+    });
+}
 
     // 7. CARGA INICIAL
     async function loadPage() {
