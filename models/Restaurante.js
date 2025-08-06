@@ -24,22 +24,30 @@ const restauranteSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
-    direccion: { // Mantén este campo para la dirección de texto
+    direccion: { 
         type: String,
         trim: true
     },
+    // --- NUEVO CAMPO PARA TÍTULOS PERSONALIZADOS ---
+    titulosPersonalizados: {
+        platos: String,
+        bebidas: String,
+        pizzas: String,
+        especiales: String,
+        menuDia: String,
+    },
+    // ---------------------------------------------
     location: {
         type: {
-            type: String, // Debe ser 'Point' para un punto GeoJSON
-            enum: ['Point'], // Asegura que solo se acepte el valor 'Point'
+            type: String, 
+            enum: ['Point'], 
             required: false 
         },
         coordinates: {
-            type: [Number], // Array de números [longitud, latitud]
+            type: [Number], 
             required: false
         }
     },
-    // --- BLOQUE FALTANTE AÑADIDO AQUÍ ---
     aceptaDomicilios: {
         type: Boolean,
         default: true
@@ -48,7 +56,6 @@ const restauranteSchema = new mongoose.Schema({
         type: Boolean,
         default: true
     }
-    // ------------------------------------
 }, { timestamps: true });
 
 module.exports = mongoose.model('Restaurante', restauranteSchema);

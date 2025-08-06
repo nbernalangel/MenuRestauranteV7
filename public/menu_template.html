@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menú Digital</title>
+    <title id="page-title">Menú Digital</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
-        body { 
-            font-family: 'Poppins', sans-serif; 
-            background-color: #f8fafc; 
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8fafc;
         }
         .restaurant-logo {
             max-width: 180px; max-height: 100px; object-fit: contain;
@@ -25,10 +25,22 @@
         #especiales-content, #platos-a-la-carta-content, #bebidas-content, #pizzas-content {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;
         }
-        .menu-card { 
+        .menu-card {
             background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.08);
             padding: 0.75rem; display: flex; flex-direction: column;
         }
+
+        .menu-card:nth-of-type(odd) {
+            background-color: rgba(0, 24, 58, 0.04);
+        }
+        .menu-card:nth-of-type(even) {
+            background-color: rgba(148, 193, 32, 0.04);
+        }
+
+        #cart-card {
+            background-color: rgba(0, 24, 58, 0.04);
+        }
+
         .menu-card-diario { height: auto !important; }
         .menu-card .content-wrapper { flex-grow: 1; }
         .menu-card h3 { font-size: 0.9rem; font-weight: 600; color: #00183A; line-height: 1.3; margin: 0 0 0.25rem 0; }
@@ -42,18 +54,16 @@
         .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #eee; }
         #customer-form-container input, #notas-cliente { width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #ccc; margin-top: 0.25rem; }
         #customer-form-container label { font-weight: 600; display: block; margin-top: 1rem; }
-
-        /* --- ESTILOS CORREGIDOS Y MEJORADOS PARA LA SELECCIÓN DE TAMAÑO --- */
         #pizza-modal-variantes {
             display: flex;
-            flex-wrap: wrap; /* Permite que los tamaños pasen a la siguiente línea si es necesario */
-            gap: 0.75rem; /* Espacio entre los "botones" de tamaño */
+            flex-wrap: wrap;
+            gap: 0.75rem;
             margin-bottom: 1rem;
         }
         #pizza-modal-variantes label {
             display: inline-flex;
             align-items: center;
-            padding: 0.5rem 1rem; /* Más padding horizontal para que parezca un botón */
+            padding: 0.5rem 1rem;
             border: 1px solid #ddd;
             border-radius: 8px;
             cursor: pointer;
@@ -62,17 +72,14 @@
             font-size: 0.9rem;
         }
         #pizza-modal-variantes input[type="radio"] {
-            margin-right: 0.5rem; /* Espacio entre el círculo y el texto */
+            margin-right: 0.5rem;
         }
         #pizza-modal-variantes label:has(input:checked) {
-            border-color: #94C120; /* ting-green */
-            background-color: rgba(148, 193, 32, 0.1); /* ting-green con opacidad */
+            border-color: #94C120;
+            background-color: rgba(148, 193, 32, 0.1);
             font-weight: bold;
             color: #00183A;
         }
-        /* ----------------------------------------------------------------- */
-
-        /* --- ESTILO DEFINITIVO PARA EL BOTÓN DEL MODAL --- */
         .modal-final-button {
             display: block !important; visibility: visible !important; opacity: 1 !important;
             width: 100%; background-color: #94C120; color: white;
@@ -83,12 +90,11 @@
         .modal-final-button:hover {
             background-color: #7c9f1a;
         }
-                /* --- ESTILO PARA EL TEXTO DE INGREDIENTES --- */
         .ingredients-text {
-            font-size: 0.75rem; /* 12px */
-            color: #6c757d; /* Un color gris sutil */
+            font-size: 0.75rem;
+            color: #6c757d;
             font-style: italic;
-            margin-top: 0.5rem; /* Espacio entre la descripción y los ingredientes */
+            margin-top: 0.5rem;
             line-height: 1.3;
         }
     </style>
@@ -104,29 +110,33 @@
             <main class="md:col-span-2">
                 
                 <section id="daily-menu-section" style="display: none;">
-                    <h2 class="menu-section-title">Menú del Día</h2>
+                    <h2 id="titulo-menu-dia" class="menu-section-title">Menú del Día</h2>
                     <div id="menu-del-dia-content"></div>
                 </section>
-                <section id="carta-section">
-                    <h2 class="menu-section-title">A la Carta</h2>
-                    <div id="platos-a-la-carta-content"></div>
-                </section>
-                <section id="especiales-section">
-                    <h2 class="menu-section-title">Nuestros Especiales</h2>
-                    <div id="especiales-content"></div>
-                </section>
+
                 <section id="pizzas-section">
-                    <h2 class="menu-section-title">Nuestras Pizzas</h2>
+                    <h2 id="titulo-pizzas" class="menu-section-title">Nuestras Pizzas</h2>
                     <div id="pizzas-content"></div>
                 </section>
+
+                <section id="carta-section">
+                    <h2 id="titulo-platos" class="menu-section-title">A la Carta</h2>
+                    <div id="platos-a-la-carta-content"></div>
+                </section>
+
+                <section id="especiales-section">
+                    <h2 id="titulo-especiales" class="menu-section-title">Nuestros Especiales</h2>
+                    <div id="especiales-content"></div>
+                </section>
+                
                 <section id="bebidas-section">
-                    <h2 class="menu-section-title">Bebidas y Otros</h2>
+                    <h2 id="titulo-bebidas" class="menu-section-title">Bebidas y Otros</h2>
                     <div id="bebidas-content"></div>
                 </section>
 
             </main>
             <aside class="md:col-span-1">
-                <div class="p-4 bg-white rounded-lg shadow-lg sticky top-4">
+                <div id="cart-card" class="p-4 rounded-lg shadow-lg sticky top-4">
                     <h2 class="text-2xl font-bold border-b pb-2 mb-4">Tu Pedido</h2>
                     <div id="cart-items" class="mb-4"><p>Tu carrito está vacío.</p></div>
                     <div class="border-t pt-2 mb-4"><p class="text-xl font-bold flex justify-between"><span>Total:</span><span id="cart-total-price">$0</span></p></div>

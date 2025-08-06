@@ -86,6 +86,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     const pizzaSubmitBtn = document.getElementById('pizza-submit-btn');
     // --------------------------------------------------
     
+    // --- NUEVAS REFERENCIAS PARA PERSONALIZAR TÍTULOS ---
+    const titulosForm = document.getElementById('titulos-form');
+    const tituloPlatosInput = document.getElementById('titulo-platos-input');
+    const tituloBebidasInput = document.getElementById('titulo-bebidas-input');
+    const tituloPizzasInput = document.getElementById('titulo-pizzas-input');
+    const tituloEspecialesInput = document.getElementById('titulo-especiales-input');
+    const tituloMenuDiaInput = document.getElementById('titulo-menu-dia-input');
+
+    const tituloPlatosH2 = document.getElementById('titulo-platos');
+    const tituloBebidasH2 = document.getElementById('titulo-bebidas');
+    const tituloPizzasH2 = document.getElementById('titulo-pizzas');
+    const tituloEspecialesH2 = document.getElementById('titulo-especiales');
+    const tituloMenuDiaH2 = document.getElementById('titulo-menu-dia');
+    // --------------------------------------------------
+
     // 3. LÓGICA PRINCIPAL
     async function fetchData(url, options = {}) {
         try {
@@ -123,6 +138,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             alert('El reporte se está descargando. Por favor, revisa tus descargas.');
         });
     }
+
+    // --- NUEVA LÓGICA PARA NAVEGACIÓN ---
+    document.querySelectorAll('.nav-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            const targetId = button.dataset.target;
+            document.querySelectorAll('.admin-module').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.getElementById(targetId).style.display = 'block';
+        });
+    });
+    // Mostrar la primera sección por defecto
+    document.getElementById('seccion-titulos').style.display = 'block';
     
     // --- GESTIÓN DE DATOS DEL RESTAURANTE ---
     let currentRestauranteSlug = null;
@@ -141,6 +169,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                 aceptaDomiciliosCheckbox.checked = restaurante.aceptaDomicilios;
                 aceptaServicioEnMesaCheckbox.checked = restaurante.aceptaServicioEnMesa;
                 currentRestauranteSlug = restaurante.slug;
+                
+                // --- NUEVO: Cargar y aplicar títulos personalizados ---
+                const titulos = restaurante.titulosPersonalizados || {};
+                tituloPlatosInput.value = titulos.platos || '';
+                tituloBebidasInput.value = titulos.bebidas || '';
+                tituloPizzasInput.value = titulos.pizzas || '';
+                tituloEspecialesInput.value = titulos.especiales || '';
+                tituloMenuDiaInput.value = titulos.menuDia || '';
+                
+                tituloPlatosH2.textContent = titulos.platos || 'Gestionar Platos a la Carta';
+                tituloBebidasH2.textContent = titulos.bebidas || 'Gestionar Bebidas y Otros';
+                tituloPizzasH2.textContent = titulos.pizzas || 'Gestionar Pizzas';
+                tituloEspecialesH2.textContent = titulos.especiales || 'Gestionar Especiales';
+                tituloMenuDiaH2.textContent = titulos.menuDia || 'Gestionar Menús del Día';
+                // ----------------------------------------------------
             }
         } catch (error) {
             console.error("Error al cargar datos del restaurante:", error);
@@ -209,6 +252,34 @@ document.addEventListener('DOMContentLoaded', async () => {
             loadRestauranteData();
         }
     });
+    
+    // --- NUEVO: LISTENER PARA EL FORMULARIO DE TÍTULOS ---
+    titulosForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const titulos = {
+            platos: tituloPlatosInput.value.trim() || undefined,
+            bebidas: tituloBebidasInput.value.trim() || undefined,
+            pizzas: tituloPizzasInput.value.trim() || undefined,
+            especiales: tituloEspecialesInput.value.trim() || undefined,
+            menuDia: tituloMenuDiaInput.value.trim() || undefined,
+        };
+
+        const dataToUpdate = { titulosPersonalizados: titulos };
+
+        const updated = await fetchData(`/api/restaurantes/${RESTAURANTE_ID}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dataToUpdate)
+        });
+
+        if (updated) {
+            alert('Títulos personalizados actualizados con éxito.');
+            loadRestauranteData(); // Recargar los datos para ver los cambios aplicados
+        }
+    });
+    // ----------------------------------------------------
+
 
     restauranteQrBtn.addEventListener('click', () => {
         if (!currentRestauranteSlug) {

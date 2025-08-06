@@ -1,3 +1,4 @@
+// menu.js
 document.addEventListener('DOMContentLoaded', () => {
     // --- VARIABLES GLOBALES ---
     let carrito = [];
@@ -36,6 +37,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Dibuja el menú completo con el diseño original de columnas
     function renderMenu(data) {
         menuContent.innerHTML = ''; 
+        
+        // --- NUEVO: OBTENER TÍTULOS PERSONALIZADOS O USAR POR DEFECTO ---
+        const titulos = data.restaurante.titulosPersonalizados || {};
+        document.getElementById('titulo-platos').textContent = titulos.platos || 'A la Carta';
+        document.getElementById('titulo-especiales').textContent = titulos.especiales || 'Nuestros Especiales';
+        document.getElementById('titulo-pizzas').textContent = titulos.pizzas || 'Nuestras Pizzas';
+        document.getElementById('titulo-bebidas').textContent = titulos.bebidas || 'Bebidas y Otros';
+        document.getElementById('titulo-menu-dia').textContent = titulos.menuDia || 'Menú del Día';
+        // ---------------------------------------------------------------
 
         // --- LÓGICA RECONSTRUIDA PARA COPIAR TU DISEÑO ORIGINAL ---
         if (data.menuDelDia && data.menuDelDia.itemsPorCategoria && data.menuDelDia.itemsPorCategoria.length > 0) {
@@ -45,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let menuDiaHtml = `
                 <div class="menu-section" id="menu-del-dia-form">
-                    <h3 class="text-2xl font-bold text-ting-blue">${data.menuDelDia.nombre || 'Menú del Día'}</h3>
+                    <h3 class="text-2xl font-bold text-ting-blue">${titulos.menuDia || 'Menú del Día'}</h3>
                     <div class="p-4 border rounded-lg mt-4">
             `;
             

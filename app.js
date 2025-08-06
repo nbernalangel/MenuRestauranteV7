@@ -972,6 +972,7 @@ app.get('/api/reportes/restaurantes/descargar', async (req, res) => {
 
 
 // RUTAS PÚBLICAS Y PARA SERVIR ARCHIVOS HTML
+// RUTA PÚBLICA PARA OBTENER LOS DATOS DEL MENÚ COMPLETO
 app.get('/api/public/menu/:slug', async (req, res) => {
     try {
         const { slug } = req.params;
@@ -982,10 +983,10 @@ app.get('/api/public/menu/:slug', async (req, res) => {
         const menuDelDia = await MenuDia.findOne({ restaurante: restaurante._id, fecha: { $gte: inicioDelDia, $lte: finDelDia }, activo: true });
         const platosALaCarta = await Plato.find({ restaurante: restaurante._id, disponible: true });
         const platosEspeciales = await Especial.find({ restaurante: restaurante._id, disponible: true });
-        const bebidas = await Bebida.find({ restaurante: restaurante._id, disponible: true }); // <-- LÍNEA NUEVA
+        const bebidas = await Bebida.find({ restaurante: restaurante._id, disponible: true });
         const pizzas = await Pizza.find({ restaurante: restaurante._id, disponible: true });
 
-        // Se añade "bebidas" a la respuesta
+        // Ahora el frontend recibirá el objeto 'restaurante' completo, incluyendo 'titulosPersonalizados'
         res.json({ restaurante, menuDelDia, platosALaCarta, platosEspeciales, bebidas, pizzas });
     } catch (e) {
         res.status(500).json({ message: 'Error interno del servidor.' });

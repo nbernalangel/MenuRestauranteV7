@@ -1,4 +1,4 @@
-// script.js (CÓDIGO COMPLETO Y FINAL CON MODAL DE PIZZAS CORREGIDO)
+// script.js (CÓDIGO COMPLETO Y FINAL CON MODAL DE PIZZAS Y TÍTULOS CORREGIDOS)
 document.addEventListener('DOMContentLoaded', () => {
     // 1. REFERENCIAS AL DOM
     const urlParams = new URLSearchParams(window.location.search);
@@ -23,6 +23,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const bebidasContent = document.getElementById('bebidas-content');
     const pizzasSection = document.getElementById('pizzas-section');
     const pizzasContent = document.getElementById('pizzas-content');
+
+    // --- NUEVAS REFERENCIAS PARA LOS TÍTULOS DE LAS SECCIONES ---
+    const tituloPlatos = document.getElementById('titulo-platos');
+    const tituloEspeciales = document.getElementById('titulo-especiales');
+    const tituloPizzas = document.getElementById('titulo-pizzas');
+    const tituloBebidas = document.getElementById('titulo-bebidas');
+    const tituloMenuDia = document.getElementById('titulo-menu-dia');
+    // -------------------------------------------------------------
 
     const cartItemsContainer = document.getElementById('cart-items');
     const cartTotalPriceDisplay = document.getElementById('cart-total-price');
@@ -145,30 +153,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderPizzas(pizzas, container, section) {
-    if (!container || !section) return;
+        if (!container || !section) return;
 
-    if (!pizzas || pizzas.length === 0) {
-        section.style.display = 'none';
-        return;
-    }
-    section.style.display = 'block';
-    container.innerHTML = '';
+        if (!pizzas || pizzas.length === 0) {
+            section.style.display = 'none';
+            return;
+        }
+        section.style.display = 'block';
+        container.innerHTML = '';
 
-    pizzas.forEach(pizza => {
-        const minPrice = pizza.variantes.length > 0 ? Math.min(...pizza.variantes.map(v => v.precio)) : 0;
+        pizzas.forEach(pizza => {
+            const minPrice = pizza.variantes.length > 0 ? Math.min(...pizza.variantes.map(v => v.precio)) : 0;
 
-        const pizzaDiv = document.createElement('div');
-        pizzaDiv.className = 'menu-card';
-        // Esta es la versión limpia que solo usa la descripción
-        pizzaDiv.innerHTML = `
-            <div class="content-wrapper">
-                <h3>${pizza.nombre}</h3>
-                <p class="description">${pizza.descripcion || ''}</p>
-            </div>
-            <div class="card-footer">
-                <span class="price">Desde ${formatCurrency(minPrice)}</span>
-                <button class="add-btn open-pizza-modal-btn" data-pizza-id="${pizza._id}">Elegir</button>
-            </div>`;
+            const pizzaDiv = document.createElement('div');
+            pizzaDiv.className = 'menu-card';
+            pizzaDiv.innerHTML = `
+                <div class="content-wrapper">
+                    <h3>${pizza.nombre}</h3>
+                    <p class="description">${pizza.descripcion || ''}</p>
+                </div>
+                <div class="card-footer">
+                    <span class="price">Desde ${formatCurrency(minPrice)}</span>
+                    <button class="add-btn open-pizza-modal-btn" data-pizza-id="${pizza._id}">Elegir</button>
+                </div>`;
              container.appendChild(pizzaDiv);
         });
     }
@@ -193,68 +200,63 @@ document.addEventListener('DOMContentLoaded', () => {
         customerFormContainer.innerHTML = formHtml;
     }
     
-    // REEMPLAZA CON ESTE BLOQUE CORREGIDO
-if (checkoutBtn) {
-    checkoutBtn.addEventListener('click', async () => {
-        if (cart.length === 0) { return alert('Tu carrito está vacío.'); }
+    if (checkoutBtn) {
+        checkoutBtn.addEventListener('click', async () => {
+            if (cart.length === 0) { return alert('Tu carrito está vacío.'); }
 
-        const tipoPedido = urlParams.get('tipo');
-        const nombreCliente = document.getElementById('nombre-cliente')?.value.trim();
-        if (!nombreCliente) { return alert('Por favor, ingresa tu nombre.'); }
-        
-        const notas = notasClienteTextarea.value.trim() || '';
-        const totalPedido = cart.reduce((sum, item) => sum + (item.precio * item.quantity), 0);
-        
-        let pedidoParaGuardar = { 
-            restaurante: restauranteInfo._id, 
-            items: cart.map(item => ({ nombre: item.nombre, cantidad: item.quantity, precio: item.precio })), 
-            total: totalPedido, 
-            cliente: { nombre: nombreCliente }, 
-            notas 
-        };
-        
-        let message = `*¡Nuevo Pedido para ${restauranteInfo.nombre}!* \n\n`;
+            const tipoPedido = urlParams.get('tipo');
+            const nombreCliente = document.getElementById('nombre-cliente')?.value.trim();
+            if (!nombreCliente) { return alert('Por favor, ingresa tu nombre.'); }
+            
+            const notas = notasClienteTextarea.value.trim() || '';
+            const totalPedido = cart.reduce((sum, item) => sum + (item.precio * item.quantity), 0);
+            
+            let pedidoParaGuardar = { 
+                restaurante: restauranteInfo._id, 
+                items: cart.map(item => ({ nombre: item.nombre, cantidad: item.quantity, precio: item.precio })), 
+                total: totalPedido, 
+                cliente: { nombre: nombreCliente }, 
+                notas 
+            };
+            
+            let message = `*¡Nuevo Pedido para ${restauranteInfo.nombre}!* \n\n`;
 
-        if (tipoPedido === 'mesa') {
-            const numeroMesa = document.getElementById('numero-mesa')?.value.trim();
-            if (!numeroMesa) { return alert('Por favor, ingresa tu número de mesa.'); }
-            pedidoParaGuardar.tipo = 'Mesa';
-            pedidoParaGuardar.cliente.numeroMesa = numeroMesa;
-            message += `*Pedido para la MESA #${numeroMesa}*\n*Cliente:* ${nombreCliente}\n`;
-        } else {
-            const telefono = document.getElementById('telefono-cliente')?.value.trim();
-            const direccion = document.getElementById('direccion-cliente')?.value.trim();
-            if (!telefono || !direccion) { return alert('Los campos "Teléfono" y "Dirección" son obligatorios.'); }
-            pedidoParaGuardar.tipo = 'Domicilio';
-            pedidoParaGuardar.cliente.telefono = telefono;
-            pedidoParaGuardar.cliente.direccion = direccion;
-            message += `*Pedido a DOMICILIO*\n*Cliente:* ${nombreCliente}\n*Teléfono:* ${telefono}\n*Dirección:* ${direccion}\n`;
-        }
-        
-        message += `\n*--- Detalle del Pedido ---*\n`;
-        cart.forEach(item => { message += `${item.quantity}x ${item.nombre} - ${formatCurrency(item.precio * item.quantity)}\n`; });
-        message += `\n*Total: ${formatCurrency(totalPedido)}*`;
-        if (notas) message += `\n\n*Notas:* ${notas}`;
-        
-        const whatsappUrl = `https://api.whatsapp.com/send?phone=${restauranteInfo.telefono.replace(/[\s\-()]/g, '')}&text=${encodeURIComponent(message)}`;
+            if (tipoPedido === 'mesa') {
+                const numeroMesa = document.getElementById('numero-mesa')?.value.trim();
+                if (!numeroMesa) { return alert('Por favor, ingresa tu número de mesa.'); }
+                pedidoParaGuardar.tipo = 'Mesa';
+                pedidoParaGuardar.cliente.numeroMesa = numeroMesa;
+                message += `*Pedido para la MESA #${numeroMesa}*\n*Cliente:* ${nombreCliente}\n`;
+            } else {
+                const telefono = document.getElementById('telefono-cliente')?.value.trim();
+                const direccion = document.getElementById('direccion-cliente')?.value.trim();
+                if (!telefono || !direccion) { return alert('Los campos "Teléfono" y "Dirección" son obligatorios.'); }
+                pedidoParaGuardar.tipo = 'Domicilio';
+                pedidoParaGuardar.cliente.telefono = telefono;
+                pedidoParaGuardar.cliente.direccion = direccion;
+                message += `*Pedido a DOMICILIO*\n*Cliente:* ${nombreCliente}\n*Teléfono:* ${telefono}\n*Dirección:* ${direccion}\n`;
+            }
+            
+            message += `\n*--- Detalle del Pedido ---*\n`;
+            cart.forEach(item => { message += `${item.quantity}x ${item.nombre} - ${formatCurrency(item.precio * item.quantity)}\n`; });
+            message += `\n*Total: ${formatCurrency(totalPedido)}*`;
+            if (notas) message += `\n\n*Notas:* ${notas}`;
+            
+            const whatsappUrl = `https://api.whatsapp.com/send?phone=${restauranteInfo.telefono.replace(/[\s\-()]/g, '')}&text=${encodeURIComponent(message)}`;
 
-        // --- ORDEN CORREGIDO ---
-        // 1. Abrimos WhatsApp INMEDIATAMENTE.
-        window.open(whatsappUrl, '_blank');
-        
-        // 2. Guardamos el pedido en la base de datos en segundo plano.
-        try { 
-            await fetch('/api/pedidos', { 
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify(pedidoParaGuardar) 
-            }); 
-        } catch (error) { 
-            console.error('Error de red al registrar el pedido (el cliente ya fue redirigido a WhatsApp):', error); 
-        }
-        // -----------------------
-    });
-}
+            window.open(whatsappUrl, '_blank');
+            
+            try { 
+                await fetch('/api/pedidos', { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify(pedidoParaGuardar) 
+                }); 
+            } catch (error) { 
+                console.error('Error de red al registrar el pedido (el cliente ya fue redirigido a WhatsApp):', error); 
+            }
+        });
+    }
 
     // 7. CARGA INICIAL
     async function loadPage() {
@@ -267,6 +269,16 @@ if (checkoutBtn) {
             if (nombreRestauranteElem) nombreRestauranteElem.textContent = restauranteInfo.nombre;
             if (mensajeBienvenidaElem) mensajeBienvenidaElem.textContent = restauranteInfo.mensajeBienvenida || '';
             allPizzas = data.pizzas || []; 
+            
+            // --- CÓDIGO CORREGIDO PARA APLICAR TÍTULOS PERSONALIZADOS ---
+            const titulos = restauranteInfo.titulosPersonalizados || {};
+            if (tituloPlatos) tituloPlatos.textContent = titulos.platos || 'A la Carta';
+            if (tituloEspeciales) tituloEspeciales.textContent = titulos.especiales || 'Nuestros Especiales';
+            if (tituloPizzas) tituloPizzas.textContent = titulos.pizzas || 'Nuestras Pizzas';
+            if (tituloBebidas) tituloBebidas.textContent = titulos.bebidas || 'Bebidas y Otros';
+            if (tituloMenuDia) tituloMenuDia.textContent = titulos.menuDia || 'Menú del Día';
+            // -------------------------------------------------------------
+            
             renderMenuDelDia(data.menuDelDia);
             renderPlatos(data.platosEspeciales, especialesContent, especialesSection);
             renderPlatos(data.platosALaCarta, platosALaCartaContent, platosCartaSection);
