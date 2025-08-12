@@ -262,8 +262,8 @@ input:checked + .slider:before { transform: translateX(20px); }
 .menu-card .add-btn:hover {
     background-color: var(--color-azul-oscuro);
     color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    transform: translateY(-5px);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.15);
 }
 
 
@@ -599,3 +599,13 @@ input:checked + .slider:before { transform: translateX(20px); }
 .admin-module:nth-child(even) {
     background-color: rgba(0, 24, 58, 0.04); /* Azul Ting al 4% de opacidad */
 }
+
+/* Nuevo estilo para los títulos de categoría del menú del día */
+.categoria-titulo-menu-dia {
+    font-size: 1.25rem; /* Tamaño de fuente más grande que las opciones */
+    font-weight: 700; /* Asegura que siga en negrita */
+    color: #00183A; /* El color azul oscuro de tu marca */
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+

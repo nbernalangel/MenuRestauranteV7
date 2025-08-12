@@ -110,22 +110,62 @@ document.addEventListener('DOMContentLoaded', () => {
         cartTotalPriceDisplay.textContent = formatCurrency(total);
     }
     
-    // 5. RENDERIZADO DE MENÚS
-    function renderMenuDelDia(menu) {
-        if (!menuDelDiaContent || !dailyMenuSection) return;
-        if (!menu) {
-            dailyMenuSection.style.display = 'none';
-            return;
-        }
-        dailyMenuSection.style.display = 'block';
-        let opcionesHtml = '';
-        menu.itemsPorCategoria.forEach((cat, index) => {
-            opcionesHtml += `<div><strong>${cat.categoriaNombre}:</strong></div>`;
-            let radioButtonsHtml = '';
-            cat.platosEscogidos.forEach((plato) => { radioButtonsHtml += `<label class="radio-option-label"><input type="radio" name="menu-cat-${index}" value="${plato.nombre}"> ${plato.nombre}</label>`; });
-            opcionesHtml += `<div class="radio-options-container">${radioButtonsHtml}</div>`;
+    // 5. RENDERIZADO DE MENÚS (FUNCIÓN MODIFICADA)
+function renderMenuDelDia(menu) {
+    if (!menuDelDiaContent || !dailyMenuSection) return;
+    if (!menu) {
+        dailyMenuSection.style.display = 'none';
+        return;
+    }
+    dailyMenuSection.style.display = 'block';
+
+    const menuCard = document.createElement('div');
+    // Aplicamos clases de Tailwind directamente al contenedor
+    menuCard.className = 'menu-card menu-card-diario';
+
+    const menuContentWrapper = document.createElement('div');
+
+    const menuTitle = document.createElement('h3');
+    menuTitle.textContent = menu.nombreMenu;
+    menuContentWrapper.appendChild(menuTitle);
+
+    const descriptionDiv = document.createElement('div');
+    descriptionDiv.className = 'description';
+
+    menu.itemsPorCategoria.forEach((cat, index) => {
+        // Título de la categoría
+        const categoriaTitle = document.createElement('strong');
+        // Aquí usamos las clases de Tailwind para el estilo
+        categoriaTitle.className = 'block text-lg font-bold text-ting-blue mt-4 mb-2';
+        categoriaTitle.textContent = `${cat.categoriaNombre}:`;
+        descriptionDiv.appendChild(categoriaTitle);
+
+        // Opciones en un contenedor
+        const radioOptionsContainer = document.createElement('div');
+        // Usamos flexbox para que las opciones se organicen en dos columnas si hay espacio
+        radioOptionsContainer.className = 'flex flex-wrap gap-x-6 gap-y-2';
+
+        cat.platosEscogidos.forEach((plato) => {
+            const label = document.createElement('label');
+            // Clases de Tailwind para las opciones
+            label.className = 'flex items-center text-sm font-normal text-gray-800';
+            label.innerHTML = `<input type="radio" name="menu-cat-${index}" value="${plato.nombre}" class="mr-2"> ${plato.nombre}`;
+            radioOptionsContainer.appendChild(label);
         });
-        menuDelDiaContent.innerHTML = `<div class="menu-card menu-card-diario"><div><h3>${menu.nombreMenu}</h3><div class="description">${opcionesHtml}</div></div><div class="card-footer"><span class="price">${formatCurrency(menu.precioMenuGlobal)}</span><button class="add-btn add-menu-to-cart-btn" data-precio="${menu.precioMenuGlobal}" data-nombre-base="${menu.nombreMenu}">Añadir Menú</button></div></div>`;
+
+        descriptionDiv.appendChild(radioOptionsContainer);
+    });
+
+    menuContentWrapper.appendChild(descriptionDiv);
+    menuCard.appendChild(menuContentWrapper);
+
+    const cardFooter = document.createElement('div');
+    cardFooter.className = 'card-footer';
+    cardFooter.innerHTML = `<span class="price">${formatCurrency(menu.precioMenuGlobal)}</span><button class="add-btn add-menu-to-cart-btn" data-precio="${menu.precioMenuGlobal}" data-nombre-base="${menu.nombreMenu}">Añadir Menú</button>`;
+    menuCard.appendChild(cardFooter);
+
+    menuDelDiaContent.innerHTML = '';
+    menuDelDiaContent.appendChild(menuCard);
     }
     
     function renderPlatos(platos, container, section) {
