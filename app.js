@@ -209,7 +209,11 @@ app.post('/api/forgot-password', async (req, res) => {
         await usuario.save();
 
         const appBaseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-
+        
+        // --- CÓDIGO CORREGIDO: Se define la variable resetUrl antes de usarla ---
+        const resetUrl = `${appBaseUrl}/reset-password/${resetToken}`;
+        // ----------------------------------------------------------------------
+        
         await resend.emails.send({
             from: `Tu Menú Digital <noreply@ting-col.com>`,
             to: email,
