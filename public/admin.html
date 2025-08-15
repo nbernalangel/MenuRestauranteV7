@@ -57,6 +57,15 @@
                     <label for="aceptaServicioEnMesa">Acepta Servicio en la Mesa</label>
                 </div>
 
+                <label class="form-label" style="margin-top: 1rem; display: block; font-weight: bold;">Configuración de Domicilio:</label>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="cobraDomicilio">
+                    <label for="cobraDomicilio">Cobrar por el servicio a domicilio</label>
+                </div>
+                <div id="costo-domicilio-container" style="display: none;">
+                    <label for="costoDomicilio">Costo del domicilio (solo números)</label>
+                    <input type="number" id="costoDomicilio" placeholder="Ej: 3000">
+                </div>
                 <label class="form-label" style="margin-top: 1rem; display: block; font-weight: bold;">Métodos de Pago Activos:</label>
                 <div class="checkbox-group">
                     <input type="checkbox" id="pago-efectivo-admin">
@@ -258,7 +267,7 @@
 
             <hr style="margin: 3rem 0; border-top: 2px solid #ddd;">
 
-            <h2 id="titulo-menu-dia">2. Armar Menú del Día</h2>
+             <h2 id="titulo-menu-dia">2. Armar Menú del Día</h2>
              <p>Una vez creadas las categorías, aquí seleccionas las opciones disponibles para la fecha que elijas.</p>
             <form id="menu-dia-form">
                 <input type="hidden" id="menu-dia-id">
@@ -277,7 +286,8 @@
                 </table>
             </div>
         </section>
-        </div>
+        
+    </div>
 
     <script src="/socket.io/socket.io.js"></script>
     

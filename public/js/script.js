@@ -1,4 +1,4 @@
-// script.js (Versión Definitiva y Corregida)
+// script.js (Versión Definitiva y Corregida con Costo de Domicilio visible)
 document.addEventListener('DOMContentLoaded', () => {
     // 1. REFERENCIAS AL DOM
     const urlParams = new URLSearchParams(window.location.search);
@@ -66,7 +66,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return str.replace(/"/g, '&quot;');
     }
     
-    // --- ESTA ES LA FUNCIÓN CORREGIDA ---
     function renderizarMetodosDePago(metodos) {
         const container = document.getElementById('dynamic-payment-options');
         if (!container) return;
@@ -74,7 +73,6 @@ document.addEventListener('DOMContentLoaded', () => {
         container.innerHTML = '';
         let primerMetodoDisponible = null;
         
-        // Objeto que separa el valor para el sistema y el texto para el usuario
         const opciones = {
             efectivo: { valor: 'Efectivo', texto: 'Efectivo' },
             tarjeta: { valor: 'Tarjeta', texto: 'Tarjeta (Datáfono)' },
@@ -88,7 +86,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 const isChecked = key === primerMetodoDisponible ? 'checked' : '';
                 
-                // Usamos .valor para el value (lo que se envía) y .texto para el label (lo que se ve)
                 container.innerHTML += `
                     <div class="payment-option">
                         <input type="radio" id="pago-${key}" name="metodo-pago" value="${opciones[key].valor}" ${isChecked} required>
@@ -135,20 +132,41 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderCart() {
         if (!cartItemsContainer) return;
         cartItemsContainer.innerHTML = '';
+        
+        let totalProductos = 0;
+
         if (cart.length === 0) {
             cartItemsContainer.innerHTML = '<p>Tu carrito está vacío.</p>';
-            cartTotalPriceDisplay.textContent = formatCurrency(0);
-            return;
+        } else {
+            cart.forEach(item => {
+                totalProductos += item.precio * item.quantity;
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'cart-item';
+                itemDiv.innerHTML = `<div class="cart-item-details"><span class="item-name">${item.quantity}x ${item.nombre}</span><span class="item-price">${formatCurrency(item.precio * item.quantity)}</span></div><button class="remove-btn" data-id="${item.id}">×</button>`;
+                cartItemsContainer.appendChild(itemDiv);
+            });
         }
-        let total = 0;
-        cart.forEach(item => {
-            total += item.precio * item.quantity;
-            const itemDiv = document.createElement('div');
-            itemDiv.className = 'cart-item';
-            itemDiv.innerHTML = `<div class="cart-item-details"><span class="item-name">${item.quantity}x ${item.nombre}</span><span class="item-price">${formatCurrency(item.precio * item.quantity)}</span></div><button class="remove-btn" data-id="${item.id}">×</button>`;
-            cartItemsContainer.appendChild(itemDiv);
-        });
-        cartTotalPriceDisplay.textContent = formatCurrency(total);
+
+        const tipoPedido = urlParams.get('tipo');
+        let costoDomicilio = 0;
+        let totalFinal = totalProductos;
+
+        if (tipoPedido === 'domicilio' && restauranteInfo.cobraDomicilio && restauranteInfo.costoDomicilio > 0) {
+            costoDomicilio = restauranteInfo.costoDomicilio;
+            totalFinal += costoDomicilio;
+            
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = '';
+            }
+
+            const domicilioDiv = document.createElement('div');
+            domicilioDiv.className = 'cart-item';
+            domicilioDiv.style.borderBottom = 'none';
+            domicilioDiv.innerHTML = `<div class="cart-item-details" style="font-weight: bold; margin-top: 5px;"><span class="item-name">Costo Domicilio</span><span class="item-price">${formatCurrency(costoDomicilio)}</span></div>`;
+            cartItemsContainer.appendChild(domicilioDiv);
+        }
+
+        cartTotalPriceDisplay.textContent = formatCurrency(totalFinal);
     }
     
     // 5. RENDERIZADO DE MENÚS
@@ -269,14 +287,26 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (checkoutBtn) {
         checkoutBtn.addEventListener('click', async () => {
-            if (cart.length === 0) { return alert('Tu carrito está vacío.'); }
+            if (cart.length === 0) { 
+                // Aún con carrito vacío, verificamos si hay un costo de domicilio para validar el formulario
+                const tipoPedidoCheck = urlParams.get('tipo');
+                if (!(tipoPedidoCheck === 'domicilio' && restauranteInfo.cobraDomicilio && restauranteInfo.costoDomicilio > 0)) {
+                    return alert('Tu carrito está vacío.');
+                }
+            }
 
             const tipoPedido = urlParams.get('tipo');
             const nombreCliente = document.getElementById('nombre-cliente')?.value.trim();
             if (!nombreCliente) { return alert('Por favor, ingresa tu nombre.'); }
             
             const notas = notasClienteTextarea.value.trim() || '';
-            const totalPedido = cart.reduce((sum, item) => sum + (item.precio * item.quantity), 0);
+            
+            const totalProductos = cart.reduce((sum, item) => sum + (item.precio * item.quantity), 0);
+            let costoDomicilio = 0;
+            if (tipoPedido === 'domicilio' && restauranteInfo.cobraDomicilio && restauranteInfo.costoDomicilio > 0) {
+                costoDomicilio = restauranteInfo.costoDomicilio;
+            }
+            const totalFinal = totalProductos + costoDomicilio;
             
             const metodoPagoSeleccionado = document.querySelector('input[name="metodo-pago"]:checked');
             if (!metodoPagoSeleccionado) {
@@ -284,15 +314,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             const metodoDePagoValue = metodoPagoSeleccionado.value;
 
-            // --- ESTE OBJETO ES EL CORREGIDO ---
             let pedidoParaGuardar = { 
                 restaurante: restauranteInfo._id, 
-                // Aseguramos que el campo 'precio' se envía correctamente.
                 items: cart.map(item => ({ nombre: item.nombre, cantidad: item.quantity, precio: item.precio })), 
-                total: totalPedido, 
+                total: totalFinal,
                 cliente: { nombre: nombreCliente }, 
                 notas,
-                // Aseguramos que el nombre del campo es 'metodoDePago' con 'D' mayúscula.
                 metodoDePago: metodoDePagoValue
             };
             
@@ -321,8 +348,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             message += `\n*--- Detalle del Pedido ---*\n`;
-            cart.forEach(item => { message += `${item.quantity}x ${item.nombre} - ${formatCurrency(item.precio * item.quantity)}\n`; });
-            message += `\n*Total: ${formatCurrency(totalPedido)}*`;
+            if (cart.length > 0) {
+                cart.forEach(item => { message += `${item.quantity}x ${item.nombre} - ${formatCurrency(item.precio * item.quantity)}\n`; });
+            }
+            
+            if (costoDomicilio > 0) {
+                 message += `Costo Domicilio - ${formatCurrency(costoDomicilio)}\n`;
+            }
+
+            message += `\n*Total: ${formatCurrency(totalFinal)}*`;
             if (notas) message += `\n\n*Notas:* ${notas}`;
             
             const textoMetodoPago = document.querySelector(`label[for="${metodoPagoSeleccionado.id}"]`).textContent;
@@ -350,8 +384,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!data.restaurante) throw new Error('Restaurante no encontrado');
             restauranteInfo = data.restaurante;
             
-            renderizarMetodosDePago(restauranteInfo.metodosDePago);
-            
             document.title = restauranteInfo.nombre;
             if (restaurantLogoContainer) { restaurantLogoContainer.innerHTML = restauranteInfo.logoUrl ? `<img src="${restauranteInfo.logoUrl}" alt="Logo de ${restauranteInfo.nombre}" class="restaurant-logo">` : ''; }
             if (nombreRestauranteElem) nombreRestauranteElem.textContent = restauranteInfo.nombre;
@@ -363,6 +395,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (tituloEspeciales) tituloEspeciales.textContent = titulos.especiales || 'Nuestros Especiales';
             if (tituloBebidas) tituloBebidas.textContent = titulos.bebidas || 'Bebidas y Otros';
             if (tituloMenuDia) tituloMenuDia.textContent = titulos.menuDia || 'Menú del Día';
+            
+            renderizarMetodosDePago(restauranteInfo.metodosDePago);
+            renderCustomerForm();
+            renderCart(); 
             
             renderMenuDelDia(data.menuDelDia);
             renderPlatos(data.platosEspeciales, especialesContent, especialesSection);
@@ -392,7 +428,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             pizzaModalTipoContainer.style.display = 'none';
             pizzaModalMitadesContainer.style.display = 'none';
-            pizzaModalTipoContainer.querySelector('input[value="completa"]').checked = true;
+            if (pizzaModalTipoContainer.querySelector('input[value="completa"]')) {
+                pizzaModalTipoContainer.querySelector('input[value="completa"]').checked = true;
+            }
         }
         const selectedTipoRadio = pizzaModalTipoContainer.querySelector('input[name="pizza_tipo"]:checked');
         let finalPrice = variante.precio;
@@ -435,7 +473,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function closePizzaModal() {
-        pizzaModal.style.display = 'none';
+        if (pizzaModal) pizzaModal.style.display = 'none';
     }
 
     // 9. EVENT LISTENERS GLOBALES
@@ -517,5 +555,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // INICIO DE EJECUCIÓN
     loadPage();
-    renderCustomerForm();
 });

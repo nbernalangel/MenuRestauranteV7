@@ -1,3 +1,4 @@
+// models/Restaurante.js
 const mongoose = require('mongoose');
 
 const restauranteSchema = new mongoose.Schema({
@@ -54,13 +55,22 @@ const restauranteSchema = new mongoose.Schema({
         type: Boolean,
         default: true
     },
-    // --- NUEVO CAMPO AÑADIDO ---
     metodosDePago: {
         efectivo: { type: Boolean, default: true },
         tarjeta: { type: Boolean, default: false },
         transferencia: { type: Boolean, default: false }
+    },
+    
+    // --- CAMPOS NUEVOS CON LA COMA ANTERIOR YA CORREGIDA ---
+    cobraDomicilio: {
+        type: Boolean,
+        default: false
+    },
+    costoDomicilio: {
+        type: Number,
+        default: 0
     }
-    // --------------------------
+
 }, { timestamps: true });
 
 module.exports = mongoose.model('Restaurante', restauranteSchema);

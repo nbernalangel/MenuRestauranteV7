@@ -37,6 +37,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const pagoEfectivoAdminCheckbox = document.getElementById('pago-efectivo-admin');
     const pagoTarjetaAdminCheckbox = document.getElementById('pago-tarjeta-admin');
     const pagoTransferenciaAdminCheckbox = document.getElementById('pago-transferencia-admin');
+
+    // --- INICIO: NUEVAS REFERENCIAS PARA DOMICILIO ---
+    const cobraDomicilioCheckbox = document.getElementById('cobraDomicilio');
+    const costoDomicilioContainer = document.getElementById('costo-domicilio-container');
+    const costoDomicilioInput = document.getElementById('costoDomicilio');
+    // --- FIN: NUEVAS REFERENCIAS ---
+
     const downloadReportBtn = document.getElementById('download-report-btn');
     const restauranteQrBtn = document.getElementById('restaurante-qr-btn');
     const qrcodeContainer = document.getElementById('qrcode-container');
@@ -264,6 +271,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 aceptaServicioEnMesaCheckbox.checked = restaurante.aceptaServicioEnMesa;
                 currentRestauranteSlug = restaurante.slug;
                 
+                // --- INICIO: CARGAR DATOS DE DOMICILIO ---
+                cobraDomicilioCheckbox.checked = restaurante.cobraDomicilio || false;
+                costoDomicilioInput.value = restaurante.costoDomicilio || 0;
+                // Mostrar u ocultar el campo de costo basado en el checkbox
+                costoDomicilioContainer.style.display = cobraDomicilioCheckbox.checked ? 'block' : 'none';
+                // --- FIN: CARGAR DATOS ---
+
                 const metodosDePago = restaurante.metodosDePago || {};
                 pagoEfectivoAdminCheckbox.checked = metodosDePago.efectivo || false;
                 pagoTarjetaAdminCheckbox.checked = metodosDePago.tarjeta || false;
@@ -296,6 +310,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             reader.readAsDataURL(file);
         }
     });
+
+    // --- INICIO: LÓGICA PARA MOSTRAR/OCULTAR CAMPO DE COSTO ---
+    cobraDomicilioCheckbox.addEventListener('change', () => {
+        costoDomicilioContainer.style.display = cobraDomicilioCheckbox.checked ? 'block' : 'none';
+    });
+    // --- FIN: LÓGICA ---
 
     editRestauranteForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -336,6 +356,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             logoUrl: logoUrl,
             aceptaDomicilios: aceptaDomiciliosCheckbox.checked,
             aceptaServicioEnMesa: aceptaServicioEnMesaCheckbox.checked,
+            // --- INICIO: GUARDAR DATOS DE DOMICILIO ---
+            cobraDomicilio: cobraDomicilioCheckbox.checked,
+            costoDomicilio: parseFloat(costoDomicilioInput.value) || 0,
+            // --- FIN: GUARDAR DATOS ---
             metodosDePago: {
                 efectivo: pagoEfectivoAdminCheckbox.checked,
                 tarjeta: pagoTarjetaAdminCheckbox.checked,
