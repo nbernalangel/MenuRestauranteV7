@@ -16,7 +16,13 @@
                 <button id="logout-btn" class="btn btn-danger">Cerrar Sesión</button>
             </div>
         </header>
-
+        <section class="admin-module" id="seccion-pedidos-en-vivo" style="display: block; border-left: 5px solid #28a745;">
+            <h2>Pedidos Entrantes en Tiempo Real</h2>
+            <div id="pedidos-container" class="pedidos-grid">
+                <p id="mensaje-no-pedidos">Aún no hay pedidos nuevos. ¡Los pedidos entrantes aparecerán aquí al instante!</p>
+            </div>
+        </section>
+        
         <section class="admin-module" id="seccion-datos-restaurante">
             <h2 id="titulo-datos-restaurante">Datos de mi Restaurante</h2>
             <form id="edit-restaurante-form">
@@ -49,6 +55,20 @@
                 <div class="checkbox-group">
                     <input type="checkbox" id="aceptaServicioEnMesa" name="servicios">
                     <label for="aceptaServicioEnMesa">Acepta Servicio en la Mesa</label>
+                </div>
+
+                <label class="form-label" style="margin-top: 1rem; display: block; font-weight: bold;">Métodos de Pago Activos:</label>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="pago-efectivo-admin">
+                    <label for="pago-efectivo-admin">Aceptar Efectivo</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="pago-tarjeta-admin">
+                    <label for="pago-tarjeta-admin">Aceptar Tarjeta (Débito/Crédito)</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="pago-transferencia-admin">
+                    <label for="pago-transferencia-admin">Aceptar Transferencia</label>
                 </div>
                 <button type="submit" class="btn btn-primary" style="margin-top: 1.5rem;">Actualizar Datos</button>
             </form>
@@ -155,6 +175,11 @@
                 <label for="pizza-descripcion">Descripción y Composición (Ej: Completa. Jamón, Piña, Queso)</label>
                 <textarea id="pizza-descripcion" rows="2"></textarea>
 
+                <label for="pizza-categoria">Categoría de la Pizza</label>
+                <select id="pizza-categoria" required>
+                    <option value="Tradicional">Tradicional</option>
+                    <option value="Gourmet">Gourmet</option>
+                </select>
                 <hr style="margin: 1.5rem 0;">
 
                 <label class="form-label" style="font-weight: bold;">Tamaños y Precios:</label>
@@ -178,6 +203,7 @@
                     <thead>
                         <tr>
                             <th>Nombre</th>
+                            <th>Categoría</th>
                             <th>Tamaños y Precios</th>
                             <th>Permite Mitades</th>
                             <th>Disponible</th>
@@ -209,9 +235,11 @@
                 </table>
             </div>
         </section>
-
-        <section class="admin-module">
-            <h2 id="titulo-categorias-menu-dia">Gestionar Categorías para Menú del Día</h2>
+        
+        <section class="admin-module" id="seccion-menu-dia">
+            
+            <h2 id="titulo-categorias-menu-dia">1. Gestionar Categorías para Menú del Día</h2>
+            <p>Aquí creas los grupos (ej: Proteínas, Acompañantes) y las opciones dentro de cada uno.</p>
             <form id="categoria-form">
                 <input type="hidden" id="categoria-id">
                 <label for="categoria-nombre">Nombre de Categoría (Ej: Proteínas)</label>
@@ -227,17 +255,18 @@
                     <tbody></tbody>
                 </table>
             </div>
-        </section>
-        
-        <section class="admin-module" id="seccion-menu-dia">
-             <h2 id="titulo-menu-dia">Gestionar Menús del Día</h2>
+
+            <hr style="margin: 3rem 0; border-top: 2px solid #ddd;">
+
+            <h2 id="titulo-menu-dia">2. Armar Menú del Día</h2>
+             <p>Una vez creadas las categorías, aquí seleccionas las opciones disponibles para la fecha que elijas.</p>
             <form id="menu-dia-form">
                 <input type="hidden" id="menu-dia-id">
                 <div><label for="menu-fecha">Fecha</label><input type="date" id="menu-fecha" required></div>
                 <div><label for="menu-nombre">Nombre</label><input type="text" id="menu-nombre" value="Menú del Día"></div>
                 <div><label for="menu-precio">Precio</label><input type="number" id="menu-precio" value="0" step="0.01"></div>
                 <h3>Selección de Platos para el Menú</h3>
-                <div id="menu-items-selection-container"><p>Cargando categorías...</p></div>
+                <div id="menu-items-selection-container"><p>Primero debes crear categorías para armar el menú del día.</p></div>
                 <button type="submit" id="menu-dia-submit-btn" class="btn btn-primary">Guardar Menú del Día</button>
             </form>
             <h3>Menús del Día Existentes</h3>
@@ -248,8 +277,10 @@
                 </table>
             </div>
         </section>
-    </div>
+        </div>
 
+    <script src="/socket.io/socket.io.js"></script>
+    
     <script src="js/admin.js?v=31"></script>
 </body>
 </html>

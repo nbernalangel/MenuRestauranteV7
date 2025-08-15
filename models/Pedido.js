@@ -38,19 +38,21 @@ const pedidoSchema = new mongoose.Schema({
         direccion: { type: String },
         numeroMesa: { type: String }
     },
-    // --- CAMPO CLAVE AÑADIDO ---
-    // Este campo es el que faltaba. Ahora la base de datos
-    // guardará si el pedido es 'Domicilio' o 'Mesa'.
     tipo: {
         type: String,
-        enum: ['Domicilio', 'Mesa'],
+        // --- ESTE ES EL ÚNICO CAMBIO ---
+        enum: ['Domicilio', 'Mesa', 'Recoger'], // Añadimos la nueva opción
         required: [true, 'El tipo de pedido es obligatorio.']
     },
-    // --------------------------
     estado: {
         type: String,
         enum: ['pendiente', 'en preparación', 'listo', 'entregado', 'cancelado'],
         default: 'pendiente'
+    },
+    metodoDePago: {
+        type: String,
+        enum: ['Efectivo', 'Tarjeta', 'Transferencia'],
+        required: [true, 'El método de pago es obligatorio.']
     },
     notas: {
         type: String

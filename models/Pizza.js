@@ -25,6 +25,16 @@ const pizzaSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
+    
+    // --- NUEVO CAMPO AÑADIDO ---
+    categoria: {
+        type: String,
+        enum: ['Tradicional', 'Gourmet'],
+        required: [true, 'La categoría de la pizza es obligatoria.'],
+        default: 'Tradicional'
+    },
+    // --------------------------
+
     ingredientes: [String], // Un array de textos para los ingredientes
     imagenUrl: { 
         type: String,

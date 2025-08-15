@@ -22,7 +22,7 @@
             margin-bottom: 1.5rem; padding-bottom: 0.5rem;
             border-bottom: 3px solid #94C120; color: #00183A;
         }
-        #especiales-content, #platos-a-la-carta-content, #bebidas-content, #pizzas-content {
+        #especiales-content, #platos-a-la-carta-content, #bebidas-content, #pizzas-tradicionales-content, #pizzas-gourmet-content {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;
         }
         .menu-card {
@@ -97,6 +97,14 @@
             margin-top: 0.5rem;
             line-height: 1.3;
         }
+        .payment-option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .payment-option input[type="radio"] {
+            margin-right: 0.5rem;
+        }
     </style>
 </head>
 <body class="p-4">
@@ -114,11 +122,15 @@
                     <div id="menu-del-dia-content"></div>
                 </section>
 
-                <section id="pizzas-section">
-                    <h2 id="titulo-pizzas" class="menu-section-title">Nuestras Pizzas</h2>
-                    <div id="pizzas-content"></div>
+                <section id="pizzas-tradicionales-section" style="display: none;">
+                    <h2 id="titulo-pizzas-tradicionales" class="menu-section-title">Pizzas Tradicionales</h2>
+                    <div id="pizzas-tradicionales-content"></div>
                 </section>
-
+                
+                <section id="pizzas-gourmet-section" style="display: none;">
+                    <h2 id="titulo-pizzas-gourmet" class="menu-section-title">Pizzas Gourmet</h2>
+                    <div id="pizzas-gourmet-content"></div>
+                </section>
                 <section id="carta-section">
                     <h2 id="titulo-platos" class="menu-section-title">A la Carta</h2>
                     <div id="platos-a-la-carta-content"></div>
@@ -142,6 +154,12 @@
                     <div class="border-t pt-2 mb-4"><p class="text-xl font-bold flex justify-between"><span>Total:</span><span id="cart-total-price">$0</span></p></div>
                     <div id="customer-form-container"></div>
                     <div class="mt-4"><label for="notas-cliente" class="block text-sm font-semibold mb-1">Notas para tu pedido:</label><textarea id="notas-cliente" class="w-full p-2 rounded border" rows="2"></textarea></div>
+                    
+                    <div id="payment-method-container" class="mt-4">
+                        <label class="block text-sm font-semibold mb-2">Elige tu método de pago:</label>
+                        <div id="dynamic-payment-options">
+                            </div>
+                    </div>
                     <button id="send-order-btn" class="w-full mt-4 bg-green-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-600">Finalizar y Enviar Pedido</button>
                 </div>
             </aside>

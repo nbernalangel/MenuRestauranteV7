@@ -1,4 +1,4 @@
-// admin.js (CÓDIGO COMPLETO Y ACTUALIZADO)
+// admin.js (CÓDIGO COMPLETO Y FINAL CON CATEGORÍAS DE PIZZA)
 document.addEventListener('DOMContentLoaded', async () => {
     // 1. AUTENTICACIÓN Y CONFIGURACIÓN
     const userData = JSON.parse(localStorage.getItem('userData'));
@@ -12,22 +12,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     let config = {};
     let fileToUpload = null;
 
+    // --- CONEXIÓN A SOCKET.IO ---
+    const socket = io();
+    socket.on('connect', () => {
+        console.log('✅ Conectado al servidor de WebSockets!');
+        socket.emit('join_admin_room', RESTAURANTE_ID);
+    });
+    
     // 2. REFERENCIAS AL DOM
     const adminRestauranteNombre = document.getElementById('admin-restaurante-nombre');
     const logoutBtn = document.getElementById('logout-btn');
+    const pedidosContainer = document.getElementById('pedidos-container');
+    const mensajeNoPedidos = document.getElementById('mensaje-no-pedidos');
     const editRestauranteForm = document.getElementById('edit-restaurante-form');
     const editRestauranteNombreInput = document.getElementById('edit-restaurante-nombre');
     const editRestauranteTelefonoInput = document.getElementById('edit-restaurante-telefono');
     const restauranteMensajeTextarea = document.getElementById('restaurante-mensaje');
     const restauranteDireccionInput = document.getElementById('restaurante-direccion');
     const restauranteDescripcionInput = document.getElementById('restaurante-descripcion');
-
     const logoPreview = document.getElementById('logo-preview');
     const logoUploadInput = document.getElementById('logo-upload-input');
-    
     const aceptaDomiciliosCheckbox = document.getElementById('aceptaDomicilios');
     const aceptaServicioEnMesaCheckbox = document.getElementById('aceptaServicioEnMesa');
-
+    const pagoEfectivoAdminCheckbox = document.getElementById('pago-efectivo-admin');
+    const pagoTarjetaAdminCheckbox = document.getElementById('pago-tarjeta-admin');
+    const pagoTransferenciaAdminCheckbox = document.getElementById('pago-transferencia-admin');
     const downloadReportBtn = document.getElementById('download-report-btn');
     const restauranteQrBtn = document.getElementById('restaurante-qr-btn');
     const qrcodeContainer = document.getElementById('qrcode-container');
@@ -72,36 +81,117 @@ document.addEventListener('DOMContentLoaded', async () => {
     const menuItemsSelectionContainer = document.getElementById('menu-items-selection-container');
     const menusDiaTableBody = document.querySelector('#menus-dia-table tbody');
     const menuDiaSubmitBtn = document.getElementById('menu-dia-submit-btn');
-
-    // --- NUEVAS REFERENCIAS PARA EL MÓDULO DE PIZZAS ---
     const pizzaForm = document.getElementById('pizza-form');
     const pizzaIdInput = document.getElementById('pizza-id');
     const pizzaNombreInput = document.getElementById('pizza-nombre');
     const pizzaDescripcionInput = document.getElementById('pizza-descripcion');
+    const pizzaCategoriaSelect = document.getElementById('pizza-categoria');
     const pizzaIngredientesInput = document.getElementById('pizza-ingredientes');
     const variantesContainer = document.getElementById('variantes-container');
     const addVarianteBtn = document.getElementById('add-variante-btn');
     const permiteMitadesCheckbox = document.getElementById('permiteMitades');
     const pizzasTableBody = document.querySelector('#pizzas-table tbody');
     const pizzaSubmitBtn = document.getElementById('pizza-submit-btn');
-    // --------------------------------------------------
-    
-    // --- NUEVAS REFERENCIAS PARA PERSONALIZAR TÍTULOS ---
     const titulosForm = document.getElementById('titulos-form');
     const tituloPlatosInput = document.getElementById('titulo-platos-input');
     const tituloBebidasInput = document.getElementById('titulo-bebidas-input');
     const tituloPizzasInput = document.getElementById('titulo-pizzas-input');
     const tituloEspecialesInput = document.getElementById('titulo-especiales-input');
     const tituloMenuDiaInput = document.getElementById('titulo-menu-dia-input');
-
     const tituloPlatosH2 = document.getElementById('titulo-platos');
     const tituloBebidasH2 = document.getElementById('titulo-bebidas');
     const tituloPizzasH2 = document.getElementById('titulo-pizzas');
     const tituloEspecialesH2 = document.getElementById('titulo-especiales');
     const tituloMenuDiaH2 = document.getElementById('titulo-menu-dia');
-    // --------------------------------------------------
 
-    // 3. LÓGICA PRINCIPAL
+    const ESTADOS_PEDIDO = {
+        'pendiente': 'Pendiente',
+        'en preparación': 'En Preparación',
+        'listo': 'Listo para Entregar',
+        'entregado': 'Entregado',
+        'cancelado': 'Cancelado'
+    };
+    
+    function formatCurrency(value) {
+        return new Intl.NumberFormat('es-CO', {
+            style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0,
+        }).format(value);
+    }
+
+    function renderPedidoCard(pedido) {
+        const card = document.createElement('div');
+        card.className = 'pedido-card';
+        card.dataset.pedidoId = pedido._id; 
+        const esCompletado = ['entregado', 'cancelado'].includes(pedido.estado);
+        if (esCompletado) { card.classList.add('completado'); }
+        let opcionesSelect = '';
+        for (const [valor, texto] of Object.entries(ESTADOS_PEDIDO)) {
+            const isSelected = valor === pedido.estado ? 'selected' : '';
+            opcionesSelect += `<option value="${valor}" ${isSelected}>${texto}</option>`;
+        }
+        const selectHtml = `<select class="estado-select" data-id="${pedido._id}">${opcionesSelect}</select>`;
+        const estadoActualTexto = ESTADOS_PEDIDO[pedido.estado] || pedido.estado;
+        const estadoCssClass = pedido.estado.replace(/\s+/g, '-');
+        card.innerHTML = `
+            <h3>Pedido #${pedido.numeroPedido}</h3>
+            <p><strong>Cliente:</strong> ${pedido.cliente.nombre}</p>
+            ${pedido.tipo === 'Domicilio' && pedido.cliente.telefono ? `<p><strong>Teléfono:</strong> ${pedido.cliente.telefono}</p>` : ''}
+            <p><strong>Tipo:</strong> ${pedido.tipo}</p>
+            <p><strong>Método de Pago:</strong> ${pedido.metodoDePago || 'No especificado'}</p>
+            <p><strong>Estado:</strong> <span class="estado-badge estado-${estadoCssClass}">${estadoActualTexto}</span></p>
+            <hr>
+            <ul class="items-list">${pedido.items.map(item => `<li>${item.cantidad}x ${item.nombre}</li>`).join('')}</ul>
+            <p><strong>Total: ${formatCurrency(pedido.total)}</strong></p>
+            ${pedido.notas ? `<p style="margin-top: 0.5rem; font-style: italic;"><strong>Notas:</strong> ${pedido.notas}</p>` : ''}
+            ${selectHtml} 
+            <p style="text-align: right; font-size: 0.8em; color: #666; margin-top: 1rem; margin-bottom: 0;">Recibido: ${new Date(pedido.createdAt).toLocaleTimeString()}</p>
+        `;
+        return card;
+    }
+
+    async function cargarPedidosDeHoy() {
+        const pedidos = await fetchData(`/api/pedidos/restaurante/${RESTAURANTE_ID}/hoy`);
+        pedidosContainer.innerHTML = ''; 
+        if (pedidos && pedidos.length > 0) {
+            mensajeNoPedidos.style.display = 'none';
+            pedidos.forEach(pedido => {
+                const card = renderPedidoCard(pedido);
+                pedidosContainer.appendChild(card);
+            });
+        } else {
+            mensajeNoPedidos.style.display = 'block';
+        }
+    }
+
+    socket.on('nuevo-pedido', (pedido) => {
+        console.log('¡Nuevo pedido recibido!', pedido);
+        mensajeNoPedidos.style.display = 'none';
+        const card = renderPedidoCard(pedido);
+        pedidosContainer.prepend(card);
+        try { new Audio('/sounds/notificacion.mp3').play(); } catch(e) {}
+    });
+
+    socket.on('actualizacion-estado', (pedido) => {
+        console.log('¡Actualización de estado recibida!', pedido);
+        const cardExistente = document.querySelector(`.pedido-card[data-pedido-id="${pedido._id}"]`);
+        if (cardExistente) {
+            const nuevaCard = renderPedidoCard(pedido);
+            cardExistente.replaceWith(nuevaCard);
+        }
+    });
+
+    document.addEventListener('change', async (e) => {
+        if (e.target.classList.contains('estado-select')) {
+            const pedidoId = e.target.dataset.id;
+            const nuevoEstado = e.target.value;
+            await fetchData(`/api/pedidos/${pedidoId}/estado`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ estado: nuevoEstado })
+            });
+        }
+    });
+    
     async function fetchData(url, options = {}) {
         try {
             const response = await fetch(url, options);
@@ -117,7 +207,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return null;
         }
     }
-
+    
     if (userData.nombreRestaurante) {
         adminRestauranteNombre.textContent = `Gestionando: ${userData.nombreRestaurante}`;
     }
@@ -139,20 +229,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // --- NUEVA LÓGICA PARA NAVEGACIÓN ---
-    document.querySelectorAll('.nav-btn').forEach(button => {
+    const navButtons = document.querySelectorAll('.nav-btn');
+    navButtons.forEach(button => {
         button.addEventListener('click', () => {
+            navButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
             const targetId = button.dataset.target;
             document.querySelectorAll('.admin-module').forEach(section => {
-                section.style.display = 'none';
+                if (section.id !== 'seccion-pedidos-en-vivo') { 
+                    section.style.display = 'none';
+                }
             });
             document.getElementById(targetId).style.display = 'block';
         });
     });
-    // Mostrar la primera sección por defecto
-    document.getElementById('seccion-titulos').style.display = 'block';
+
+    document.querySelector('.nav-btn[data-target="seccion-datos-restaurante"]').classList.add('active');
+    document.getElementById('seccion-datos-restaurante').style.display = 'block';
     
-    // --- GESTIÓN DE DATOS DEL RESTAURANTE ---
     let currentRestauranteSlug = null;
 
     async function loadRestauranteData() {
@@ -170,7 +264,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 aceptaServicioEnMesaCheckbox.checked = restaurante.aceptaServicioEnMesa;
                 currentRestauranteSlug = restaurante.slug;
                 
-                // --- NUEVO: Cargar y aplicar títulos personalizados ---
+                const metodosDePago = restaurante.metodosDePago || {};
+                pagoEfectivoAdminCheckbox.checked = metodosDePago.efectivo || false;
+                pagoTarjetaAdminCheckbox.checked = metodosDePago.tarjeta || false;
+                pagoTransferenciaAdminCheckbox.checked = metodosDePago.transferencia || false;
+
                 const titulos = restaurante.titulosPersonalizados || {};
                 tituloPlatosInput.value = titulos.platos || '';
                 tituloBebidasInput.value = titulos.bebidas || '';
@@ -183,7 +281,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 tituloPizzasH2.textContent = titulos.pizzas || 'Gestionar Pizzas';
                 tituloEspecialesH2.textContent = titulos.especiales || 'Gestionar Especiales';
                 tituloMenuDiaH2.textContent = titulos.menuDia || 'Gestionar Menús del Día';
-                // ----------------------------------------------------
             }
         } catch (error) {
             console.error("Error al cargar datos del restaurante:", error);
@@ -238,7 +335,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             mensajeBienvenida: restauranteMensajeTextarea.value,
             logoUrl: logoUrl,
             aceptaDomicilios: aceptaDomiciliosCheckbox.checked,
-            aceptaServicioEnMesa: aceptaServicioEnMesaCheckbox.checked
+            aceptaServicioEnMesa: aceptaServicioEnMesaCheckbox.checked,
+            metodosDePago: {
+                efectivo: pagoEfectivoAdminCheckbox.checked,
+                tarjeta: pagoTarjetaAdminCheckbox.checked,
+                transferencia: pagoTransferenciaAdminCheckbox.checked
+            }
         };
         
         const updated = await fetchData(`/api/restaurantes/${RESTAURANTE_ID}`, {
@@ -253,7 +355,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
     
-    // --- NUEVO: LISTENER PARA EL FORMULARIO DE TÍTULOS ---
     titulosForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
@@ -275,11 +376,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (updated) {
             alert('Títulos personalizados actualizados con éxito.');
-            loadRestauranteData(); // Recargar los datos para ver los cambios aplicados
+            loadRestauranteData();
         }
     });
-    // ----------------------------------------------------
-
 
     restauranteQrBtn.addEventListener('click', () => {
         if (!currentRestauranteSlug) {
@@ -306,7 +405,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // --- GESTIÓN DE PLATOS ---
     async function loadPlatos() {
         if (!platosTableBody) return;
         const platos = await fetchData(`/api/platos/restaurante/${RESTAURANTE_ID}`);
@@ -316,7 +414,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const row = platosTableBody.insertRow();
                 row.innerHTML = `
                     <td>${p.nombre}</td>
-                    <td>$${p.precio ? p.precio.toFixed(2) : '0.00'}</td>
+                    <td>${formatCurrency(p.precio)}</td>
                     <td>${p.categoria || ''}</td>
                     <td>
                         <label class="switch">
@@ -390,7 +488,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
     
-    // --- GESTIÓN DE ESPECIALES ---
     async function loadEspeciales() {
         if (!especialesTableBody) return;
         const especiales = await fetchData(`/api/especiales/restaurante/${RESTAURANTE_ID}`);
@@ -400,7 +497,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const row = especialesTableBody.insertRow();
                 row.innerHTML = `
                     <td>${e.nombre}</td>
-                    <td>$${e.precio ? e.precio.toFixed(2) : '0.00'}</td>
+                    <td>${formatCurrency(e.precio)}</td>
                     <td>
                         <label class="switch">
                             <input type="checkbox" class="toggle-disponibilidad" data-id="${e._id}" data-tipo="especiales" ${e.disponible ? 'checked' : ''}>
@@ -471,7 +568,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
     
-    // --- GESTIÓN DE BEBIDAS ---
     async function loadBebidas() {
         if (!bebidasTableBody) return;
         const bebidas = await fetchData(`/api/bebidas/restaurante/${RESTAURANTE_ID}`);
@@ -481,7 +577,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const row = bebidasTableBody.insertRow();
                 row.innerHTML = `
                     <td>${b.nombre}</td>
-                    <td>$${b.precio ? b.precio.toFixed(2) : '0.00'}</td>
+                    <td>${formatCurrency(b.precio)}</td>
                     <td>${b.categoria || ''}</td>
                     <td>
                         <label class="switch">
@@ -553,7 +649,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // --- GESTIÓN DE PIZZAS (NUEVO BLOQUE DE CÓDIGO) ---
     function createVarianteInput(variante = {}) {
         if (!variantesContainer) return;
         const div = document.createElement('div');
@@ -593,9 +688,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (pizzas && Array.isArray(pizzas)) {
             pizzas.forEach(p => {
                 const row = pizzasTableBody.insertRow();
-                const variantesStr = p.variantes.map(v => `${v.tamaño}: $${v.precio}`).join('<br>');
+                const variantesStr = p.variantes.map(v => `${v.tamaño}: ${formatCurrency(v.precio)}`).join('<br>');
                 row.innerHTML = `
                     <td>${p.nombre}</td>
+                    <td>${p.categoria || 'Tradicional'}</td>
                     <td>${variantesStr}</td>
                     <td>${p.permiteMitades ? 'Sí' : 'No'}</td>
                     <td>
@@ -632,6 +728,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const pizzaData = {
                 nombre: pizzaNombreInput.value,
                 descripcion: pizzaDescripcionInput.value,
+                categoria: pizzaCategoriaSelect.value,
                 variantes: variantes,
                 permiteMitades: permiteMitadesCheckbox.checked,
                 restaurante: RESTAURANTE_ID
@@ -669,6 +766,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     pizzaNombreInput.value = pizza.nombre;
                     pizzaDescripcionInput.value = pizza.descripcion || '';
                     permiteMitadesCheckbox.checked = pizza.permiteMitades;
+                    pizzaCategoriaSelect.value = pizza.categoria || 'Tradicional';
                     
                     variantesContainer.innerHTML = '';
                     pizza.variantes.forEach(v => createVarianteInput(v));
@@ -687,9 +785,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
     }
-    // --- FIN DEL NUEVO BLOQUE DE CÓDIGO PARA PIZZAS ---
 
-    // --- LISTENER GLOBAL PARA TOGGLE DE DISPONIBILIDAD ---
     document.addEventListener('change', async (e) => {
         if (e.target.classList.contains('toggle-disponibilidad')) {
             const { id, tipo } = e.target.dataset;
@@ -698,7 +794,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // --- GESTIÓN DE CATEGORÍAS DE MENÚ ---
     function createOpcionInput(opcion = {}) {
         if (!opcionesContainer) return;
         const div = document.createElement('div'); div.classList.add('opcion-item'); div.style.display = 'flex'; div.style.alignItems = 'center'; div.style.marginBottom = '5px';
@@ -789,7 +884,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // --- GESTIÓN DE MENÚS DEL DÍA ---
     function updateMenuDiaForm(menuAEditar = null) {
         if (!menuItemsSelectionContainer) return;
         menuItemsSelectionContainer.innerHTML = '';
@@ -900,20 +994,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // 4. CARGA INICIAL DE DATOS AL CARGAR LA PÁGINA
-    config = await fetchData('/api/config');
-    loadRestauranteData();
-    loadPlatos();
-    loadEspeciales();
-    loadBebidas();
-    loadCategorias();
-    loadMenusDia();
-    // Añadimos las nuevas llamadas
-    if (pizzaForm) {
-        loadPizzas();
-        createVarianteInput();
+    // CARGA INICIAL DE DATOS
+    async function init() {
+        config = await fetchData('/api/config');
+        await loadRestauranteData();
+        await loadPlatos();
+        await loadEspeciales();
+        await loadBebidas();
+        await loadCategorias();
+        await loadMenusDia();
+        if (pizzaForm) {
+            await loadPizzas();
+            createVarianteInput();
+        }
+        if (categoriaForm) {
+            createOpcionInput();
+        }
+        await cargarPedidosDeHoy();
     }
-    if (categoriaForm) {
-        createOpcionInput();
-    }
+
+    init();
 });

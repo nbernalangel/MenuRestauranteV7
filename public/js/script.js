@@ -1,4 +1,4 @@
-// script.js (CÓDIGO COMPLETO Y FINAL CON MODAL DE PIZZAS Y TÍTULOS CORREGIDOS)
+// script.js (Versión Definitiva y Corregida)
 document.addEventListener('DOMContentLoaded', () => {
     // 1. REFERENCIAS AL DOM
     const urlParams = new URLSearchParams(window.location.search);
@@ -21,16 +21,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const platosALaCartaContent = document.getElementById('platos-a-la-carta-content');
     const bebidasSection = document.getElementById('bebidas-section');
     const bebidasContent = document.getElementById('bebidas-content');
-    const pizzasSection = document.getElementById('pizzas-section');
-    const pizzasContent = document.getElementById('pizzas-content');
 
-    // --- NUEVAS REFERENCIAS PARA LOS TÍTULOS DE LAS SECCIONES ---
+    const pizzasTradicionalesSection = document.getElementById('pizzas-tradicionales-section');
+    const pizzasTradicionalesContent = document.getElementById('pizzas-tradicionales-content');
+    const pizzasGourmetSection = document.getElementById('pizzas-gourmet-section');
+    const pizzasGourmetContent = document.getElementById('pizzas-gourmet-content');
+
     const tituloPlatos = document.getElementById('titulo-platos');
     const tituloEspeciales = document.getElementById('titulo-especiales');
-    const tituloPizzas = document.getElementById('titulo-pizzas');
     const tituloBebidas = document.getElementById('titulo-bebidas');
     const tituloMenuDia = document.getElementById('titulo-menu-dia');
-    // -------------------------------------------------------------
 
     const cartItemsContainer = document.getElementById('cart-items');
     const cartTotalPriceDisplay = document.getElementById('cart-total-price');
@@ -64,6 +64,47 @@ document.addEventListener('DOMContentLoaded', () => {
     function escapeAttr(str) {
         if (typeof str !== 'string') return '';
         return str.replace(/"/g, '&quot;');
+    }
+    
+    // --- ESTA ES LA FUNCIÓN CORREGIDA ---
+    function renderizarMetodosDePago(metodos) {
+        const container = document.getElementById('dynamic-payment-options');
+        if (!container) return;
+
+        container.innerHTML = '';
+        let primerMetodoDisponible = null;
+        
+        // Objeto que separa el valor para el sistema y el texto para el usuario
+        const opciones = {
+            efectivo: { valor: 'Efectivo', texto: 'Efectivo' },
+            tarjeta: { valor: 'Tarjeta', texto: 'Tarjeta (Datáfono)' },
+            transferencia: { valor: 'Transferencia', texto: 'Transferencia' }
+        };
+
+        for (const key in opciones) {
+            if (metodos && metodos[key] === true) {
+                if (!primerMetodoDisponible) {
+                    primerMetodoDisponible = key;
+                }
+                const isChecked = key === primerMetodoDisponible ? 'checked' : '';
+                
+                // Usamos .valor para el value (lo que se envía) y .texto para el label (lo que se ve)
+                container.innerHTML += `
+                    <div class="payment-option">
+                        <input type="radio" id="pago-${key}" name="metodo-pago" value="${opciones[key].valor}" ${isChecked} required>
+                        <label for="pago-${key}">${opciones[key].texto}</label>
+                    </div>
+                `;
+            }
+        }
+
+        if (container.innerHTML === '') {
+            container.innerHTML = '<p class="text-red-500 text-sm">No hay métodos de pago configurados.</p>';
+            if (checkoutBtn) {
+                checkoutBtn.disabled = true;
+                checkoutBtn.style.backgroundColor = 'grey';
+            }
+        }
     }
 
     // 4. LÓGICA DEL CARRITO
@@ -110,62 +151,45 @@ document.addEventListener('DOMContentLoaded', () => {
         cartTotalPriceDisplay.textContent = formatCurrency(total);
     }
     
-    // 5. RENDERIZADO DE MENÚS (FUNCIÓN MODIFICADA)
-function renderMenuDelDia(menu) {
-    if (!menuDelDiaContent || !dailyMenuSection) return;
-    if (!menu) {
-        dailyMenuSection.style.display = 'none';
-        return;
-    }
-    dailyMenuSection.style.display = 'block';
-
-    const menuCard = document.createElement('div');
-    // Aplicamos clases de Tailwind directamente al contenedor
-    menuCard.className = 'menu-card menu-card-diario';
-
-    const menuContentWrapper = document.createElement('div');
-
-    const menuTitle = document.createElement('h3');
-    menuTitle.textContent = menu.nombreMenu;
-    menuContentWrapper.appendChild(menuTitle);
-
-    const descriptionDiv = document.createElement('div');
-    descriptionDiv.className = 'description';
-
-    menu.itemsPorCategoria.forEach((cat, index) => {
-        // Título de la categoría
-        const categoriaTitle = document.createElement('strong');
-        // Aquí usamos las clases de Tailwind para el estilo
-        categoriaTitle.className = 'block text-lg font-bold text-ting-blue mt-4 mb-2';
-        categoriaTitle.textContent = `${cat.categoriaNombre}:`;
-        descriptionDiv.appendChild(categoriaTitle);
-
-        // Opciones en un contenedor
-        const radioOptionsContainer = document.createElement('div');
-        // Usamos flexbox para que las opciones se organicen en dos columnas si hay espacio
-        radioOptionsContainer.className = 'flex flex-wrap gap-x-6 gap-y-2';
-
-        cat.platosEscogidos.forEach((plato) => {
-            const label = document.createElement('label');
-            // Clases de Tailwind para las opciones
-            label.className = 'flex items-center text-sm font-normal text-gray-800';
-            label.innerHTML = `<input type="radio" name="menu-cat-${index}" value="${plato.nombre}" class="mr-2"> ${plato.nombre}`;
-            radioOptionsContainer.appendChild(label);
+    // 5. RENDERIZADO DE MENÚS
+    function renderMenuDelDia(menu) {
+        if (!menuDelDiaContent || !dailyMenuSection) return;
+        if (!menu) {
+            dailyMenuSection.style.display = 'none';
+            return;
+        }
+        dailyMenuSection.style.display = 'block';
+        const menuCard = document.createElement('div');
+        menuCard.className = 'menu-card menu-card-diario';
+        const menuContentWrapper = document.createElement('div');
+        const menuTitle = document.createElement('h3');
+        menuTitle.textContent = menu.nombreMenu;
+        menuContentWrapper.appendChild(menuTitle);
+        const descriptionDiv = document.createElement('div');
+        descriptionDiv.className = 'description';
+        menu.itemsPorCategoria.forEach((cat, index) => {
+            const categoriaTitle = document.createElement('strong');
+            categoriaTitle.className = 'block text-lg font-bold text-ting-blue mt-4 mb-2';
+            categoriaTitle.textContent = `${cat.categoriaNombre}:`;
+            descriptionDiv.appendChild(categoriaTitle);
+            const radioOptionsContainer = document.createElement('div');
+            radioOptionsContainer.className = 'flex flex-wrap gap-x-6 gap-y-2';
+            cat.platosEscogidos.forEach((plato) => {
+                const label = document.createElement('label');
+                label.className = 'flex items-center text-sm font-normal text-gray-800';
+                label.innerHTML = `<input type="radio" name="menu-cat-${index}" value="${plato.nombre}" class="mr-2"> ${plato.nombre}`;
+                radioOptionsContainer.appendChild(label);
+            });
+            descriptionDiv.appendChild(radioOptionsContainer);
         });
-
-        descriptionDiv.appendChild(radioOptionsContainer);
-    });
-
-    menuContentWrapper.appendChild(descriptionDiv);
-    menuCard.appendChild(menuContentWrapper);
-
-    const cardFooter = document.createElement('div');
-    cardFooter.className = 'card-footer';
-    cardFooter.innerHTML = `<span class="price">${formatCurrency(menu.precioMenuGlobal)}</span><button class="add-btn add-menu-to-cart-btn" data-precio="${menu.precioMenuGlobal}" data-nombre-base="${menu.nombreMenu}">Añadir Menú</button>`;
-    menuCard.appendChild(cardFooter);
-
-    menuDelDiaContent.innerHTML = '';
-    menuDelDiaContent.appendChild(menuCard);
+        menuContentWrapper.appendChild(descriptionDiv);
+        menuCard.appendChild(menuContentWrapper);
+        const cardFooter = document.createElement('div');
+        cardFooter.className = 'card-footer';
+        cardFooter.innerHTML = `<span class="price">${formatCurrency(menu.precioMenuGlobal)}</span><button class="add-btn add-menu-to-cart-btn" data-precio="${menu.precioMenuGlobal}" data-nombre-base="${menu.nombreMenu}">Añadir Menú</button>`;
+        menuCard.appendChild(cardFooter);
+        menuDelDiaContent.innerHTML = '';
+        menuDelDiaContent.appendChild(menuCard);
     }
     
     function renderPlatos(platos, container, section) {
@@ -194,17 +218,14 @@ function renderMenuDelDia(menu) {
 
     function renderPizzas(pizzas, container, section) {
         if (!container || !section) return;
-
         if (!pizzas || pizzas.length === 0) {
             section.style.display = 'none';
             return;
         }
         section.style.display = 'block';
         container.innerHTML = '';
-
         pizzas.forEach(pizza => {
             const minPrice = pizza.variantes.length > 0 ? Math.min(...pizza.variantes.map(v => v.precio)) : 0;
-
             const pizzaDiv = document.createElement('div');
             pizzaDiv.className = 'menu-card';
             pizzaDiv.innerHTML = `
@@ -220,17 +241,23 @@ function renderMenuDelDia(menu) {
         });
     }
 
-    // 6. LÓGICA DE WHATSAPP Y FORMULARIO
+    // 6. LÓGICA DE FORMULARIO
     function renderCustomerForm() {
         if (!customerFormContainer) return;
         const tipoPedido = urlParams.get('tipo');
         let formHtml = '';
+
         if (tipoPedido === 'mesa') {
             formHtml = `
                 <label for="nombre-cliente">Tu Nombre:</label><input type="text" id="nombre-cliente" required>
                 <label for="numero-mesa">Número de Mesa:</label><input type="number" id="numero-mesa" required>
             `;
-        } else {
+        } else if (tipoPedido === 'recoger') {
+            formHtml = `
+                <label for="nombre-cliente">Tu Nombre:</label><input type="text" id="nombre-cliente" required>
+                <label for="telefono-cliente">Tu Teléfono (WhatsApp):</label><input type="tel" id="telefono-cliente" required>
+            `;
+        } else { // 'domicilio' es el por defecto
             formHtml = `
                 <label for="nombre-cliente">Tu Nombre:</label><input type="text" id="nombre-cliente" required>
                 <label for="telefono-cliente">Tu Teléfono (WhatsApp):</label><input type="tel" id="telefono-cliente" required>
@@ -251,12 +278,22 @@ function renderMenuDelDia(menu) {
             const notas = notasClienteTextarea.value.trim() || '';
             const totalPedido = cart.reduce((sum, item) => sum + (item.precio * item.quantity), 0);
             
+            const metodoPagoSeleccionado = document.querySelector('input[name="metodo-pago"]:checked');
+            if (!metodoPagoSeleccionado) {
+                return alert('Por favor, selecciona un método de pago.');
+            }
+            const metodoDePagoValue = metodoPagoSeleccionado.value;
+
+            // --- ESTE OBJETO ES EL CORREGIDO ---
             let pedidoParaGuardar = { 
                 restaurante: restauranteInfo._id, 
+                // Aseguramos que el campo 'precio' se envía correctamente.
                 items: cart.map(item => ({ nombre: item.nombre, cantidad: item.quantity, precio: item.precio })), 
                 total: totalPedido, 
                 cliente: { nombre: nombreCliente }, 
-                notas 
+                notas,
+                // Aseguramos que el nombre del campo es 'metodoDePago' con 'D' mayúscula.
+                metodoDePago: metodoDePagoValue
             };
             
             let message = `*¡Nuevo Pedido para ${restauranteInfo.nombre}!* \n\n`;
@@ -267,7 +304,13 @@ function renderMenuDelDia(menu) {
                 pedidoParaGuardar.tipo = 'Mesa';
                 pedidoParaGuardar.cliente.numeroMesa = numeroMesa;
                 message += `*Pedido para la MESA #${numeroMesa}*\n*Cliente:* ${nombreCliente}\n`;
-            } else {
+            } else if (tipoPedido === 'recoger') {
+                const telefono = document.getElementById('telefono-cliente')?.value.trim();
+                if (!telefono) { return alert('Por favor, ingresa tu teléfono.'); }
+                pedidoParaGuardar.tipo = 'Recoger';
+                pedidoParaGuardar.cliente.telefono = telefono;
+                message += `*PEDIDO PARA RECOGER*\n*Cliente:* ${nombreCliente}\n*Teléfono:* ${telefono}\n`;
+            } else { // Domicilio
                 const telefono = document.getElementById('telefono-cliente')?.value.trim();
                 const direccion = document.getElementById('direccion-cliente')?.value.trim();
                 if (!telefono || !direccion) { return alert('Los campos "Teléfono" y "Dirección" son obligatorios.'); }
@@ -281,6 +324,9 @@ function renderMenuDelDia(menu) {
             cart.forEach(item => { message += `${item.quantity}x ${item.nombre} - ${formatCurrency(item.precio * item.quantity)}\n`; });
             message += `\n*Total: ${formatCurrency(totalPedido)}*`;
             if (notas) message += `\n\n*Notas:* ${notas}`;
+            
+            const textoMetodoPago = document.querySelector(`label[for="${metodoPagoSeleccionado.id}"]`).textContent;
+            message += `\n\n*Método de Pago:* ${textoMetodoPago}`;
             
             const whatsappUrl = `https://api.whatsapp.com/send?phone=${restauranteInfo.telefono.replace(/[\s\-()]/g, '')}&text=${encodeURIComponent(message)}`;
 
@@ -298,32 +344,37 @@ function renderMenuDelDia(menu) {
         });
     }
 
-    // 7. CARGA INICIAL
     async function loadPage() {
         try {
             const data = await fetch(`/api/public/menu/${slug}`).then(res => res.json());
             if (!data.restaurante) throw new Error('Restaurante no encontrado');
             restauranteInfo = data.restaurante;
+            
+            renderizarMetodosDePago(restauranteInfo.metodosDePago);
+            
             document.title = restauranteInfo.nombre;
             if (restaurantLogoContainer) { restaurantLogoContainer.innerHTML = restauranteInfo.logoUrl ? `<img src="${restauranteInfo.logoUrl}" alt="Logo de ${restauranteInfo.nombre}" class="restaurant-logo">` : ''; }
             if (nombreRestauranteElem) nombreRestauranteElem.textContent = restauranteInfo.nombre;
             if (mensajeBienvenidaElem) mensajeBienvenidaElem.textContent = restauranteInfo.mensajeBienvenida || '';
             allPizzas = data.pizzas || []; 
             
-            // --- CÓDIGO CORREGIDO PARA APLICAR TÍTULOS PERSONALIZADOS ---
             const titulos = restauranteInfo.titulosPersonalizados || {};
             if (tituloPlatos) tituloPlatos.textContent = titulos.platos || 'A la Carta';
             if (tituloEspeciales) tituloEspeciales.textContent = titulos.especiales || 'Nuestros Especiales';
-            if (tituloPizzas) tituloPizzas.textContent = titulos.pizzas || 'Nuestras Pizzas';
             if (tituloBebidas) tituloBebidas.textContent = titulos.bebidas || 'Bebidas y Otros';
             if (tituloMenuDia) tituloMenuDia.textContent = titulos.menuDia || 'Menú del Día';
-            // -------------------------------------------------------------
             
             renderMenuDelDia(data.menuDelDia);
             renderPlatos(data.platosEspeciales, especialesContent, especialesSection);
             renderPlatos(data.platosALaCarta, platosALaCartaContent, platosCartaSection);
             renderPlatos(data.bebidas, bebidasContent, bebidasSection);
-            renderPizzas(data.pizzas, pizzasContent, pizzasSection);
+            
+            const pizzasTradicionales = allPizzas.filter(p => p.categoria === 'Tradicional');
+            const pizzasGourmet = allPizzas.filter(p => p.categoria === 'Gourmet');
+
+            renderPizzas(pizzasTradicionales, pizzasTradicionalesContent, pizzasTradicionalesSection);
+            renderPizzas(pizzasGourmet, pizzasGourmetContent, pizzasGourmetSection);
+
         } catch (error) {
             console.error('Error al cargar el menú:', error);
             document.body.innerHTML = `<div class="container" style="text-align:center; padding: 2rem;"><h1>Error al cargar el menú</h1><p>${error.message}</p></div>`;
@@ -421,13 +472,22 @@ function renderMenuDelDia(menu) {
         }
     });
 
-    closePizzaModalBtn.addEventListener('click', closePizzaModal);
-    pizzaModal.addEventListener('click', (e) => {
+    if (cartItemsContainer) {
+        cartItemsContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('remove-btn')) {
+                const itemId = e.target.dataset.id;
+                removeFromCart(itemId);
+            }
+        });
+    }
+
+    if(closePizzaModalBtn) closePizzaModalBtn.addEventListener('click', closePizzaModal);
+    if(pizzaModal) pizzaModal.addEventListener('click', (e) => {
         if (e.target === pizzaModal) closePizzaModal();
     });
-    pizzaModalContent.addEventListener('change', updatePizzaModalState);
+    if(pizzaModalContent) pizzaModalContent.addEventListener('change', updatePizzaModalState);
 
-    addPizzaToCartBtn.addEventListener('click', () => {
+    if(addPizzaToCartBtn) addPizzaToCartBtn.addEventListener('click', () => {
         const selectedVarianteRadio = pizzaModalVariantes.querySelector('input[name="pizza_variante"]:checked');
         if (!selectedVarianteRadio) return alert('Por favor, selecciona un tamaño.');
         const varianteIndex = parseInt(selectedVarianteRadio.value);

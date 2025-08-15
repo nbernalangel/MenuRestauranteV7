@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const domicilioBtn = document.getElementById('domicilio-btn');
     const mesaBtn = document.getElementById('mesa-btn');
+    const recogerBtn = document.getElementById('recoger-btn'); // --- LÍNEA AÑADIDA ---
 
     // Referencias a los nuevos elementos del header
     const logoContainer = document.getElementById('welcome-logo');
@@ -52,6 +53,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (mesaBtn) {
         mesaBtn.href = `/r/${restauranteSlug}/menu?tipo=mesa`;
+    }
+    if (recogerBtn) { // --- LÍNEA AÑADIDA ---
+        recogerBtn.href = `/r/${restauranteSlug}/menu?tipo=recoger`;
     }
 
     // Llama a la nueva función para cargar la información

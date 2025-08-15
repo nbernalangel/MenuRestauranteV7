@@ -609,3 +609,133 @@ input:checked + .slider:before { transform: translateX(20px); }
     margin-bottom: 0.5rem;
 }
 
+/* CSS Opcional para la sección de pedidos en vivo */
+.pedidos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.pedido-card {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: transform 0.2s;
+}
+
+.pedido-card:hover {
+    transform: translateY(-5px);
+}
+
+.pedido-card h3 {
+    margin-top: 0;
+    font-size: 1.1rem;
+    color: #002b4d;
+    border-bottom: 2px solid #28a745;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+.pedido-card p {
+    margin: 0.3rem 0;
+    font-size: 0.9rem;
+}
+.pedido-card .items-list {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+}
+
+/* ---- NUEVOS ESTILOS PARA GESTIÓN DE PEDIDOS ---- */
+
+/* Estilos para la tarjeta de pedido completada */
+.pedido-card.completado {
+  background-color: #f8f9fa; /* Un gris muy claro */
+  opacity: 0.7;
+  border-left-color: #6c757d;
+}
+
+.pedido-card.completado h3 {
+  border-bottom-color: #6c757d; /* Borde del título en gris */
+}
+
+/* Reducimos el tamaño para ahorrar espacio */
+.pedido-card.completado p,
+.pedido-card.completado .items-list li {
+  font-size: 0.8rem;
+  margin: 0.2rem 0;
+}
+
+/* Deshabilitamos el menú en pedidos completados */
+.pedido-card.completado .estado-select {
+  pointer-events: none;
+  background-color: #e9ecef;
+}
+
+/* Etiqueta para el estado del pedido */
+.estado-badge {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: white;
+}
+.estado-pendiente { background-color: #007bff; }
+.estado-en-preparación { background-color: #ffc107; color: #333; }
+.estado-listo { background-color: #fd7e14; }
+.estado-entregado { background-color: #28a745; }
+.estado-cancelado { background-color: #dc3545; }
+
+/* Estilo del menú desplegable para cambiar estado */
+.estado-select {
+    width: 100%;
+    padding: 8px;
+    margin-top: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+}
+
+/* --- ESTILOS PARA LAS PESTAÑAS DE NAVEGACIÓN DEL ADMIN --- */
+
+.admin-menu-nav {
+    display: flex;
+    flex-wrap: wrap; 
+    gap: 10px;       
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #ddd;
+    position: sticky;
+    top: 0;
+    background-color: white;
+    z-index: 1000;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+.nav-btn {
+    padding: 12px 20px; /* Hacemos los botones más grandes */
+    font-size: 1rem;     /* Aumentamos el tamaño de la letra */
+    font-weight: 600;    /* Letra en semibold */
+    border: none;
+    border-radius: 8px 8px 0 0; /* Redondeamos solo las esquinas superiores */
+    background-color: #f0f2f5; /* Un color de fondo suave por defecto */
+    color: #4a5568;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    border-bottom: 3px solid transparent; /* Borde inferior transparente por defecto */
+}
+
+.nav-btn:hover {
+    background-color: #e2e8f0;
+    color: #00183A;
+}
+
+/* ESTA ES LA CLASE MÁGICA PARA EL BOTÓN ACTIVO */
+.nav-btn.active {
+    background-color: #00183A; /* El color azul de tu tema */
+    color: white;              /* Letra blanca */
+    border-bottom: 3px solid #94C120; /* Borde inferior con tu color verde */
+}
+

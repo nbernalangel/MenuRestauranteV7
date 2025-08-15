@@ -28,7 +28,6 @@ const restauranteSchema = new mongoose.Schema({
         type: String,
         trim: true
     },
-    // --- NUEVO CAMPO PARA TÍTULOS PERSONALIZADOS ---
     titulosPersonalizados: {
         platos: String,
         bebidas: String,
@@ -36,7 +35,6 @@ const restauranteSchema = new mongoose.Schema({
         especiales: String,
         menuDia: String,
     },
-    // ---------------------------------------------
     location: {
         type: {
             type: String, 
@@ -55,7 +53,14 @@ const restauranteSchema = new mongoose.Schema({
     aceptaServicioEnMesa: {
         type: Boolean,
         default: true
+    },
+    // --- NUEVO CAMPO AÑADIDO ---
+    metodosDePago: {
+        efectivo: { type: Boolean, default: true },
+        tarjeta: { type: Boolean, default: false },
+        transferencia: { type: Boolean, default: false }
     }
+    // --------------------------
 }, { timestamps: true });
 
 module.exports = mongoose.model('Restaurante', restauranteSchema);

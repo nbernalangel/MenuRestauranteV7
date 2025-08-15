@@ -1,4 +1,4 @@
-// app.js
+// app.js (MODIFICADO CON SOCKET.IO)
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -10,8 +10,24 @@ const crypto = require('crypto');
 require('dotenv').config();
 const cloudinary = require('cloudinary').v2;
 const { Client } = require("@googlemaps/google-maps-services-js");
+
+// --- CAMBIO 1: IMPORTAMOS HTTP Y SOCKET.IO ---
+const http = require('http');
+const { Server } = require('socket.io');
+// -------------------------------------------
+
 const app = express();
 const port = process.env.PORT || 3000;
+
+// --- CAMBIO 2: CREAMOS EL SERVIDOR HTTP Y EL SERVIDOR DE SOCKETS ---
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: "*", // Puedes restringir esto a tu dominio en producción
+        methods: ["GET", "POST"]
+    }
+});
+// -----------------------------------------------------------------
 
 // --- Middlewares ---
 app.use(cors());
@@ -28,6 +44,7 @@ mongoose.connect(dbUri)
     .then(() => console.log('✅ Conectado a MongoDB'))
     .catch(err => console.error('❌ Error de conexión a MongoDB:', err.message || err));
 
+// ... (El resto de tu código de configuración de Cloudinary, Resend, Modelos, etc., sigue igual)
 // --- Configuración de Cloudinary ---
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -50,6 +67,123 @@ const Pedido = require('./models/Pedido');
 const Bebida = require('./models/Bebida'); // <-- ¡LÍNEA AÑADIDA!
 const Pizza = require('./models/Pizza');
 
+
+// --- CAMBIO 3: LÓGICA DE CONEXIÓN DE SOCKET.IO ---
+io.on('connection', (socket) => {
+    console.log('✅ Un cliente se ha conectado al WebSocket.');
+    
+    // Unirse a una "sala" específica por restaurante
+    socket.on('join_admin_room', (restauranteId) => {
+        socket.join(restauranteId);
+        console.log(`👨‍💼 Admin se unió a la sala: ${restauranteId}`);
+    });
+
+    socket.on('disconnect', () => {
+        console.log('❌ Un cliente se ha desconectado del WebSocket.');
+    });
+});
+// ----------------------------------------------------
+
+
+// ... (Todas tus otras rutas: /api/sign-upload, /api/contact, /api/register, etc. siguen aquí)
+
+// ========================================================
+// === EL RESTO DE TU CÓDIGO CONTINÚA AQUÍ ================
+// ========================================================
+
+// --- CAMBIO 4: MODIFICAMOS LA RUTA PARA CREAR PEDIDOS ---
+// RUTA PARA CREAR UN NUEVO PEDIDO (PÚBLICA)
+app.post('/api/pedidos', async (req, res) => {
+    try {
+        const nuevoPedido = new Pedido(req.body);
+        await nuevoPedido.save();
+
+        // Después de guardar, poblamos los datos del restaurante para enviarlos
+        const pedidoCompleto = await Pedido.findById(nuevoPedido._id).populate('restaurante');
+        
+        console.log(`✅ Nuevo pedido ${pedidoCompleto.numeroPedido} guardado con éxito.`);
+        
+        // ¡LA MAGIA! Emitimos el evento 'nuevo-pedido' a la sala del restaurante específico
+        if(pedidoCompleto.restaurante && pedidoCompleto.restaurante._id) {
+            io.to(pedidoCompleto.restaurante._id.toString()).emit('nuevo-pedido', pedidoCompleto);
+            console.log(`📢 Evento "nuevo-pedido" emitido a la sala ${pedidoCompleto.restaurante._id}`);
+        }
+        
+        res.status(201).json({ message: 'Pedido creado con éxito', pedido: pedidoCompleto });
+
+    } catch (error) {
+        console.error("❌ Error al crear el pedido:", error.message || error);
+        res.status(500).json({ message: 'Error interno del servidor al crear el pedido.' });
+    }
+});
+
+// RUTA 1: OBTENER TODOS LOS PEDIDOS DE HOY PARA UN RESTAURANTE
+app.get('/api/pedidos/restaurante/:restauranteId/hoy', async (req, res) => {
+    try {
+        const { restauranteId } = req.params;
+
+        // Configuramos el inicio del día en la zona horaria local (Colombia)
+        const hoy = new Date();
+        const inicioDelDia = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+        
+        const pedidos = await Pedido.find({
+            restaurante: restauranteId,
+            createdAt: { $gte: inicioDelDia } // Filtro para traer solo pedidos creados desde el inicio del día de hoy
+        }).sort({ createdAt: -1 }); // Los más nuevos primero
+
+        res.json(pedidos);
+
+    } catch (error) {
+        console.error("❌ Error al obtener los pedidos de hoy:", error.message || error);
+        res.status(500).json({ message: 'Error interno del servidor.' });
+    }
+});
+
+// RUTA 2: ACTUALIZAR EL ESTADO DE UN PEDIDO
+app.patch('/api/pedidos/:id/estado', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { estado } = req.body;
+
+        // Validamos que el estado enviado sea uno de los permitidos en el modelo
+        const estadosPermitidos = Pedido.schema.path('estado').enumValues;
+        if (!estadosPermitidos.includes(estado)) {
+            return res.status(400).json({ message: 'Estado no válido.' });
+        }
+
+        const pedidoActualizado = await Pedido.findByIdAndUpdate(
+            id,
+            { estado: estado },
+            { new: true } // Devuelve el documento actualizado
+        );
+
+        if (!pedidoActualizado) {
+            return res.status(404).json({ message: 'Pedido no encontrado.' });
+        }
+
+        // ¡LA MAGIA EN TIEMPO REAL!
+        // Notificamos a todos en la sala del restaurante que un estado ha cambiado.
+        io.to(pedidoActualizado.restaurante.toString()).emit('actualizacion-estado', pedidoActualizado);
+        console.log(`📢 Estado del pedido ${pedidoActualizado.numeroPedido} actualizado a "${estado}". Evento emitido.`);
+
+        res.json(pedidoActualizado);
+
+    } catch (error) {
+        console.error("❌ Error al actualizar el estado del pedido:", error.message || error);
+        res.status(500).json({ message: 'Error interno del servidor.' });
+    }
+});
+
+// -------------------------------------------------------
+
+// ... (El resto de tus rutas existentes: /api/register, /api/verify, etc., van aquí sin cambios)
+
+/*
+ PEGA AQUÍ TODO EL RESTO DE TUS RUTAS DESDE:
+ app.post('/api/register', ...);
+ HASTA EL FINAL DE LAS RUTAS...
+ app.get('/r/:slug/menu', ...);
+*/
 // ========================================================
 // === RUTAS PARA LA SUBIDA DE LOGOS ======================
 // ========================================================
@@ -111,23 +245,6 @@ app.post('/api/contact', async (req, res) => {
     }
 });
 
-
-// ========================================================
-// === EL RESTO DE TU CÓDIGO CONTINÚA AQUÍ ================
-// ========================================================
-
-// RUTA PARA CREAR UN NUEVO PEDIDO (PÚBLICA)
-app.post('/api/pedidos', async (req, res) => {
-    try {
-        const nuevoPedido = new Pedido(req.body);
-        await nuevoPedido.save();
-        console.log(`✅ Nuevo pedido ${nuevoPedido.numeroPedido} guardado con éxito.`);
-        res.status(201).json({ message: 'Pedido creado con éxito', pedido: nuevoPedido });
-    } catch (error) {
-        console.error("❌ Error al crear el pedido:", error.message || error);
-        res.status(500).json({ message: 'Error interno del servidor al crear el pedido.' });
-    }
-});
 
 // RUTAS DE REGISTRO Y VERIFICACIÓN
 app.post('/api/register', async (req, res) => {
@@ -1045,5 +1162,7 @@ app.get('/r/:slug/menu', (req, res) => res.sendFile(path.join(__dirname, 'public
 
 
 
-// --- Iniciar Servidor ---
-app.listen(port, () => { console.log(`🚀 Servidor funcionando en http://localhost:${port}`); });
+
+// --- CAMBIO 5: Iniciar Servidor con el server de http en vez de app ---
+server.listen(port, () => { console.log(`🚀 Servidor funcionando en http://localhost:${port}`); });
+// ----------------------------------------------------------------------
