@@ -23,7 +23,7 @@ const port = process.env.PORT || 3000;
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "*", // Puedes restringir esto a tu dominio en producción
+        origin: "https://app.ting-col.com", // Puedes restringir esto a tu dominio en producción
         methods: ["GET", "POST"]
     }
 });
