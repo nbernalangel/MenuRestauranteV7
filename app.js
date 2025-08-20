@@ -26,6 +26,7 @@ const io = new Server(server, {
         origin: "https://app.ting-col.com", // Puedes restringir esto a tu dominio en producción
         methods: ["GET", "POST"]
     }
+    allowEIO3: true
 });
 // -----------------------------------------------------------------
 
